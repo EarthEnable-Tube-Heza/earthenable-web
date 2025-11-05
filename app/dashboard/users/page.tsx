@@ -6,14 +6,16 @@
  * Displays paginated list of users with search and filtering.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import { apiClient } from '@/src/lib/api';
 import { UserRole, UserRoleLabels } from '@/src/types/user';
 import { cn } from '@/src/lib/theme';
 import { UserDetailModal } from '@/src/components/UserDetailModal';
 
 export default function UsersPage() {
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
@@ -21,6 +23,22 @@ export default function UsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const limit = 20;
+
+  // Initialize filters from URL query parameters
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    const statusParam = searchParams.get('status');
+
+    if (roleParam && Object.values(UserRole).includes(roleParam as UserRole)) {
+      setRoleFilter(roleParam as UserRole);
+    }
+
+    if (statusParam === 'active') {
+      setStatusFilter(true);
+    } else if (statusParam === 'inactive') {
+      setStatusFilter(false);
+    }
+  }, [searchParams]);
 
   // Fetch users with filters
   const { data, isLoading, error, refetch } = useQuery({

@@ -42,16 +42,10 @@ export default function DashboardPage() {
     },
     {
       title: 'View Analytics',
-      description: 'Department and jurisdiction performance dashboards',
+      description: 'User statistics and performance insights',
       href: '/dashboard/analytics',
       icon: '📊',
-    },
-    {
-      title: 'Review Data',
-      description: 'Review and approve submitted form data',
-      href: '/dashboard/review',
-      icon: '✅',
-      managerOnly: true,
+      adminOnly: true,
     },
   ];
 

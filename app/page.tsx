@@ -1,4 +1,31 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/src/lib/auth';
+
 export default function Home() {
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isLoading, router]);
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background-primary">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="text-text-secondary mt-4">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background-primary p-24">
       <div className="max-w-5xl w-full items-center justify-between font-heading text-center">
@@ -8,6 +35,14 @@ export default function Home() {
         <p className="text-2xl text-text-secondary font-body mb-8">
           Admin and manager web dashboard for field operations management
         </p>
+
+        {/* Sign In Button */}
+        <Link
+          href="/auth/signin"
+          className="inline-block px-8 py-3 bg-primary text-white font-heading font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-medium hover:shadow-large"
+        >
+          Sign In with Google
+        </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="bg-white rounded-lg p-6 shadow-medium">
