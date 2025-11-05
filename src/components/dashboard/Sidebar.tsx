@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth, useIsAdmin } from '@/src/lib/auth';
 import { cn } from '@/src/lib/theme';
+import { UserRoleLabels } from '@/src/types/user';
 
 interface NavItem {
   href: string;
@@ -115,7 +116,7 @@ export function Sidebar() {
                 {user.name || user.email}
               </p>
               <p className="text-xs text-text-secondary truncate">
-                {user.role.replace('_', ' ').toUpperCase()}
+                {user.role ? UserRoleLabels[user.role] : 'Loading...'}
               </p>
             </div>
           </div>

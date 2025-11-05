@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useTokenExpiry } from '@/src/lib/auth';
 import { Menu } from '@headlessui/react';
 import { cn } from '@/src/lib/theme';
+import { UserRoleLabels } from '@/src/types/user';
 
 export function Header() {
   const router = useRouter();
@@ -84,7 +85,7 @@ export function Header() {
                     {user.name || user.email}
                   </p>
                   <p className="text-xs text-text-secondary">
-                    {user.role.replace('_', ' ').toUpperCase()}
+                    {user.role ? UserRoleLabels[user.role] : 'Loading...'}
                   </p>
                 </div>
                 <svg
