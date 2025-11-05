@@ -82,7 +82,10 @@ export default function UsersPage() {
                 setRoleFilter(e.target.value as UserRole | '');
                 setPage(0);
               }}
-              className="w-full px-4 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-4 pr-10 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white bg-no-repeat bg-[length:16px_16px] bg-[right_16px_center]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`
+              }}
             >
               <option value="">All Roles</option>
               <option value={UserRole.ADMIN}>Admin</option>
@@ -103,7 +106,10 @@ export default function UsersPage() {
                 setStatusFilter(value === '' ? '' : value === 'true');
                 setPage(0);
               }}
-              className="w-full px-4 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-4 pr-10 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white bg-no-repeat bg-[length:16px_16px] bg-[right_16px_center]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`
+              }}
             >
               <option value="">All</option>
               <option value="true">Active</option>
