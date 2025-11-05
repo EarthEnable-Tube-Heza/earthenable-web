@@ -86,6 +86,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (accessToken && refreshToken && userStr) {
         const user: User = JSON.parse(userStr);
 
+        // Set cookie for middleware (in case it's missing after page refresh)
+        if (tokenExpiry) {
+          const expiryDate = new Date(parseInt(tokenExpiry, 10));
+          document.cookie = `earthenable_access_token=${accessToken}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
+        }
+
         setState({
           user,
           accessToken,
@@ -130,10 +136,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Calculate token expiry
       const tokenExpiry = calculateTokenExpiry(tokenResponse.expires_in);
 
-      // Store tokens FIRST (so API client can use them)
+      // Store tokens in localStorage (for API client)
       localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.access_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refresh_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, tokenExpiry.toString());
+
+      // Also store access token in cookies (for middleware)
+      // Calculate expiry date for cookie (convert expires_in seconds to Date)
+      const expiryDate = new Date(Date.now() + tokenResponse.expires_in * 1000);
+      document.cookie = `earthenable_access_token=${tokenResponse.access_token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
 
       // NOW get user profile (API client will find token in localStorage)
       const user = await apiClient.getCurrentUser();
@@ -170,11 +181,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('Error during sign out:', error);
     } finally {
-      // Clear state and storage regardless of API call result
+      // Clear localStorage
       localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
       localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+
+      // Clear cookie (set expired date)
+      document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
 
       setState(initialAuthState);
     }
