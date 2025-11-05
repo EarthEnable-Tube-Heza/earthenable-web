@@ -22,6 +22,9 @@ import {
   UserRole,
   PaginatedUsersResponse,
   UserStatsResponse,
+  TaskSubjectForm,
+  PaginatedFormMappingsResponse,
+  UpdateFormMapping,
 } from '../../types';
 
 /**
@@ -319,6 +322,32 @@ class APIClient {
    */
   async getUserStats(): Promise<UserStatsResponse> {
     return this.get<UserStatsResponse>('/admin/users/stats');
+  }
+
+  // ============================================================================
+  // FORM MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get paginated list of form mappings with optional filters
+   */
+  async getFormMappings(params?: {
+    skip?: number;
+    limit?: number;
+    country_code?: string;
+    task_subject_id?: string;
+  }): Promise<PaginatedFormMappingsResponse> {
+    return this.get<PaginatedFormMappingsResponse>('/admin/forms/mappings', { params });
+  }
+
+  /**
+   * Update form mapping
+   */
+  async updateFormMapping(
+    mappingId: string,
+    data: UpdateFormMapping
+  ): Promise<TaskSubjectForm> {
+    return this.patch<TaskSubjectForm>(`/admin/forms/mappings/${mappingId}`, data);
   }
 }
 
