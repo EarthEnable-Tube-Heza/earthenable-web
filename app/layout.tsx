@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "@/src/components/Providers";
 
 export const metadata: Metadata = {
   title: "EarthEnable Dashboard",
@@ -22,7 +23,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

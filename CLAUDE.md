@@ -73,11 +73,29 @@ Theme is configured in `tailwind.config.ts` to match the mobile app's design sys
 4. Store access + refresh tokens (localStorage)
 5. Redirect to `/dashboard`
 
-**Token Management:**
-- Access token: 30 days expiry
-- Refresh token: 90 days expiry
-- Auto-refresh: 7 days before expiry
-- Refresh threshold: Configurable via environment
+**Token Management (Security-Focused for Admin Dashboard):**
+
+⚠️ **IMPORTANT SECURITY NOTE**: The web dashboard uses **much stricter** token expiration than the mobile app to protect sensitive admin/manager operations:
+
+| Setting | Mobile App | Web Dashboard | Reason |
+|---------|-----------|---------------|---------|
+| Access token expiry | 30 days | **1 hour** (backend) | No offline needs, higher security |
+| Refresh token expiry | 90 days | **7 days** (backend) | Limit session hijacking window |
+| Auto-refresh threshold | 7 days before | **10 minutes before** | Seamless UX with security |
+| Critical warning | 24 hours before | **2 minutes before** | Time to save work |
+
+**Why stricter expiration?**
+- Web dashboard doesn't need offline capability
+- Admin/Manager roles have elevated permissions
+- Shorter sessions reduce risk of unauthorized access if session is compromised
+- Forces re-authentication regularly for sensitive operations
+- Mitigates session hijacking and malicious actor risks
+
+**Configuration** (in `.env.local`):
+```bash
+NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10  # minutes before expiry to auto-refresh
+NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2  # minutes before expiry to show warning
+```
 
 **Protected Routes:**
 - Middleware checks auth status
@@ -218,9 +236,9 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 NEXT_PUBLIC_APP_NAME=EarthEnable Dashboard
 NEXT_PUBLIC_COMPANY_DOMAIN=earthenable.org
 
-# Token Management
-NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10080  # Minutes (7 days)
-NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=1440  # Minutes (24 hours)
+# Token Management (Security-focused for admin dashboard)
+NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10  # Minutes (10 min - tight security)
+NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2  # Minutes (2 min - time to save)
 ```
 
 ### Environment-Specific URLs
