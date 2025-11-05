@@ -91,9 +91,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const isExpired = expiry ? expiry <= Date.now() : false;
 
         if (isExpired) {
-          // Token expired, clear auth and don't set cookie
+          // Token expired, clear storage directly (don't call signOut to avoid circular dependency)
           console.log('Stored token is expired, clearing auth');
-          await signOut();
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+          document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
           setState(prev => ({ ...prev, isLoading: false }));
           return;
         }
@@ -123,9 +127,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isLoading: false,
           }));
         } catch (error) {
-          // Token invalid, clear auth
+          // Token invalid, clear storage directly (don't call signOut to avoid circular dependency)
           console.log('Token verification failed, clearing auth');
-          await signOut();
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+          document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+          setState(initialAuthState);
         }
       } else {
         setState(prev => ({ ...prev, isLoading: false }));
