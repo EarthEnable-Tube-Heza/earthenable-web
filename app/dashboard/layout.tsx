@@ -1,0 +1,55 @@
+'use client';
+
+/**
+ * Dashboard Layout
+ *
+ * Layout wrapper for all dashboard pages with sidebar and header.
+ */
+
+import { useRequireAuth } from '@/src/lib/auth';
+import { Sidebar } from '@/src/components/dashboard/Sidebar';
+import { Header } from '@/src/components/dashboard/Header';
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Protect dashboard routes - redirect to sign-in if not authenticated
+  const { isAuthenticated, isLoading } = useRequireAuth();
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background-primary">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-text-secondary">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background-primary">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <Header />
+
+        {/* Page Content */}
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
