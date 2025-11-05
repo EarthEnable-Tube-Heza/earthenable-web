@@ -11,12 +11,15 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/src/lib/api';
 import { UserRole, UserRoleLabels } from '@/src/types/user';
 import { cn } from '@/src/lib/theme';
+import { UserDetailModal } from '@/src/components/UserDetailModal';
 
 export default function UsersPage() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
   const [statusFilter, setStatusFilter] = useState<boolean | ''>('');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const limit = 20;
 
   // Fetch users with filters
@@ -210,8 +213,8 @@ export default function UsersPage() {
                     <td className="px-6 py-4">
                       <button
                         onClick={() => {
-                          // TODO: Open user detail modal
-                          console.log('View user:', user.id);
+                          setSelectedUserId(user.id);
+                          setIsModalOpen(true);
                         }}
                         className="text-primary hover:text-primary/80 text-sm font-medium"
                       >
@@ -261,6 +264,16 @@ export default function UsersPage() {
           </>
         )}
       </div>
+
+      {/* User Detail Modal */}
+      <UserDetailModal
+        userId={selectedUserId}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedUserId(null);
+        }}
+      />
     </div>
   );
 }
