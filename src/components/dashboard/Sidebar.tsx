@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth, useIsAdmin } from '@/src/lib/auth';
 import { cn } from '@/src/lib/theme';
-import { UserRoleLabels } from '@/src/types/user';
+import { UserRole, UserRoleLabels } from '@/src/types/user';
 
 interface NavItem {
   href: string;
