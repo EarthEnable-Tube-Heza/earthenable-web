@@ -85,10 +85,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (accessToken && refreshToken && userStr) {
         const user: User = JSON.parse(userStr);
+        const expiry = tokenExpiry ? parseInt(tokenExpiry, 10) : null;
 
-        // Set cookie for middleware (in case it's missing after page refresh)
-        if (tokenExpiry) {
-          const expiryDate = new Date(parseInt(tokenExpiry, 10));
+        // Check if token is expired
+        const isExpired = expiry ? expiry <= Date.now() : false;
+
+        if (isExpired) {
+          // Token expired, clear auth and don't set cookie
+          console.log('Stored token is expired, clearing auth');
+          await signOut();
+          setState(prev => ({ ...prev, isLoading: false }));
+          return;
+        }
+
+        // Set cookie for middleware (only if token is not expired)
+        if (expiry) {
+          const expiryDate = new Date(expiry);
           document.cookie = `earthenable_access_token=${accessToken}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
         }
 
@@ -96,7 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           user,
           accessToken,
           refreshToken,
-          tokenExpiry: tokenExpiry ? parseInt(tokenExpiry, 10) : null,
+          tokenExpiry: expiry,
           isAuthenticated: true,
           isLoading: false,
           error: null,
@@ -112,6 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }));
         } catch (error) {
           // Token invalid, clear auth
+          console.log('Token verification failed, clearing auth');
           await signOut();
         }
       } else {

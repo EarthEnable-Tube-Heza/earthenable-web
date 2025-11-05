@@ -1,20 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/src/lib/auth';
 
 export default function Home() {
-  const router = useRouter();
   const { user, isLoading } = useAuth();
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.push('/dashboard');
-    }
-  }, [user, isLoading, router]);
 
   // Show loading state while checking auth
   if (isLoading) {
@@ -36,13 +26,22 @@ export default function Home() {
           Admin and manager web dashboard for field operations management
         </p>
 
-        {/* Sign In Button */}
-        <Link
-          href="/auth/signin"
-          className="inline-block px-8 py-3 bg-primary text-white font-heading font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-medium hover:shadow-large"
-        >
-          Sign In with Google
-        </Link>
+        {/* Show different buttons based on auth status */}
+        {user ? (
+          <Link
+            href="/dashboard"
+            className="inline-block px-8 py-3 bg-primary text-white font-heading font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-medium hover:shadow-large"
+          >
+            Go to Dashboard
+          </Link>
+        ) : (
+          <Link
+            href="/auth/signin"
+            className="inline-block px-8 py-3 bg-primary text-white font-heading font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-medium hover:shadow-large"
+          >
+            Sign In with Google
+          </Link>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="bg-white rounded-lg p-6 shadow-medium">
