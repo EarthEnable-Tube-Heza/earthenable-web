@@ -7,15 +7,8 @@
  */
 
 import { useAuth, useIsAdmin, useIsManager } from '@/src/lib/auth';
+import { UserStatsCards } from '@/src/components/UserStatsCards';
 import Link from 'next/link';
-
-interface StatCard {
-  title: string;
-  value: string | number;
-  icon: string;
-  color: string;
-  href?: string;
-}
 
 interface QuickAction {
   title: string;
@@ -30,35 +23,6 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const isAdmin = useIsAdmin();
   const isManager = useIsManager();
-
-  // Mock stats (will be replaced with real API data)
-  const stats: StatCard[] = [
-    {
-      title: 'Total Users',
-      value: '248',
-      icon: '👥',
-      color: 'text-blue',
-      href: isAdmin ? '/dashboard/users' : undefined,
-    },
-    {
-      title: 'Active Tasks',
-      value: '127',
-      icon: '📋',
-      color: 'text-primary',
-    },
-    {
-      title: 'Forms Submitted',
-      value: '1,284',
-      icon: '📝',
-      color: 'text-green',
-    },
-    {
-      title: 'Pending Review',
-      value: '42',
-      icon: '⏳',
-      color: 'text-accent',
-    },
-  ];
 
   // Quick actions based on role
   const quickActions: QuickAction[] = [
@@ -110,38 +74,8 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const content = (
-            <div className="bg-white rounded-lg shadow-medium p-6 hover:shadow-large transition-shadow">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-text-secondary text-sm font-body mb-1">
-                    {stat.title}
-                  </p>
-                  <p className="text-3xl font-heading font-bold text-text-primary">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`text-4xl ${stat.color}`}>
-                  {stat.icon}
-                </div>
-              </div>
-            </div>
-          );
-
-          if (stat.href) {
-            return (
-              <Link key={index} href={stat.href}>
-                {content}
-              </Link>
-            );
-          }
-
-          return <div key={index}>{content}</div>;
-        })}
-      </div>
+      {/* User Statistics (Admin only) */}
+      {isAdmin && <UserStatsCards />}
 
       {/* Quick Actions */}
       <div>
