@@ -17,6 +17,11 @@ import {
   GoogleAuthRequest,
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
+  User,
+  UserDetail,
+  UserRole,
+  PaginatedUsersResponse,
+  UserStatsResponse,
 } from '../../types';
 
 /**
@@ -267,6 +272,53 @@ class APIClient {
     } finally {
       this.clearAuth();
     }
+  }
+
+  // ============================================================================
+  // USER MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get paginated list of users with optional filters
+   */
+  async getUsers(params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    is_active?: boolean;
+  }): Promise<PaginatedUsersResponse> {
+    return this.get<PaginatedUsersResponse>('/admin/users', { params });
+  }
+
+  /**
+   * Get user by ID
+   */
+  async getUserById(userId: string): Promise<UserDetail> {
+    return this.get<UserDetail>(`/admin/users/${userId}`);
+  }
+
+  /**
+   * Update user role
+   */
+  async updateUserRole(userId: string, role: UserRole): Promise<User> {
+    return this.patch<User>(`/admin/users/${userId}/role`, { role });
+  }
+
+  /**
+   * Update user active status
+   */
+  async updateUserStatus(userId: string, isActive: boolean): Promise<User> {
+    return this.patch<User>(`/admin/users/${userId}/status`, {
+      is_active: isActive,
+    });
+  }
+
+  /**
+   * Get user statistics
+   */
+  async getUserStats(): Promise<UserStatsResponse> {
+    return this.get<UserStatsResponse>('/admin/users/stats');
   }
 }
 
