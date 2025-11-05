@@ -127,16 +127,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Exchange Google token for JWT
       const tokenResponse = await apiClient.authenticateWithGoogle(googleToken);
 
-      // Get user profile
-      const user = await apiClient.getCurrentUser();
-
       // Calculate token expiry
       const tokenExpiry = calculateTokenExpiry(tokenResponse.expires_in);
 
-      // Store tokens and user
+      // Store tokens FIRST (so API client can use them)
       localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.access_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refresh_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, tokenExpiry.toString());
+
+      // NOW get user profile (API client will find token in localStorage)
+      const user = await apiClient.getCurrentUser();
+
+      // Store user
       localStorage.setItem(TOKEN_STORAGE_KEYS.USER, JSON.stringify(user));
 
       setState({
