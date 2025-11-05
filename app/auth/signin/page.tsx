@@ -77,8 +77,29 @@ export default function SignInPage() {
     return null;
   }
 
+  // Get client ID directly from environment variable
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || config.google.clientId;
+
+  if (!clientId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background-primary px-4">
+        <div className="bg-white rounded-lg shadow-medium p-8 max-w-md">
+          <h2 className="text-2xl font-heading font-bold text-status-error mb-4">
+            Configuration Error
+          </h2>
+          <p className="text-text-secondary mb-4">
+            Google Client ID is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file.
+          </p>
+          <p className="text-text-disabled text-sm">
+            Contact your system administrator for assistance.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <GoogleOAuthProvider clientId={config.google.clientId}>
+    <GoogleOAuthProvider clientId={clientId}>
       <div className="flex min-h-screen items-center justify-center bg-background-primary px-4">
         <div className="w-full max-w-md">
           {/* Logo and Title */}

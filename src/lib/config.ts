@@ -85,7 +85,7 @@ export const config: Config = {
   },
 
   google: {
-    clientId: getEnvVar('NEXT_PUBLIC_GOOGLE_CLIENT_ID'),
+    clientId: getOptionalEnvVar('NEXT_PUBLIC_GOOGLE_CLIENT_ID', ''),
   },
 
   app: {
@@ -136,11 +136,5 @@ export function validateConfig(): void {
   }
 }
 
-// Validate configuration on module load (only in browser)
-if (typeof window !== 'undefined') {
-  try {
-    validateConfig();
-  } catch (error) {
-    console.error('Configuration validation failed:', error);
-  }
-}
+// Note: Validation is removed from module load to prevent errors during Next.js hydration
+// The Google OAuth component will show a clear error if the client ID is missing
