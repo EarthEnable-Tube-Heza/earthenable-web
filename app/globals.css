@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #F7EDDB;
+    --foreground: #1F2937;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #1F2937;
+      --foreground: #F7EDDB;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background-primary text-text-primary;
+  }
+}
