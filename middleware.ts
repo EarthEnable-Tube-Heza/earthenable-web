@@ -20,6 +20,7 @@ const protectedRoutes = [
 const adminRoutes = [
   '/dashboard/users',
   '/dashboard/forms',
+  '/dashboard/analytics',
 ];
 
 /**

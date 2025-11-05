@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
     href: '/dashboard/analytics',
     label: 'Analytics',
     icon: '📊',
+    adminOnly: true,
   },
 ];
 
