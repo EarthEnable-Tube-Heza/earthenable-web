@@ -6,6 +6,9 @@
   :root {
     --background: #F7EDDB;
     --foreground: #1F2937;
+    --font-heading: 'Ropa Sans', sans-serif;
+    --font-body: 'Lato', sans-serif;
+    --font-flourish: 'Literata', serif;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -17,10 +20,8 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-background-primary text-text-primary;
+    font-family: var(--font-body);
   }
 }
