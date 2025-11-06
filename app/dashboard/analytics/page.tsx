@@ -52,10 +52,27 @@ export default function AnalyticsPage() {
     queryFn: () => apiClient.getUserStats(),
   });
 
+  // Normalize role string (e.g., "UserRole.ADMIN" -> "admin")
+  const normalizeRole = (role: string): string => {
+    // If it's in the format "UserRole.ADMIN", extract "ADMIN" and lowercase it
+    if (role.startsWith('UserRole.')) {
+      return role.replace('UserRole.', '').toLowerCase();
+    }
+    return role.toLowerCase();
+  };
+
   // Process data for charts
   const roleDistributionData = useMemo(() => {
     if (!stats) return [];
-    return Object.entries(stats.by_role).map(([role, count]) => ({
+
+    // Normalize and aggregate duplicate roles
+    const aggregatedRoles: Record<string, number> = {};
+    Object.entries(stats.by_role).forEach(([role, count]) => {
+      const normalizedRole = normalizeRole(role);
+      aggregatedRoles[normalizedRole] = (aggregatedRoles[normalizedRole] || 0) + count;
+    });
+
+    return Object.entries(aggregatedRoles).map(([role, count]) => ({
       name: UserRoleLabels[role as UserRole] || role,
       value: count,
       color: ROLE_COLORS[role] || COLORS.accent,
