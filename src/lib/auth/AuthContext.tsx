@@ -212,7 +212,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Clear cookie (set expired date)
       document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
 
-      setState(initialAuthState);
+      // Reset state to unauthenticated with isLoading: false
+      setState({
+        ...initialAuthState,
+        isLoading: false,
+      });
     }
   }, []);
 
