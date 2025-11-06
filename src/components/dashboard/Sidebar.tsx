@@ -92,12 +92,12 @@ export function Sidebar() {
           'bg-white border-r border-border-light h-screen flex flex-col',
           'transition-all duration-300 ease-in-out',
 
-          // Mobile: fixed overlay, hidden by default
+          // Mobile: fixed overlay (slides in from left)
           'fixed inset-y-0 left-0 z-50 w-64',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
 
-          // Desktop: normal flow, always visible, collapsible width
-          'lg:sticky lg:top-0 lg:translate-x-0',
+          // Desktop: sticky positioning, always visible, responsive width
+          'lg:sticky lg:top-0',
           isCollapsed ? 'lg:w-20' : 'lg:w-64'
         )}
       >
