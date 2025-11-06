@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
           <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
             Users by Role
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
                 data={roleDistributionData}
@@ -239,7 +239,13 @@ export default function AnalyticsPage() {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                iconType="circle"
+                iconSize={10}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -249,7 +255,7 @@ export default function AnalyticsPage() {
           <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
             User Activity Status
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
                 data={activeStatusData}
@@ -266,7 +272,13 @@ export default function AnalyticsPage() {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                iconType="circle"
+                iconSize={10}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -277,13 +289,19 @@ export default function AnalyticsPage() {
         <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
           Role Distribution
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={350}>
           <BarChart data={roleDistributionData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
-            <Legend />
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+              iconType="rect"
+              iconSize={10}
+            />
             <Bar dataKey="value" name="Users">
               {roleDistributionData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -299,13 +317,19 @@ export default function AnalyticsPage() {
           <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
             Recent Signups Timeline
           </h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={350}>
             <AreaChart data={signupsTimelineData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Legend />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                iconType="line"
+                iconSize={10}
+              />
               <Area
                 type="monotone"
                 dataKey="signups"

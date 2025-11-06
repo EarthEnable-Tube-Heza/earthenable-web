@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '@/src/lib/auth';
 import { config } from '@/src/lib/config';
@@ -104,9 +105,16 @@ export default function SignInPage() {
         <div className="w-full max-w-md">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-heading font-bold text-primary mb-2">
-              EarthEnable
-            </h1>
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/logo.svg"
+                alt="EarthEnable Logo"
+                width={200}
+                height={115}
+                priority
+                className="h-auto"
+              />
+            </div>
             <p className="text-xl text-text-secondary font-body">
               Dashboard Sign In
             </p>
