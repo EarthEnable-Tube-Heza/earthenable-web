@@ -234,16 +234,17 @@ export function UserStatsCards() {
           </div>
           <div className="space-y-3">
             {stats.recent_signups.slice(0, 5).map((user) => (
-              <div
+              <Link
                 key={user.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-3 bg-background-light rounded-lg"
+                href={`/dashboard/users/${user.id}`}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-3 bg-background-light rounded-lg hover:bg-background-light/80 hover:shadow-medium transition-all group"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0 group-hover:bg-primary/90 transition-colors">
                     {user.name?.[0] || user.email[0].toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-primary truncate">
+                    <p className="text-sm font-medium text-text-primary truncate group-hover:text-primary transition-colors">
                       {user.name || user.email}
                     </p>
                     <p className="text-xs text-text-secondary truncate">{user.email}</p>
@@ -263,7 +264,7 @@ export function UserStatsCards() {
                     {UserRoleLabels[user.role]}
                   </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
