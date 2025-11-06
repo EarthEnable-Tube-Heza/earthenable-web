@@ -51,6 +51,7 @@ export interface UserDetail extends UserListItem {
   is_verified: boolean;
   tasks_count: number;
   cases_count: number;
+  surveys_count?: number;
 }
 
 /**

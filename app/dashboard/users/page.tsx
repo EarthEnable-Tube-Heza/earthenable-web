@@ -9,10 +9,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { apiClient } from '@/src/lib/api';
 import { UserRole, UserRoleLabels } from '@/src/types/user';
 import { cn } from '@/src/lib/theme';
-import { UserDetailModal } from '@/src/components/UserDetailModal';
 
 export default function UsersPage() {
   const searchParams = useSearchParams();
@@ -20,8 +20,6 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
   const [statusFilter, setStatusFilter] = useState<boolean | ''>('');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const limit = 20;
 
   // Initialize filters from URL query parameters
@@ -235,15 +233,12 @@ export default function UsersPage() {
                         : 'Never'}
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() => {
-                          setSelectedUserId(user.id);
-                          setIsModalOpen(true);
-                        }}
-                        className="text-primary hover:text-primary/80 text-sm font-medium"
+                      <Link
+                        href={`/dashboard/users/${user.id}`}
+                        className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
                       >
                         View Details
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -288,16 +283,6 @@ export default function UsersPage() {
           </>
         )}
       </div>
-
-      {/* User Detail Modal */}
-      <UserDetailModal
-        userId={selectedUserId}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedUserId(null);
-        }}
-      />
     </div>
   );
 }
