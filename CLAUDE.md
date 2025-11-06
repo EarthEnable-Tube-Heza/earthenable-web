@@ -288,6 +288,88 @@ export interface User {
 }
 ```
 
+## UI Component Library
+
+The dashboard uses a comprehensive component library built with the EarthEnable design system. All components are located in `src/components/ui/` and use centralized theme constants.
+
+### Available Components
+
+**Form Components:**
+- `Button` - Primary interaction component with 5 variants (primary, secondary, outline, ghost, danger)
+- `Input` - Text input with label, error states, icons, and password visibility toggle
+- `Select` - Dropdown select with consistent styling and theme integration
+
+**Layout Components:**
+- `Card` - Container component with variants (default, bordered, elevated) and optional header/footer
+
+**Feedback Components:**
+- `Badge` - Status indicators and labels with multiple variants and sizes
+- `Spinner` - Loading indicators with configurable size and color
+
+### Component Usage
+
+Import components from the central export:
+
+```typescript
+import { Button, Input, Card, Badge, Spinner } from '@/src/components/ui';
+
+// Button examples
+<Button variant="primary" size="md" onClick={handleClick}>
+  Save Changes
+</Button>
+
+<Button variant="outline" loading>
+  Loading...
+</Button>
+
+// Input examples
+<Input
+  label="Email"
+  type="email"
+  placeholder="Enter your email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  error={errors.email}
+  required
+/>
+
+// Card examples
+<Card variant="elevated" padding="lg" header="User Details" divided>
+  <p>Card content</p>
+</Card>
+
+// Badge examples
+<Badge variant="success" dot>Active</Badge>
+<Badge variant="error" outline>Failed</Badge>
+
+// Spinner examples
+<Spinner size="md" variant="primary" />
+<Spinner centered label="Loading data..." />
+```
+
+### Component Showcase
+
+Visit `/dashboard/components` to see all components with interactive examples and code snippets. This admin-only page serves as a living style guide.
+
+### Design Principles
+
+All components follow these principles:
+1. **Theme Constants** - All styling uses values from `src/lib/theme/constants.ts`
+2. **Consistent Sizing** - Components use 3 standard sizes (sm: 36px, md: 44px, lg: 52px)
+3. **Accessibility** - ARIA labels, keyboard navigation, focus states
+4. **TypeScript** - Full type safety with exported prop interfaces
+5. **Mobile Consistency** - Design matches the React Native mobile app
+
+### Creating New Components
+
+When adding new components:
+1. Create in `src/components/ui/ComponentName.tsx`
+2. Use `forwardRef` for ref forwarding
+3. Export props interface (e.g., `ButtonProps`)
+4. Use theme constants from `src/lib/theme/constants.ts`
+5. Add to `src/components/ui/index.ts`
+6. Add examples to `/dashboard/components` showcase page
+
 ## Component Patterns
 
 ### Server Components (Default)
