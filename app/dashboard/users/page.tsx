@@ -188,9 +188,17 @@ export default function UsersPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold">
-                          {user.name?.[0] || user.email[0].toUpperCase()}
-                        </div>
+                        {user.picture ? (
+                          <img
+                            src={user.picture}
+                            alt={user.name || user.email}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0">
+                            {user.name?.[0] || user.email[0].toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <div className="text-sm font-medium text-text-primary">
                             {user.name || user.email}
