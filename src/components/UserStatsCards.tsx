@@ -236,23 +236,23 @@ export function UserStatsCards() {
             {stats.recent_signups.slice(0, 5).map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 bg-background-light rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 p-3 bg-background-light rounded-lg"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0">
                     {user.name?.[0] || user.email[0].toUpperCase()}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-text-primary truncate">
                       {user.name || user.email}
                     </p>
-                    <p className="text-xs text-text-secondary">{user.email}</p>
+                    <p className="text-xs text-text-secondary truncate">{user.email}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="flex sm:justify-end pl-[52px] sm:pl-0">
                   <span
                     className={cn(
-                      'px-2 py-1 text-xs font-medium rounded-full',
+                      'inline-block px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap',
                       user.role === UserRole.ADMIN
                         ? 'bg-status-error/10 text-status-error'
                         : user.role === UserRole.MANAGER
