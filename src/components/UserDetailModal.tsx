@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api';
 import { UserRole, UserRoleLabels } from '../types/user';
 import { cn } from '../lib/theme';
+import { Select } from './ui/Select';
 
 interface UserDetailModalProps {
   userId: string | null;
@@ -176,15 +177,14 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Role
                     </label>
                     {editMode ? (
-                      <select
+                      <Select
                         value={selectedRole || user.role}
                         onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                        className="w-full px-3 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value={UserRole.QA_AGENT}>QA Agent</option>
                         <option value={UserRole.MANAGER}>Manager</option>
                         <option value={UserRole.ADMIN}>Admin</option>
-                      </select>
+                      </Select>
                     ) : (
                       <span
                         className={cn(
@@ -207,14 +207,13 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Status
                     </label>
                     {editMode ? (
-                      <select
+                      <Select
                         value={selectedStatus === null ? user.is_active : selectedStatus ? 'true' : 'false'}
                         onChange={(e) => setSelectedStatus(e.target.value === 'true')}
-                        className="w-full px-3 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
-                      </select>
+                      </Select>
                     ) : (
                       <span
                         className={cn(

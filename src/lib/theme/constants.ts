@@ -157,6 +157,39 @@ export const animations = {
 } as const;
 
 /**
+ * Form Input Constants
+ * Consistent styling for form elements (inputs, selects, textareas)
+ */
+export const formInputs = {
+  // Padding values
+  padding: {
+    x: '1rem',        // 16px horizontal padding (px-4)
+    y: '0.625rem',    // 10px vertical padding (py-2.5)
+    selectRight: '2.5rem', // 40px right padding for dropdown arrow (pr-10)
+  },
+
+  // Height values
+  height: {
+    default: '2.75rem',  // 44px - good tap target for accessibility
+    sm: '2.25rem',       // 36px - compact version
+    lg: '3.25rem',       // 52px - large version
+  },
+
+  // Border
+  border: {
+    width: '1px',
+    color: colors.border.light,
+    radius: borderRadius.md,
+  },
+
+  // Focus state
+  focus: {
+    ringWidth: '2px',
+    ringColor: colors.primary,
+  },
+} as const;
+
+/**
  * Theme object containing all constants
  */
 export const theme = {
@@ -168,6 +201,7 @@ export const theme = {
   zIndex,
   breakpoints,
   animations,
+  formInputs,
 } as const;
 
 export type Theme = typeof theme;

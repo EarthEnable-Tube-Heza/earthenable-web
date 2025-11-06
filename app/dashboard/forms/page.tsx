@@ -12,6 +12,7 @@ import { apiClient } from '@/src/lib/api';
 import { TaskSubjectForm } from '@/src/types/form';
 import { cn } from '@/src/lib/theme';
 import { EditFormMappingModal } from '@/src/components/EditFormMappingModal';
+import { Select } from '@/src/components/ui/Select';
 
 export default function FormMappingsPage() {
   const [page, setPage] = useState(0);
@@ -70,16 +71,13 @@ export default function FormMappingsPage() {
           <label className="text-sm font-medium text-text-primary">
             Filter by Country:
           </label>
-          <select
+          <Select
             value={countryFilter}
             onChange={(e) => {
               setCountryFilter(e.target.value);
               setPage(0);
             }}
-            className="pl-4 pr-10 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white bg-no-repeat bg-[length:16px_16px] bg-[right_16px_center]"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`
-            }}
+            fullWidth={false}
           >
             <option value="">All Countries</option>
             {countries.map((country) => (
@@ -87,7 +85,7 @@ export default function FormMappingsPage() {
                 {country}
               </option>
             ))}
-          </select>
+          </Select>
           {countryFilter && (
             <button
               onClick={() => {
