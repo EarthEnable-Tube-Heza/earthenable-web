@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
     // Run ESLint during builds
     ignoreDuringBuilds: false,
   },
+  images: {
+    // Allow external images from Google profile photos
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
