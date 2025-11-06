@@ -7,7 +7,7 @@
  * Responsive design for mobile, tablet, and desktop.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useTokenExpiry } from '@/src/lib/auth';
 import { useSidebar } from '@/src/contexts/SidebarContext';
@@ -15,6 +15,7 @@ import { Menu } from '@headlessui/react';
 import { cn } from '@/src/lib/theme';
 import { UserRoleLabels } from '@/src/types/user';
 import { Breadcrumbs } from './Breadcrumbs';
+import { Toast } from '@/src/components/ui/Toast';
 
 export function Header() {
   const router = useRouter();
@@ -22,6 +23,29 @@ export function Header() {
   const { isExpiring, timeRemaining } = useTokenExpiry();
   const { toggleMobileMenu } = useSidebar();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [showExpiryToast, setShowExpiryToast] = useState(false);
+  const [lastToastShown, setLastToastShown] = useState<number>(0);
+
+  // Show toast when token is expiring (but not constantly)
+  useEffect(() => {
+    if (isExpiring && timeRemaining) {
+      const now = Date.now();
+      const minutesRemaining = Math.floor(timeRemaining / 1000 / 60);
+
+      // Show toast if:
+      // 1. Haven't shown in the last 5 minutes, OR
+      // 2. It's critical (< 5 minutes remaining) and haven't shown in the last 2 minutes
+      const timeSinceLastToast = now - lastToastShown;
+      const shouldShow =
+        (minutesRemaining <= 5 && timeSinceLastToast > 2 * 60 * 1000) || // Critical: every 2 min
+        (timeSinceLastToast > 5 * 60 * 1000); // Normal: every 5 min
+
+      if (shouldShow) {
+        setShowExpiryToast(true);
+        setLastToastShown(now);
+      }
+    }
+  }, [isExpiring, timeRemaining, lastToastShown]);
 
   /**
    * Handle sign out
@@ -70,17 +94,8 @@ export function Header() {
           </div>
         </div>
 
-        {/* Right Side: Token Warning + User Menu */}
+        {/* Right Side: User Menu */}
         <div className="flex items-center gap-4">
-          {/* Token Expiry Warning */}
-          {isExpiring && (
-            <div className="px-4 py-2 bg-status-warning/10 border border-status-warning rounded-md">
-              <p className="text-status-warning text-sm font-medium">
-                ⚠️ Session expires in {formatTimeRemaining(timeRemaining)}
-              </p>
-            </div>
-          )}
-
           {/* User Menu */}
           {user && (
             <Menu as="div" className="relative">
@@ -175,6 +190,18 @@ export function Header() {
           )}
         </div>
       </div>
+
+      {/* Session Expiry Toast */}
+      {isExpiring && (
+        <Toast
+          visible={showExpiryToast}
+          type="warning"
+          message={`⚠️ Session expires in ${formatTimeRemaining(timeRemaining)}`}
+          duration={8000} // 8 seconds
+          position="top"
+          onDismiss={() => setShowExpiryToast(false)}
+        />
+      )}
     </header>
   );
 }
