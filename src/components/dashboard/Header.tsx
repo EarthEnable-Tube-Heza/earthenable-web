@@ -3,20 +3,24 @@
 /**
  * Dashboard Header
  *
- * Top header bar with user menu and sign out.
+ * Top header bar with hamburger menu (mobile), breadcrumbs, and user menu.
+ * Responsive design for mobile, tablet, and desktop.
  */
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useTokenExpiry } from '@/src/lib/auth';
+import { useSidebar } from '@/src/contexts/SidebarContext';
 import { Menu } from '@headlessui/react';
 import { cn } from '@/src/lib/theme';
 import { UserRoleLabels } from '@/src/types/user';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export function Header() {
   const router = useRouter();
   const { user, signOut, isLoading } = useAuth();
   const { isExpiring, timeRemaining } = useTokenExpiry();
+  const { toggleMobileMenu } = useSidebar();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   /**
@@ -45,13 +49,25 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-border-light sticky top-0 z-50">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Page Title (can be customized per page) */}
-        <div>
-          <h2 className="text-xl font-heading font-bold text-text-primary">
-            Dashboard
-          </h2>
+    <header className="bg-white border-b border-border-light sticky top-0 z-30">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+        {/* Left Side: Hamburger Menu (Mobile) + Breadcrumbs */}
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          {/* Hamburger Menu Button (Mobile only) */}
+          <button
+            onClick={toggleMobileMenu}
+            className="lg:hidden p-2 rounded-lg hover:bg-background-light transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6 text-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          {/* Breadcrumbs (Hidden on mobile to save space) */}
+          <div className="hidden md:block flex-1 min-w-0">
+            <Breadcrumbs />
+          </div>
         </div>
 
         {/* Right Side: Token Warning + User Menu */}
