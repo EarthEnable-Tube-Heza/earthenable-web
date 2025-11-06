@@ -1,6 +1,6 @@
-# Contributing to EarthEnable Web Dashboard
+# Contributing to EarthEnable Hub
 
-Thank you for your interest in contributing to the EarthEnable Web Dashboard! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to the EarthEnable Hub! This document provides guidelines and information for contributors.
 
 ## Table of Contents
 

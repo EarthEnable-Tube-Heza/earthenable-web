@@ -62,11 +62,12 @@ export function Sidebar() {
     <aside className="w-64 bg-white border-r border-border-light h-screen sticky top-0">
       {/* Logo */}
       <div className="p-6 border-b border-border-light">
-        <Link href="/dashboard">
-          <h1 className="text-2xl font-heading font-bold text-primary">
-            EarthEnable
-          </h1>
-          <p className="text-sm text-text-secondary font-body">Dashboard</p>
+        <Link href="/dashboard" className="block">
+          <img
+            src="/logo.svg"
+            alt="EarthEnable Hub"
+            className="w-full max-w-[180px] h-auto"
+          />
         </Link>
       </div>
 

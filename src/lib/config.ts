@@ -89,7 +89,7 @@ export const config: Config = {
   },
 
   app: {
-    name: getOptionalEnvVar('NEXT_PUBLIC_APP_NAME', 'EarthEnable Dashboard'),
+    name: getOptionalEnvVar('NEXT_PUBLIC_APP_NAME', 'EarthEnable Hub'),
     companyDomain: getOptionalEnvVar('NEXT_PUBLIC_COMPANY_DOMAIN', 'earthenable.org'),
   },
 

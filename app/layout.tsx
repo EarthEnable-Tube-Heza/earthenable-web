@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/src/components/Providers";
 
 export const metadata: Metadata = {
-  title: "EarthEnable Dashboard",
-  description: "Admin and manager web dashboard for EarthEnable field operations management",
+  title: "EarthEnable Hub",
+  description: "Admin and manager web platform for EarthEnable field operations management",
 };
 
 export default function RootLayout({

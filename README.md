@@ -1,6 +1,6 @@
-# EarthEnable Web Dashboard
+# EarthEnable Hub
 
-> Admin and manager web dashboard for EarthEnable field operations management
+> Admin and manager web platform for EarthEnable field operations management
 
 [![CI](https://github.com/EarthEnable-Tube-Heza/earthenable-web/actions/workflows/ci.yml/badge.svg)](https://github.com/EarthEnable-Tube-Heza/earthenable-web/actions/workflows/ci.yml)
 [![Deploy Production](https://github.com/EarthEnable-Tube-Heza/earthenable-web/actions/workflows/deploy-production.yml/badge.svg)](https://github.com/EarthEnable-Tube-Heza/earthenable-web/actions/workflows/deploy-production.yml)
@@ -9,7 +9,7 @@
 
 ## Overview
 
-The EarthEnable Web Dashboard is a Next.js application that provides administrative and managerial interfaces for the EarthEnable system. It enables:
+The EarthEnable Hub is a Next.js application that provides administrative and managerial interfaces for the EarthEnable system. It enables:
 
 - **User Management**: View, search, and manage user roles and permissions
 - **Form Configuration**: Manage TaskSubject-to-FormYoula form mappings
