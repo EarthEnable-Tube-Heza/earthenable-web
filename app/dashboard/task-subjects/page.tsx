@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Form Mappings Page (Admin only)
+ * Task Subjects Page (Admin only)
  *
- * Displays TaskSubject to FormYoula form mappings with filtering.
+ * Displays and manages TaskSubjects with their FormYoula form mappings.
  */
 
 import { useState } from 'react';
@@ -14,7 +14,7 @@ import { cn } from '@/src/lib/theme';
 import { EditFormMappingModal } from '@/src/components/EditFormMappingModal';
 import { Select } from '@/src/components/ui/Select';
 
-export default function FormMappingsPage() {
+export default function TaskSubjectsPage() {
   const [page, setPage] = useState(0);
   const [countryFilter, setCountryFilter] = useState<string>('');
   const [selectedMapping, setSelectedMapping] = useState<TaskSubjectForm | null>(null);
@@ -44,10 +44,10 @@ export default function FormMappingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-heading font-bold text-text-primary">
-          Form Mappings
+          Task Subjects
         </h1>
         <p className="text-text-secondary mt-2">
-          Manage TaskSubject to FormYoula form ID mappings
+          Manage task subjects and their FormYoula form mappings
         </p>
       </div>
 
@@ -56,10 +56,10 @@ export default function FormMappingsPage() {
         <div className="flex items-start gap-3">
           <span className="text-status-info text-xl">ℹ️</span>
           <div>
-            <p className="text-status-info font-medium mb-1">About Form Mappings</p>
+            <p className="text-status-info font-medium mb-1">About Task Subjects</p>
             <p className="text-status-info/80 text-sm">
-              Each TaskSubject (evaluation type) can have different FormYoula forms for different countries.
-              Default mappings apply when no country-specific mapping exists.
+              Task subjects are evaluation types used across different countries.
+              Each subject can have different FormYoula forms for different countries, with default forms used when no country-specific mapping exists.
             </p>
           </div>
         </div>

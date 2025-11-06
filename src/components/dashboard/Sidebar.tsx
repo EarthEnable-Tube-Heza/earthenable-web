@@ -36,8 +36,8 @@ const navItems: NavItem[] = [
     adminOnly: true,
   },
   {
-    href: '/dashboard/forms',
-    label: 'Forms',
+    href: '/dashboard/task-subjects',
+    label: 'Task Subjects',
     icon: '📋',
     adminOnly: true,
   },
