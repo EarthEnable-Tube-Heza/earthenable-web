@@ -4,12 +4,11 @@
  * Spinner Component
  *
  * Reusable loading spinner component following EarthEnable design system.
- * Used to indicate loading states throughout the application.
+ * Uses incomplete circle (border-b-2) animation consistent with loading states throughout the app.
  */
 
 import { HTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/src/lib/theme';
-import { theme } from '@/src/lib/theme/constants';
 
 export interface SpinnerProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -45,30 +44,21 @@ export const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
     },
     ref
   ) => {
-    // Size styles
+    // Size styles - diameter and bottom border width (incomplete circle)
     const sizeStyles = {
-      xs: 'w-3 h-3',    // 12px
-      sm: 'w-4 h-4',    // 16px
-      md: 'w-5 h-5',    // 20px
-      lg: 'w-6 h-6',    // 24px
-      xl: 'w-8 h-8',    // 32px
+      xs: 'w-4 h-4 border-b-2',     // 16px with 2px bottom border
+      sm: 'w-5 h-5 border-b-2',     // 20px with 2px bottom border
+      md: 'w-8 h-8 border-b-2',     // 32px with 2px bottom border (default)
+      lg: 'w-12 h-12 border-b-2',   // 48px with 2px bottom border
+      xl: 'w-16 h-16 border-b-4',   // 64px with 4px bottom border
     };
 
-    // Stroke width based on size
-    const strokeWidth = {
-      xs: '3',
-      sm: '3',
-      md: '4',
-      lg: '4',
-      xl: '4',
-    };
-
-    // Color variants
+    // Color variants - border color (border-b-2 already specifies the side)
     const colorStyles = {
-      primary: 'text-primary',
-      secondary: 'text-secondary',
-      white: 'text-white',
-      current: 'text-current',
+      primary: 'border-primary',
+      secondary: 'border-secondary',
+      white: 'border-white',
+      current: 'border-current',
     };
 
     return (
@@ -83,30 +73,13 @@ export const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
         aria-label={label}
         {...props}
       >
-        <svg
+        <div
           className={cn(
-            'animate-spin',
+            'animate-spin rounded-full',
             sizeStyles[size],
             colorStyles[variant]
           )}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth={strokeWidth[size]}
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
+        />
         <span className="sr-only">{label}</span>
       </div>
     );
