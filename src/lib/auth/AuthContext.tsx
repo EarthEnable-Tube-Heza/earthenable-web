@@ -183,14 +183,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoading: false,
         error: null,
       });
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
       const errorMessage = error.response?.data?.detail || 'Authentication failed';
       setState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }));
-      throw error;
+      throw err;
     }
   }, []);
 

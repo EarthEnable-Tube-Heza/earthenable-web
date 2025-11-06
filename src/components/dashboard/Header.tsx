@@ -19,7 +19,7 @@ import { Toast } from '@/src/components/ui/Toast';
 
 export function Header() {
   const router = useRouter();
-  const { user, signOut, isLoading } = useAuth();
+  const { user, signOut } = useAuth();
   const { isExpiring, timeRemaining } = useTokenExpiry();
   const { toggleMobileMenu } = useSidebar();
   const [isSigningOut, setIsSigningOut] = useState(false);

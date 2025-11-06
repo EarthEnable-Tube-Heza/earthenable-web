@@ -13,10 +13,14 @@ import { theme } from './constants';
  */
 export function getColor(path: string): string {
   const parts = path.split('.');
-  let value: any = theme.colors;
+  let value: Record<string, unknown> | string = theme.colors;
 
   for (const part of parts) {
-    value = value[part];
+    if (typeof value === 'string') {
+      console.warn(`Color path "${path}" is invalid`);
+      return '#000000'; // Fallback color
+    }
+    value = value[part] as Record<string, unknown> | string;
     if (value === undefined) {
       console.warn(`Color path "${path}" not found in theme`);
       return '#000000'; // Fallback color

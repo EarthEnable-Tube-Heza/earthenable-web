@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth, useIsAdmin } from '@/src/lib/auth';
 import { useSidebar } from '@/src/contexts/SidebarContext';
 import { cn } from '@/src/lib/theme';
-import { UserRole, UserRoleLabels } from '@/src/types/user';
+import { UserRoleLabels } from '@/src/types/user';
 import { useEffect } from 'react';
 
 interface NavItem {

@@ -31,7 +31,7 @@ export default function SignInPage() {
   /**
    * Handle successful Google OAuth
    */
-  const handleGoogleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
     try {
       setIsSigningIn(true);
       setError(null);
@@ -46,9 +46,10 @@ export default function SignInPage() {
       // Redirect to intended destination or dashboard
       const redirect = searchParams.get('redirect') || '/dashboard';
       router.push(redirect);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Sign in error:', err);
-      setError(err.response?.data?.detail || err.message || 'Failed to sign in. Please try again.');
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
+      setError(error.response?.data?.detail || error.message || 'Failed to sign in. Please try again.');
       setIsSigningIn(false);
     }
   };

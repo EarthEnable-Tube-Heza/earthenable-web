@@ -64,7 +64,7 @@ export default function DashboardPage() {
           Welcome back, {user?.name || user?.email}!
         </h1>
         <p className="text-text-secondary font-body">
-          Here's an overview of your EarthEnable operations dashboard.
+          Here&apos;s an overview of your EarthEnable operations dashboard.
         </p>
       </div>
 

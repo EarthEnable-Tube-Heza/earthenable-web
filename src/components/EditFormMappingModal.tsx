@@ -39,8 +39,9 @@ export function EditFormMappingModal({ mapping, isOpen, onClose }: EditFormMappi
       queryClient.invalidateQueries({ queryKey: ['form-mappings'] });
       onClose();
     },
-    onError: (err: any) => {
-      setError(err.response?.data?.detail || 'Failed to update form mapping');
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { detail?: string } } };
+      setError(error.response?.data?.detail || 'Failed to update form mapping');
     },
   });
 

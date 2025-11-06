@@ -70,14 +70,14 @@ export interface APIClientConfig {
 /**
  * Request interceptor function type
  */
-export type RequestInterceptor = (config: any) => any | Promise<any>;
+export type RequestInterceptor = <T = unknown>(config: T) => T | Promise<T>;
 
 /**
  * Response interceptor function type
  */
-export type ResponseInterceptor = (response: any) => any | Promise<any>;
+export type ResponseInterceptor = <T = unknown>(response: T) => T | Promise<T>;
 
 /**
  * Error interceptor function type
  */
-export type ErrorInterceptor = (error: any) => any | Promise<any>;
+export type ErrorInterceptor = (error: unknown) => unknown | Promise<unknown>;

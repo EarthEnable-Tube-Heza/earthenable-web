@@ -31,8 +31,8 @@ import {
  * Queue for requests that are waiting for token refresh
  */
 interface QueuedRequest {
-  resolve: (value: any) => void;
-  reject: (error: any) => void;
+  resolve: (value: AxiosResponse) => void;
+  reject: (error: unknown) => void;
   config: InternalAxiosRequestConfig;
 }
 
@@ -138,7 +138,7 @@ class APIClient {
   /**
    * Process queued requests after token refresh
    */
-  private processQueue(error: any, token: string | null): void {
+  private processQueue(error: unknown, token: string | null): void {
     this.refreshQueue.forEach((request) => {
       if (error) {
         request.reject(error);
@@ -222,7 +222,7 @@ class APIClient {
   /**
    * Generic POST request
    */
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
@@ -230,7 +230,7 @@ class APIClient {
   /**
    * Generic PATCH request
    */
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.patch<T>(url, data, config);
     return response.data;
   }
@@ -238,7 +238,7 @@ class APIClient {
   /**
    * Generic PUT request
    */
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
     return response.data;
   }
@@ -262,8 +262,8 @@ class APIClient {
   /**
    * Get current user profile
    */
-  async getCurrentUser(): Promise<any> {
-    return this.get('auth/me');
+  async getCurrentUser(): Promise<User> {
+    return this.get<User>('auth/me');
   }
 
   /**
