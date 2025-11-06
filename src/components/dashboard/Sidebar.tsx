@@ -108,12 +108,14 @@ export function Sidebar() {
         )}>
           <Link href="/dashboard" className="block">
             {isCollapsed ? (
-              // Collapsed: Show icon or abbreviated logo
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-lg">E</span>
-              </div>
+              // Collapsed: Show vertical/square icon
+              <img
+                src="/icon.png"
+                alt="EarthEnable Hub"
+                className="w-12 h-12 mx-auto"
+              />
             ) : (
-              // Expanded: Show full logo
+              // Expanded: Show full horizontal logo
               <img
                 src="/logo.svg"
                 alt="EarthEnable Hub"
