@@ -89,17 +89,16 @@ export function Sidebar() {
       <aside
         className={cn(
           // Base styles
-          'bg-white border-r border-border-light h-screen sticky top-0 flex flex-col',
+          'bg-white border-r border-border-light h-screen flex flex-col',
           'transition-all duration-300 ease-in-out',
 
-          // Desktop styles
-          'hidden lg:flex',
-          isCollapsed ? 'w-20' : 'w-64',
-
-          // Mobile styles (overlay)
-          'lg:hidden fixed inset-y-0 left-0 z-50',
+          // Mobile: fixed overlay, hidden by default
+          'fixed inset-y-0 left-0 z-50 w-64',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full',
-          'lg:translate-x-0'
+
+          // Desktop: normal flow, always visible, collapsible width
+          'lg:sticky lg:top-0 lg:translate-x-0',
+          isCollapsed ? 'lg:w-20' : 'lg:w-64'
         )}
       >
         {/* Logo */}
