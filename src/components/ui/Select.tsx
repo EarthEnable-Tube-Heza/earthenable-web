@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Select Component
@@ -7,11 +7,11 @@
  * Features a custom dropdown arrow and follows EarthEnable design system.
  */
 
-import { SelectHTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/src/lib/theme';
-import { theme } from '@/src/lib/theme/constants';
+import { SelectHTMLAttributes, forwardRef } from "react";
+import { cn } from "@/src/lib/theme";
+import { theme } from "@/src/lib/theme/constants";
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   /**
    * Optional error state
    */
@@ -20,7 +20,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   /**
    * Size variant
    */
-  size?: 'sm' | 'default' | 'lg';
+  size?: "sm" | "default" | "lg";
 
   /**
    * Full width
@@ -34,14 +34,14 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 const DROPDOWN_ARROW_SVG = `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, error, size = 'default', fullWidth = true, style, ...props }, ref) => {
+  ({ className, error, size = "default", fullWidth = true, style, ...props }, ref) => {
     const sizeStyles = {
       sm: {
         height: theme.formInputs.height.sm,
         paddingLeft: theme.formInputs.padding.x,
         paddingRight: theme.formInputs.padding.selectRight,
-        paddingTop: '0.375rem', // py-1.5
-        paddingBottom: '0.375rem',
+        paddingTop: "0.375rem", // py-1.5
+        paddingBottom: "0.375rem",
       },
       default: {
         height: theme.formInputs.height.default,
@@ -54,8 +54,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         height: theme.formInputs.height.lg,
         paddingLeft: theme.formInputs.padding.x,
         paddingRight: theme.formInputs.padding.selectRight,
-        paddingTop: '0.875rem', // py-3.5
-        paddingBottom: '0.875rem',
+        paddingTop: "0.875rem", // py-3.5
+        paddingBottom: "0.875rem",
       },
     };
 
@@ -64,25 +64,25 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         ref={ref}
         className={cn(
           // Base styles
-          'appearance-none bg-white border rounded-md',
-          'font-body text-base text-text-primary',
-          'transition-colors duration-150',
+          "appearance-none bg-white border rounded-md",
+          "font-body text-base text-text-primary",
+          "transition-colors duration-150",
 
           // Border
-          error ? 'border-status-error' : 'border-border-light',
+          error ? "border-status-error" : "border-border-light",
 
           // Focus state
-          'focus:outline-none focus:ring-2',
-          error ? 'focus:ring-status-error' : 'focus:ring-primary',
+          "focus:outline-none focus:ring-2",
+          error ? "focus:ring-status-error" : "focus:ring-primary",
 
           // Hover state
-          'hover:border-border-medium',
+          "hover:border-border-medium",
 
           // Disabled state
-          'disabled:bg-background-light disabled:text-text-disabled disabled:cursor-not-allowed',
+          "disabled:bg-background-light disabled:text-text-disabled disabled:cursor-not-allowed",
 
           // Width
-          fullWidth ? 'w-full' : 'w-auto',
+          fullWidth ? "w-full" : "w-auto",
 
           // Custom class
           className
@@ -90,8 +90,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         style={{
           ...sizeStyles[size],
           backgroundImage: DROPDOWN_ARROW_SVG,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: '16px 16px',
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "16px 16px",
           backgroundPosition: `right ${theme.formInputs.padding.x} center`,
           ...style,
         }}
@@ -101,4 +101,4 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   }
 );
 
-Select.displayName = 'Select';
+Select.displayName = "Select";

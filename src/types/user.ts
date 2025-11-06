@@ -8,9 +8,9 @@
  * User roles enum matching backend UserRole
  */
 export enum UserRole {
-  QA_AGENT = 'qa_agent',
-  MANAGER = 'manager',
-  ADMIN = 'admin',
+  QA_AGENT = "qa_agent",
+  MANAGER = "manager",
+  ADMIN = "admin",
 }
 
 /**
@@ -36,6 +36,7 @@ export interface UserListItem {
   id: string;
   email: string;
   name?: string;
+  picture?: string;
   role: UserRole;
   is_active: boolean;
   created_at: string;
@@ -47,7 +48,6 @@ export interface UserListItem {
  */
 export interface UserDetail extends UserListItem {
   google_id?: string;
-  picture?: string;
   is_verified: boolean;
   tasks_count: number;
   cases_count: number;
@@ -92,9 +92,9 @@ export interface UpdateUserStatus {
  * User role display names
  */
 export const UserRoleLabels: Record<UserRole, string> = {
-  [UserRole.QA_AGENT]: 'QA Agent',
-  [UserRole.MANAGER]: 'Manager',
-  [UserRole.ADMIN]: 'Admin',
+  [UserRole.QA_AGENT]: "QA Agent",
+  [UserRole.MANAGER]: "Manager",
+  [UserRole.ADMIN]: "Admin",
 };
 
 /**

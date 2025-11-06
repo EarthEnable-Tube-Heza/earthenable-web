@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * User Detail Page
@@ -7,16 +7,15 @@
  * Accessible at /dashboard/users/[id]
  */
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/src/lib/api';
-import { UserRoleLabels } from '@/src/types/user';
-import { cn } from '@/src/lib/theme';
-import { Button, Card, Badge, Spinner } from '@/src/components/ui';
-import { UserDetailModal } from '@/src/components/UserDetailModal';
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/src/lib/api";
+import { UserRoleLabels } from "@/src/types/user";
+import { Button, Card, Badge } from "@/src/components/ui";
+import { UserDetailModal } from "@/src/components/UserDetailModal";
 
 /**
  * User Detail Page Component
@@ -28,8 +27,12 @@ export default function UserDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Fetch user details
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['user', userId],
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user", userId],
     queryFn: () => apiClient.getUserById(userId),
     enabled: !!userId,
   });
@@ -38,13 +41,13 @@ export default function UserDetailPage() {
    * Format date for display
    */
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -53,14 +56,14 @@ export default function UserDetailPage() {
    */
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'error' as const;
-      case 'manager':
-        return 'warning' as const;
-      case 'qa_agent':
-        return 'info' as const;
+      case "admin":
+        return "error" as const;
+      case "manager":
+        return "warning" as const;
+      case "qa_agent":
+        return "info" as const;
       default:
-        return 'default' as const;
+        return "default" as const;
     }
   };
 
@@ -118,19 +121,13 @@ export default function UserDetailPage() {
         <nav className="mb-6 text-sm text-text-secondary" aria-label="Breadcrumb">
           <ol className="flex items-center gap-2">
             <li>
-              <Link
-                href="/dashboard"
-                className="hover:text-primary transition-colors"
-              >
+              <Link href="/dashboard" className="hover:text-primary transition-colors">
                 Dashboard
               </Link>
             </li>
             <li className="text-text-tertiary">/</li>
             <li>
-              <Link
-                href="/dashboard/users"
-                className="hover:text-primary transition-colors"
-              >
+              <Link href="/dashboard/users" className="hover:text-primary transition-colors">
                 Users
               </Link>
             </li>
@@ -140,7 +137,7 @@ export default function UserDetailPage() {
         </nav>
 
         {/* 404 Error Card */}
-        <Card variant="elevated" padding="xl" className="text-center">
+        <Card variant="elevated" padding="lg" className="text-center">
           <div className="max-w-md mx-auto">
             <svg
               className="w-24 h-24 mx-auto mb-6 text-text-tertiary"
@@ -159,12 +156,9 @@ export default function UserDetailPage() {
               User Not Found
             </h1>
             <p className="text-text-secondary mb-6">
-              The user you're looking for doesn't exist or has been removed.
+              The user you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
-            <Button
-              variant="primary"
-              onClick={() => router.push('/dashboard/users')}
-            >
+            <Button variant="primary" onClick={() => router.push("/dashboard/users")}>
               Back to Users List
             </Button>
           </div>
@@ -180,19 +174,13 @@ export default function UserDetailPage() {
       <nav className="mb-6 text-sm text-text-secondary" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">
           <li>
-            <Link
-              href="/dashboard"
-              className="hover:text-primary transition-colors"
-            >
+            <Link href="/dashboard" className="hover:text-primary transition-colors">
               Dashboard
             </Link>
           </li>
           <li className="text-text-tertiary">/</li>
           <li>
-            <Link
-              href="/dashboard/users"
-              className="hover:text-primary transition-colors"
-            >
+            <Link href="/dashboard/users" className="hover:text-primary transition-colors">
               Users
             </Link>
           </li>
@@ -203,12 +191,8 @@ export default function UserDetailPage() {
 
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">
-          User Details
-        </h1>
-        <p className="text-text-secondary">
-          View and manage user account information
-        </p>
+        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">User Details</h1>
+        <p className="text-text-secondary">View and manage user account information</p>
       </div>
 
       {/* Main Content Grid */}
@@ -236,30 +220,20 @@ export default function UserDetailPage() {
 
               {/* Name */}
               <h2 className="text-xl font-heading font-bold text-text-primary mb-1">
-                {user.name || 'No name set'}
+                {user.name || "No name set"}
               </h2>
 
               {/* Email */}
-              <p className="text-sm text-text-secondary mb-4 break-all">
-                {user.email}
-              </p>
+              <p className="text-sm text-text-secondary mb-4 break-all">{user.email}</p>
 
               {/* Role Badge */}
-              <Badge
-                variant={getRoleBadgeVariant(user.role)}
-                size="lg"
-                className="mb-4"
-              >
+              <Badge variant={getRoleBadgeVariant(user.role)} size="lg" className="mb-4">
                 {UserRoleLabels[user.role]}
               </Badge>
 
               {/* Status Badge */}
-              <Badge
-                variant={user.is_active ? 'success' : 'default'}
-                outline={!user.is_active}
-                dot
-              >
-                {user.is_active ? 'Active' : 'Inactive'}
+              <Badge variant={user.is_active ? "success" : "default"} outline={!user.is_active} dot>
+                {user.is_active ? "Active" : "Inactive"}
               </Badge>
 
               {/* Action Buttons */}
@@ -290,7 +264,7 @@ export default function UserDetailPage() {
                   variant="outline"
                   size="md"
                   fullWidth
-                  onClick={() => router.push('/dashboard/users')}
+                  onClick={() => router.push("/dashboard/users")}
                 >
                   <svg
                     className="w-5 h-5 mr-2"
@@ -323,7 +297,7 @@ export default function UserDetailPage() {
                   Google ID
                 </dt>
                 <dd className="text-sm text-text-primary font-mono bg-background-secondary px-3 py-1.5 rounded break-all">
-                  {user.google_id || 'N/A'}
+                  {user.google_id || "N/A"}
                 </dd>
               </div>
 
@@ -342,9 +316,7 @@ export default function UserDetailPage() {
                 <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
                   Created
                 </dt>
-                <dd className="text-sm text-text-primary">
-                  {formatDate(user.created_at)}
-                </dd>
+                <dd className="text-sm text-text-primary">{formatDate(user.created_at)}</dd>
               </div>
 
               {/* Last Login */}
@@ -352,9 +324,7 @@ export default function UserDetailPage() {
                 <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
                   Last Login
                 </dt>
-                <dd className="text-sm text-text-primary">
-                  {formatDate(user.last_login)}
-                </dd>
+                <dd className="text-sm text-text-primary">{formatDate(user.last_login)}</dd>
               </div>
 
               {/* Verification Status */}
@@ -363,8 +333,8 @@ export default function UserDetailPage() {
                   Verified
                 </dt>
                 <dd>
-                  <Badge variant={user.is_verified ? 'success' : 'warning'} size="sm">
-                    {user.is_verified ? 'Verified' : 'Unverified'}
+                  <Badge variant={user.is_verified ? "success" : "warning"} size="sm">
+                    {user.is_verified ? "Verified" : "Unverified"}
                   </Badge>
                 </dd>
               </div>
@@ -376,9 +346,7 @@ export default function UserDetailPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {/* Tasks Count */}
               <div className="bg-background-secondary rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-primary mb-1">
-                  {user.tasks_count || 0}
-                </div>
+                <div className="text-2xl font-bold text-primary mb-1">{user.tasks_count || 0}</div>
                 <div className="text-xs text-text-secondary font-medium uppercase tracking-wide">
                   Tasks
                 </div>
@@ -396,9 +364,7 @@ export default function UserDetailPage() {
 
               {/* Surveys Count */}
               <div className="bg-background-secondary rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-accent mb-1">
-                  {user.surveys_count || 0}
-                </div>
+                <div className="text-2xl font-bold text-accent mb-1">{user.surveys_count || 0}</div>
                 <div className="text-xs text-text-secondary font-medium uppercase tracking-wide">
                   Surveys
                 </div>
@@ -408,9 +374,9 @@ export default function UserDetailPage() {
             {/* Activity Description */}
             <div className="mt-6 p-4 bg-primary/5 border-l-4 border-primary rounded">
               <p className="text-sm text-text-secondary">
-                Activity metrics show the total number of tasks, cases, and surveys
-                associated with this user account. These counts update automatically
-                as the user interacts with the system.
+                Activity metrics show the total number of tasks, cases, and surveys associated with
+                this user account. These counts update automatically as the user interacts with the
+                system.
               </p>
             </div>
           </Card>

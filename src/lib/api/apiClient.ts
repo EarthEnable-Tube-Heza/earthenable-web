@@ -10,8 +10,8 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
   InternalAxiosRequestConfig,
-} from 'axios';
-import { config, getAPIUrl } from '../config';
+} from "axios";
+import { config, getAPIUrl } from "../config";
 import {
   TokenResponse,
   GoogleAuthRequest,
@@ -25,7 +25,7 @@ import {
   TaskSubjectForm,
   PaginatedFormMappingsResponse,
   UpdateFormMapping,
-} from '../../types';
+} from "../../types";
 
 /**
  * Queue for requests that are waiting for token refresh
@@ -50,7 +50,7 @@ class APIClient {
       baseURL: `${config.api.baseUrl}/api/${config.api.version}`,
       timeout: config.api.timeout,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -120,8 +120,8 @@ class APIClient {
             this.clearAuth();
 
             // Redirect to sign in page
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/signin';
+            if (typeof window !== "undefined") {
+              window.location.href = "/auth/signin";
             }
 
             return Promise.reject(refreshError);
@@ -147,7 +147,10 @@ class APIClient {
         if (request.config.headers && token) {
           request.config.headers.Authorization = `Bearer ${token}`;
         }
-        request.resolve(this.client(request.config));
+        // Await the axios request promise before resolving
+        this.client(request.config)
+          .then((response) => request.resolve(response))
+          .catch((err) => request.reject(err));
       }
     });
 
@@ -158,7 +161,7 @@ class APIClient {
    * Get stored access token from localStorage
    */
   private getStoredAccessToken(): string | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     return localStorage.getItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
   }
 
@@ -166,7 +169,7 @@ class APIClient {
    * Get stored refresh token from localStorage
    */
   private getStoredRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     return localStorage.getItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
   }
 
@@ -177,19 +180,18 @@ class APIClient {
     const refreshToken = this.getStoredRefreshToken();
 
     if (!refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     // Call refresh endpoint
-    const response = await axios.post<TokenResponse>(
-      getAPIUrl('auth/refresh'),
-      { refresh_token: refreshToken }
-    );
+    const response = await axios.post<TokenResponse>(getAPIUrl("auth/refresh"), {
+      refresh_token: refreshToken,
+    });
 
     const { access_token, refresh_token, expires_in } = response.data;
 
     // Store new tokens
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, access_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, refresh_token);
       const expiry = calculateTokenExpiry(expires_in);
@@ -203,7 +205,7 @@ class APIClient {
    * Clear authentication data
    */
   private clearAuth(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
@@ -256,14 +258,14 @@ class APIClient {
    */
   async authenticateWithGoogle(googleToken: string): Promise<TokenResponse> {
     const payload: GoogleAuthRequest = { token: googleToken };
-    return this.post<TokenResponse>('auth/google', payload);
+    return this.post<TokenResponse>("auth/google", payload);
   }
 
   /**
    * Get current user profile
    */
   async getCurrentUser(): Promise<User> {
-    return this.get<User>('auth/me');
+    return this.get<User>("auth/me");
   }
 
   /**
@@ -271,7 +273,7 @@ class APIClient {
    */
   async signOut(): Promise<void> {
     try {
-      await this.post('auth/signout');
+      await this.post("auth/signout");
     } finally {
       this.clearAuth();
     }
@@ -291,7 +293,7 @@ class APIClient {
     role?: string;
     is_active?: boolean;
   }): Promise<PaginatedUsersResponse> {
-    return this.get<PaginatedUsersResponse>('/admin/users', { params });
+    return this.get<PaginatedUsersResponse>("/admin/users", { params });
   }
 
   /**
@@ -321,7 +323,7 @@ class APIClient {
    * Get user statistics
    */
   async getUserStats(): Promise<UserStatsResponse> {
-    return this.get<UserStatsResponse>('/admin/users/stats');
+    return this.get<UserStatsResponse>("/admin/users/stats");
   }
 
   // ============================================================================
@@ -337,16 +339,13 @@ class APIClient {
     country_code?: string;
     task_subject_id?: string;
   }): Promise<PaginatedFormMappingsResponse> {
-    return this.get<PaginatedFormMappingsResponse>('/admin/forms/mappings', { params });
+    return this.get<PaginatedFormMappingsResponse>("/admin/forms/mappings", { params });
   }
 
   /**
    * Update form mapping
    */
-  async updateFormMapping(
-    mappingId: string,
-    data: UpdateFormMapping
-  ): Promise<TaskSubjectForm> {
+  async updateFormMapping(mappingId: string, data: UpdateFormMapping): Promise<TaskSubjectForm> {
     return this.patch<TaskSubjectForm>(`/admin/forms/mappings/${mappingId}`, data);
   }
 }

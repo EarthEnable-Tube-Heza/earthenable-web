@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Component Showcase Page
@@ -7,7 +7,7 @@
  * Admin-only page for reference and testing.
  */
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Button,
   Input,
@@ -18,23 +18,21 @@ import {
   Spinner,
   Alert,
   Toast,
-} from '@/src/components/ui';
+} from "@/src/components/ui";
 
 export default function ComponentsPage() {
   // State for interactive examples
-  const [inputValue, setInputValue] = useState('');
-  const [textareaValue, setTextareaValue] = useState('');
-  const [selectValue, setSelectValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
+  const [textareaValue, setTextareaValue] = useState("");
+  const [selectValue, setSelectValue] = useState("");
   const [showToast, setShowToast] = useState(false);
-  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>(
-    'success'
-  );
+  const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
 
   const handleButtonClick = () => {
-    alert('Button clicked!');
+    alert("Button clicked!");
   };
 
-  const handleToast = (type: 'success' | 'error' | 'info') => {
+  const handleToast = (type: "success" | "error" | "info") => {
     setToastType(type);
     setShowToast(true);
   };
@@ -44,13 +42,10 @@ export default function ComponentsPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-heading text-text-primary mb-4">
-            Component Library
-          </h1>
+          <h1 className="text-4xl font-heading text-text-primary mb-4">Component Library</h1>
           <p className="text-lg text-text-secondary">
-            Interactive showcase of all UI components following the EarthEnable
-            design system. All components match the mobile app's styling for
-            visual consistency.
+            Interactive showcase of all UI components following the EarthEnable design system. All
+            components match the mobile app&apos;s styling for visual consistency.
           </p>
         </div>
 
@@ -164,12 +159,7 @@ export default function ComponentsPage() {
 
             {/* Password Input */}
             <Example title="Password Input">
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                required
-              />
+              <Input label="Password" type="password" placeholder="Enter your password" required />
               <CodeBlock>
                 {`<Input
   label="Password"
@@ -197,10 +187,7 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Textarea Section */}
-        <Section
-          title="Textarea"
-          description="Multi-line text input with consistent styling."
-        >
+        <Section title="Textarea" description="Multi-line text input with consistent styling.">
           <div className="space-y-6">
             {/* Basic Textarea */}
             <Example title="Basic Textarea">
@@ -243,24 +230,20 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Select Section */}
-        <Section
-          title="Select"
-          description="Dropdown selection with consistent styling."
-        >
+        <Section title="Select" description="Dropdown selection with consistent styling.">
           <div className="space-y-6">
             {/* Basic Select */}
             <Example title="Basic Select">
-              <Select
-                label="Country"
-                value={selectValue}
-                onChange={(e) => setSelectValue(e.target.value)}
-              >
-                <option value="">Select a country</option>
-                <option value="RW">Rwanda</option>
-                <option value="KE">Kenya</option>
-                <option value="ZM">Zambia</option>
-                <option value="IN">India</option>
-              </Select>
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">Country</label>
+                <Select value={selectValue} onChange={(e) => setSelectValue(e.target.value)}>
+                  <option value="">Select a country</option>
+                  <option value="RW">Rwanda</option>
+                  <option value="KE">Kenya</option>
+                  <option value="ZM">Zambia</option>
+                  <option value="IN">India</option>
+                </Select>
+              </div>
               <CodeBlock>
                 {`<Select
   label="Country"
@@ -277,19 +260,14 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Card Section */}
-        <Section
-          title="Card"
-          description="Container component with multiple variants."
-        >
+        <Section title="Card" description="Container component with multiple variants.">
           <div className="space-y-6">
             {/* Variants */}
             <Example title="Variants">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card variant="default" padding="md">
                   <h3 className="font-semibold mb-2">Default Card</h3>
-                  <p className="text-text-secondary text-sm">
-                    Basic card with no border
-                  </p>
+                  <p className="text-text-secondary text-sm">Basic card with no border</p>
                 </Card>
                 <Card variant="bordered" padding="md">
                   <h3 className="font-semibold mb-2">Bordered Card</h3>
@@ -309,12 +287,7 @@ export default function ComponentsPage() {
 
             {/* With Header */}
             <Example title="With Header">
-              <Card
-                variant="bordered"
-                padding="md"
-                header="User Profile"
-                divided
-              >
+              <Card variant="bordered" padding="md" header="User Profile" divided>
                 <p className="text-text-secondary">Card content goes here</p>
               </Card>
               <CodeBlock>
@@ -332,10 +305,7 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Badge Section */}
-        <Section
-          title="Badge"
-          description="Status indicators and labels with multiple variants."
-        >
+        <Section title="Badge" description="Status indicators and labels with multiple variants.">
           <div className="space-y-6">
             {/* Variants */}
             <Example title="Variants">
@@ -391,10 +361,7 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Spinner Section */}
-        <Section
-          title="Spinner"
-          description="Loading indicators with configurable size and color."
-        >
+        <Section title="Spinner" description="Loading indicators with configurable size and color.">
           <div className="space-y-6">
             {/* Sizes */}
             <Example title="Sizes">
@@ -431,9 +398,7 @@ export default function ComponentsPage() {
             {/* With Label */}
             <Example title="With Label">
               <Spinner label="Loading data..." centered />
-              <CodeBlock>
-                {`<Spinner label="Loading data..." centered />`}
-              </CodeBlock>
+              <CodeBlock>{`<Spinner label="Loading data..." centered />`}</CodeBlock>
             </Example>
           </div>
         </Section>
@@ -446,12 +411,8 @@ export default function ComponentsPage() {
           <div className="space-y-4">
             <Alert variant="success">Operation completed successfully!</Alert>
             <Alert variant="error">An error occurred. Please try again.</Alert>
-            <Alert variant="warning">
-              This action cannot be undone. Proceed with caution.
-            </Alert>
-            <Alert variant="info">
-              New features are available. Check them out!
-            </Alert>
+            <Alert variant="warning">This action cannot be undone. Proceed with caution.</Alert>
+            <Alert variant="info">New features are available. Check them out!</Alert>
             <Alert variant="success" dismissible onDismiss={() => {}}>
               Dismissible alert
             </Alert>
@@ -468,20 +429,15 @@ export default function ComponentsPage() {
         </Section>
 
         {/* Toast Section */}
-        <Section
-          title="Toast"
-          description="Temporary notifications that auto-dismiss."
-        >
+        <Section title="Toast" description="Temporary notifications that auto-dismiss.">
           <div className="space-y-6">
             <Example title="Try Toast">
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => handleToast('success')}>
-                  Show Success
-                </Button>
-                <Button onClick={() => handleToast('error')} variant="danger">
+                <Button onClick={() => handleToast("success")}>Show Success</Button>
+                <Button onClick={() => handleToast("error")} variant="danger">
                   Show Error
                 </Button>
-                <Button onClick={() => handleToast('info')} variant="secondary">
+                <Button onClick={() => handleToast("info")} variant="secondary">
                   Show Info
                 </Button>
               </div>
@@ -511,17 +467,15 @@ export default function ComponentsPage() {
         {/* Footer */}
         <div className="mt-16 p-6 bg-white rounded-lg border border-border-light">
           <h3 className="font-semibold text-text-primary mb-2">Usage</h3>
-          <p className="text-text-secondary mb-4">
-            Import components from the central export:
-          </p>
+          <p className="text-text-secondary mb-4">Import components from the central export:</p>
           <CodeBlock>
             {`import { Button, Input, Card, Badge } from '@/src/components/ui';`}
           </CodeBlock>
           <p className="text-text-secondary mt-4">
-            All components use theme constants from{' '}
+            All components use theme constants from{" "}
             <code className="bg-background-light px-2 py-1 rounded text-sm">
               src/lib/theme/constants.ts
-            </code>{' '}
+            </code>{" "}
             for consistent styling.
           </p>
         </div>
@@ -544,25 +498,15 @@ function Section({
   return (
     <section className="mb-16">
       <div className="mb-6">
-        <h2 className="text-3xl font-heading text-text-primary mb-2">
-          {title}
-        </h2>
+        <h2 className="text-3xl font-heading text-text-primary mb-2">{title}</h2>
         <p className="text-text-secondary">{description}</p>
       </div>
-      <div className="bg-white rounded-lg border border-border-light p-6">
-        {children}
-      </div>
+      <div className="bg-white rounded-lg border border-border-light p-6">{children}</div>
     </section>
   );
 }
 
-function Example({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Example({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
       <h4 className="font-semibold text-text-primary mb-3">{title}</h4>
@@ -589,7 +533,7 @@ function CodeBlock({ children }: { children: string }) {
         onClick={handleCopy}
         className="absolute top-2 right-2 px-3 py-1 bg-white border border-border-light rounded text-sm hover:bg-background-light transition-colors"
       >
-        {copied ? 'Copied!' : 'Copy'}
+        {copied ? "Copied!" : "Copy"}
       </button>
     </div>
   );

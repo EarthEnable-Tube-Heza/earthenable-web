@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Card Component
@@ -7,20 +7,19 @@
  * Provides consistent spacing, borders, and shadows for content sections.
  */
 
-import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/src/lib/theme';
-import { theme } from '@/src/lib/theme/constants';
+import { HTMLAttributes, forwardRef } from "react";
+import { cn } from "@/src/lib/theme";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * Visual variant of the card
    */
-  variant?: 'default' | 'bordered' | 'elevated';
+  variant?: "default" | "bordered" | "elevated";
 
   /**
    * Padding size
    */
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  padding?: "none" | "sm" | "md" | "lg";
 
   /**
    * Header content
@@ -43,8 +42,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     {
       children,
       className,
-      variant = 'default',
-      padding = 'md',
+      variant = "default",
+      padding = "md",
       header,
       footer,
       divided = false,
@@ -54,25 +53,25 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ) => {
     // Variant styles
     const variantStyles = {
-      default: 'bg-white border border-border-light',
-      bordered: 'bg-white border-2 border-border-medium',
-      elevated: 'bg-white shadow-md border border-border-light',
+      default: "bg-white border border-border-light",
+      bordered: "bg-white border-2 border-border-medium",
+      elevated: "bg-white shadow-md border border-border-light",
     };
 
     // Padding styles
     const paddingStyles = {
-      none: '',
-      sm: 'p-3',  // 12px
-      md: 'p-6',  // 24px
-      lg: 'p-8',  // 32px
+      none: "",
+      sm: "p-3", // 12px
+      md: "p-6", // 24px
+      lg: "p-8", // 32px
     };
 
     // Header/footer padding (slightly less than body)
     const headerFooterPadding = {
-      none: '',
-      sm: 'px-3 py-2',
-      md: 'px-6 py-4',
-      lg: 'px-8 py-5',
+      none: "",
+      sm: "px-3 py-2",
+      md: "px-6 py-4",
+      lg: "px-8 py-5",
     };
 
     return (
@@ -80,8 +79,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           // Base styles
-          'rounded-lg overflow-hidden',
-          'transition-shadow duration-150',
+          "rounded-lg overflow-hidden",
+          "transition-shadow duration-150",
 
           // Variant
           variantStyles[variant],
@@ -98,9 +97,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {header && (
           <div
             className={cn(
-              'font-heading text-lg font-medium text-text-primary',
+              "font-heading text-lg font-medium text-text-primary",
               headerFooterPadding[padding],
-              divided && 'border-b border-border-light'
+              divided && "border-b border-border-light"
             )}
           >
             {header}
@@ -108,17 +107,15 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         )}
 
         {/* Body */}
-        <div className={cn((header || footer) && paddingStyles[padding])}>
-          {children}
-        </div>
+        <div className={cn(header || footer ? paddingStyles[padding] : undefined)}>{children}</div>
 
         {/* Footer */}
         {footer && (
           <div
             className={cn(
-              'text-sm text-text-secondary',
+              "text-sm text-text-secondary",
               headerFooterPadding[padding],
-              divided && 'border-t border-border-light'
+              divided && "border-t border-border-light"
             )}
           >
             {footer}
@@ -129,4 +126,4 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   }
 );
 
-Card.displayName = 'Card';
+Card.displayName = "Card";

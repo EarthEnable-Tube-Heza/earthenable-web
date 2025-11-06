@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * User Detail Modal
@@ -6,13 +6,13 @@
  * Modal for viewing and editing user details (admin only).
  */
 
-import { useState } from 'react';
-import { Dialog } from '@headlessui/react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../lib/api';
-import { UserRole, UserRoleLabels } from '../types/user';
-import { cn } from '../lib/theme';
-import { Select } from './ui/Select';
+import { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../lib/api";
+import { UserRole, UserRoleLabels } from "../types/user";
+import { cn } from "../lib/theme";
+import { Select } from "./ui/Select";
 
 interface UserDetailModalProps {
   userId: string | null;
@@ -27,8 +27,12 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const [selectedStatus, setSelectedStatus] = useState<boolean | null>(null);
 
   // Fetch user details
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['user', userId],
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user", userId],
     queryFn: () => apiClient.getUserById(userId!),
     enabled: !!userId && isOpen,
   });
@@ -38,8 +42,8 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     mutationFn: ({ id, role }: { id: string; role: UserRole }) =>
       apiClient.updateUserRole(id, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
       setEditMode(false);
     },
   });
@@ -49,8 +53,8 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       apiClient.updateUserStatus(id, isActive),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
       setEditMode(false);
     },
   });
@@ -74,7 +78,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
       setEditMode(false);
     } catch (error) {
-      console.error('Failed to update user:', error);
+      console.error("Failed to update user:", error);
     }
   };
 
@@ -99,11 +103,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      className="relative z-50"
-    >
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -119,12 +119,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
               onClick={onClose}
               className="text-text-secondary hover:text-text-primary transition-colors"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -151,6 +146,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                 {/* User Profile */}
                 <div className="flex items-center gap-4">
                   {user.picture ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={user.picture}
                       alt={user.name || user.email}
@@ -188,12 +184,12 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     ) : (
                       <span
                         className={cn(
-                          'inline-block px-2 py-1 text-sm font-medium rounded-full',
+                          "inline-block px-2 py-1 text-sm font-medium rounded-full",
                           user.role === UserRole.ADMIN
-                            ? 'bg-status-error/10 text-status-error'
+                            ? "bg-status-error/10 text-status-error"
                             : user.role === UserRole.MANAGER
-                            ? 'bg-primary/10 text-primary'
-                            : 'bg-status-info/10 text-status-info'
+                              ? "bg-primary/10 text-primary"
+                              : "bg-status-info/10 text-status-info"
                         )}
                       >
                         {UserRoleLabels[user.role]}
@@ -208,8 +204,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     </label>
                     {editMode ? (
                       <Select
-                        value={selectedStatus === null ? user.is_active : selectedStatus ? 'true' : 'false'}
-                        onChange={(e) => setSelectedStatus(e.target.value === 'true')}
+                        value={
+                          selectedStatus === null ? String(user.is_active) : String(selectedStatus)
+                        }
+                        onChange={(e) => setSelectedStatus(e.target.value === "true")}
                       >
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
@@ -217,13 +215,13 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     ) : (
                       <span
                         className={cn(
-                          'inline-block px-2 py-1 text-sm font-medium rounded-full',
+                          "inline-block px-2 py-1 text-sm font-medium rounded-full",
                           user.is_active
-                            ? 'bg-status-success/10 text-status-success'
-                            : 'bg-text-disabled/10 text-text-disabled'
+                            ? "bg-status-success/10 text-status-success"
+                            : "bg-text-disabled/10 text-text-disabled"
                         )}
                       >
-                        {user.is_active ? 'Active' : 'Inactive'}
+                        {user.is_active ? "Active" : "Inactive"}
                       </span>
                     )}
                   </div>
@@ -234,7 +232,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Google ID
                     </label>
                     <p className="text-sm text-text-primary truncate" title={user.google_id}>
-                      {user.google_id || 'N/A'}
+                      {user.google_id || "N/A"}
                     </p>
                   </div>
 
@@ -244,7 +242,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Verified
                     </label>
                     <p className="text-sm text-text-primary">
-                      {user.is_verified ? '✓ Yes' : '✗ No'}
+                      {user.is_verified ? "✓ Yes" : "✗ No"}
                     </p>
                   </div>
 
@@ -264,18 +262,14 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Last Login
                     </label>
                     <p className="text-sm text-text-primary">
-                      {user.last_login
-                        ? new Date(user.last_login).toLocaleDateString()
-                        : 'Never'}
+                      {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
                     </p>
                   </div>
                 </div>
 
                 {/* Statistics */}
                 <div className="border-t border-border-light pt-4">
-                  <h4 className="text-sm font-medium text-text-secondary mb-3">
-                    Statistics
-                  </h4>
+                  <h4 className="text-sm font-medium text-text-secondary mb-3">Statistics</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-background-light p-4 rounded-lg">
                       <p className="text-2xl font-heading font-bold text-primary">
@@ -312,8 +306,8 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {updateRoleMutation.isPending || updateStatusMutation.isPending
-                      ? 'Saving...'
-                      : 'Save Changes'}
+                      ? "Saving..."
+                      : "Save Changes"}
                   </button>
                 </>
               ) : (
