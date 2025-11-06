@@ -240,9 +240,10 @@ export default function AnalyticsPage() {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}
                 iconType="circle"
                 iconSize={10}
+                formatter={(value, entry: any) => `${entry.payload.name} (${entry.payload.value})`}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -271,9 +272,10 @@ export default function AnalyticsPage() {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}
                 iconType="circle"
                 iconSize={10}
+                formatter={(value, entry: any) => `${entry.payload.name} (${entry.payload.value})`}
               />
             </PieChart>
           </ResponsiveContainer>
