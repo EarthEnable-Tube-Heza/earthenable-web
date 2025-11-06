@@ -8,12 +8,14 @@
  */
 
 import { useState } from 'react';
-import { Button, Input, Select, Card, Badge, Spinner } from '@/src/components/ui';
+import { Button, Input, Select, Card, Badge, Spinner, Alert, Toast } from '@/src/components/ui';
 
 export default function ComponentsPage() {
   const [inputValue, setInputValue] = useState('');
   const [selectValue, setSelectValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('success');
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -511,6 +513,170 @@ export default function ComponentsPage() {
           </Card>
         </section>
 
+        {/* Alert Component */}
+        <section>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
+            Alert
+          </h2>
+          <Card padding="lg" divided>
+            <div className="space-y-6">
+              {/* Variants */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Variants</h3>
+                <div className="space-y-3">
+                  <Alert variant="info" title="Information">
+                    This is an informational alert. Use it to provide helpful context to users.
+                  </Alert>
+                  <Alert variant="success" title="Success">
+                    Your changes have been saved successfully.
+                  </Alert>
+                  <Alert variant="warning" title="Warning">
+                    Please review your information before proceeding.
+                  </Alert>
+                  <Alert variant="error" title="Error">
+                    An error occurred while processing your request.
+                  </Alert>
+                </div>
+              </div>
+
+              {/* Without Icon */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Without Icon</h3>
+                <Alert variant="info" showIcon={false}>
+                  This alert doesn't display an icon.
+                </Alert>
+              </div>
+
+              {/* Without Title */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Without Title</h3>
+                <Alert variant="success">
+                  This alert only shows the message without a title.
+                </Alert>
+              </div>
+
+              {/* Dismissible */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Dismissible</h3>
+                <Alert
+                  variant="warning"
+                  title="Dismissible Alert"
+                  dismissible
+                  onDismiss={() => console.log('Alert dismissed')}
+                >
+                  Click the X button to dismiss this alert.
+                </Alert>
+              </div>
+
+              {/* Code Example */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Usage</h3>
+                <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
+{`import { Alert } from '@/src/components/ui';
+
+<Alert variant="success" title="Success">
+  Your changes have been saved successfully.
+</Alert>
+
+<Alert variant="error" title="Error" dismissible onDismiss={handleDismiss}>
+  An error occurred while processing your request.
+</Alert>
+
+<Alert variant="info" showIcon={false}>
+  Simple message without icon
+</Alert>`}
+                </pre>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* Toast Component */}
+        <section>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
+            Toast
+          </h2>
+          <Card padding="lg" divided>
+            <div className="space-y-6">
+              {/* Interactive Demo */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Interactive Demo</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Click the buttons below to show different toast notifications.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setToastType('success');
+                      setShowToast(true);
+                    }}
+                  >
+                    Show Success
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setToastType('error');
+                      setShowToast(true);
+                    }}
+                  >
+                    Show Error
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setToastType('warning');
+                      setShowToast(true);
+                    }}
+                  >
+                    Show Warning
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setToastType('info');
+                      setShowToast(true);
+                    }}
+                  >
+                    Show Info
+                  </Button>
+                </div>
+              </div>
+
+              {/* Code Example */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Usage</h3>
+                <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
+{`import { Toast } from '@/src/components/ui';
+import { useState } from 'react';
+
+function MyComponent() {
+  const [showToast, setShowToast] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setShowToast(true)}>
+        Show Toast
+      </button>
+
+      <Toast
+        visible={showToast}
+        type="success"
+        message="Your changes have been saved!"
+        duration={4000}
+        position="top"
+        onDismiss={() => setShowToast(false)}
+      />
+    </>
+  );
+}`}
+                </pre>
+              </div>
+            </div>
+          </Card>
+        </section>
+
         {/* Design Tokens */}
         <section>
           <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
@@ -593,6 +759,16 @@ export default function ComponentsPage() {
           </Card>
         </section>
       </div>
+
+      {/* Toast Demo */}
+      <Toast
+        visible={showToast}
+        type={toastType}
+        message={`This is a ${toastType} toast notification! It will auto-dismiss in 4 seconds.`}
+        duration={4000}
+        position="top"
+        onDismiss={() => setShowToast(false)}
+      />
     </div>
   );
 }

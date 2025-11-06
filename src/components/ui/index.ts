@@ -25,3 +25,9 @@ export type { BadgeProps } from './Badge';
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
+
+export { Alert } from './Alert';
+export type { AlertProps } from './Alert';
+
+export { Toast } from './Toast';
+export type { ToastProps, ToastType, ToastPosition } from './Toast';
