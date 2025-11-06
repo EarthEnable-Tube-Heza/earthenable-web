@@ -7,7 +7,7 @@
  * State persists in localStorage.
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -33,21 +33,21 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const toggleCollapsed = () => {
+  const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => {
       const newValue = !prev;
       localStorage.setItem(STORAGE_KEY, String(newValue));
       return newValue;
     });
-  };
+  }, []);
 
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = useCallback(() => {
     setIsMobileOpen((prev) => !prev);
-  };
+  }, []);
 
-  const closeMobileMenu = () => {
+  const closeMobileMenu = useCallback(() => {
     setIsMobileOpen(false);
-  };
+  }, []);
 
   return (
     <SidebarContext.Provider
