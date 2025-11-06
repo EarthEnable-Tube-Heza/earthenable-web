@@ -160,7 +160,9 @@ export default function UsersPage() {
           </div>
         ) : (
           <>
-            <table className="w-full">
+            {/* Horizontal scroll container for mobile */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
               <thead className="bg-background-light border-b border-border-light">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
@@ -251,11 +253,12 @@ export default function UsersPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-border-light flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-border-light flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-text-secondary">
                   Showing {page * limit + 1} to{' '}
                   {Math.min((page + 1) * limit, total)} of {total} users

@@ -100,17 +100,17 @@ export default function TaskSubjectsPage() {
         </div>
       </div>
 
-      {/* Form Mappings Table */}
+      {/* Task Subjects Table */}
       <div className="bg-white rounded-lg shadow-medium overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="text-text-secondary mt-2">Loading form mappings...</p>
+            <p className="text-text-secondary mt-2">Loading task subjects...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
             <p className="text-status-error">
-              Error loading form mappings. Please try again.
+              Error loading task subjects. Please try again.
             </p>
             <button
               onClick={() => refetch()}
@@ -121,11 +121,13 @@ export default function TaskSubjectsPage() {
           </div>
         ) : mappings.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-text-secondary">No form mappings found.</p>
+            <p className="text-text-secondary">No task subjects found.</p>
           </div>
         ) : (
           <>
-            <table className="w-full">
+            {/* Horizontal scroll container for mobile */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px]">
               <thead className="bg-background-light border-b border-border-light">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
@@ -191,14 +193,15 @@ export default function TaskSubjectsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-border-light flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-border-light flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-text-secondary">
                   Showing {page * limit + 1} to{' '}
-                  {Math.min((page + 1) * limit, total)} of {total} mappings
+                  {Math.min((page + 1) * limit, total)} of {total} task subjects
                 </div>
                 <div className="flex gap-2">
                   <button
