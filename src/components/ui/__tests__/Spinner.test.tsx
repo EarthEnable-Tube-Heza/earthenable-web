@@ -1,53 +1,57 @@
-import { render, screen } from '@testing-library/react';
-import { Spinner } from '../Spinner';
+import { render, screen } from "@testing-library/react";
+import { Spinner } from "../Spinner";
 
-describe('Spinner Component', () => {
-  it('renders spinner', () => {
+describe("Spinner Component", () => {
+  it("renders spinner", () => {
     const { container } = render(<Spinner />);
-    const svg = container.querySelector('svg');
-    expect(svg).toBeInTheDocument();
-    expect(svg).toHaveClass('animate-spin');
+    const spinner = container.querySelector(".animate-spin");
+    expect(spinner).toBeInTheDocument();
+    expect(spinner).toHaveClass("animate-spin");
+    expect(spinner).toHaveClass("rounded-full");
   });
 
-  it('renders with different sizes', () => {
-    const { rerender, container } = render(<Spinner size="sm" />);
-    expect(container.querySelector('svg')).toHaveClass('w-4');
+  it("renders with different sizes", () => {
+    const { rerender, container } = render(<Spinner size="xs" />);
+    expect(container.querySelector(".animate-spin")).toHaveClass("w-4");
+
+    rerender(<Spinner size="sm" />);
+    expect(container.querySelector(".animate-spin")).toHaveClass("w-5");
 
     rerender(<Spinner size="md" />);
-    expect(container.querySelector('svg')).toHaveClass('w-5');
+    expect(container.querySelector(".animate-spin")).toHaveClass("w-8");
 
     rerender(<Spinner size="lg" />);
-    expect(container.querySelector('svg')).toHaveClass('w-6');
+    expect(container.querySelector(".animate-spin")).toHaveClass("w-12");
 
     rerender(<Spinner size="xl" />);
-    expect(container.querySelector('svg')).toHaveClass('w-8');
+    expect(container.querySelector(".animate-spin")).toHaveClass("w-16");
   });
 
-  it('renders with different variants', () => {
+  it("renders with different variants", () => {
     const { rerender, container } = render(<Spinner variant="primary" />);
-    expect(container.querySelector('svg')).toHaveClass('text-primary');
+    expect(container.querySelector(".animate-spin")).toHaveClass("border-primary");
 
     rerender(<Spinner variant="secondary" />);
-    expect(container.querySelector('svg')).toHaveClass('text-secondary');
+    expect(container.querySelector(".animate-spin")).toHaveClass("border-secondary");
 
     rerender(<Spinner variant="white" />);
-    expect(container.querySelector('svg')).toHaveClass('text-white');
+    expect(container.querySelector(".animate-spin")).toHaveClass("border-white");
   });
 
-  it('renders with label', () => {
+  it("renders with label", () => {
     render(<Spinner label="Loading..." />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  it('renders centered', () => {
+  it("renders centered", () => {
     const { container } = render(<Spinner centered />);
     const wrapper = container.querySelector('div[role="status"]');
-    expect(wrapper).toHaveClass('w-full');
+    expect(wrapper).toHaveClass("w-full");
   });
 
-  it('applies custom className', () => {
+  it("applies custom className", () => {
     const { container } = render(<Spinner className="custom-spinner" />);
     const wrapper = container.querySelector('div[role="status"]');
-    expect(wrapper).toHaveClass('custom-spinner');
+    expect(wrapper).toHaveClass("custom-spinner");
   });
 });
