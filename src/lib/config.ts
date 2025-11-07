@@ -39,73 +39,42 @@ interface Config {
 }
 
 /**
- * Get environment variable with validation
- */
-function getEnvVar(key: string, defaultValue?: string): string {
-  const value = process.env[key] || defaultValue;
-
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-
-  return value;
-}
-
-/**
- * Get optional environment variable
- */
-function getOptionalEnvVar(key: string, defaultValue: string): string {
-  return process.env[key] || defaultValue;
-}
-
-/**
- * Get numeric environment variable
- */
-function getNumericEnvVar(key: string, defaultValue: number): number {
-  const value = process.env[key];
-  if (!value) return defaultValue;
-
-  const numValue = parseInt(value, 10);
-  if (isNaN(numValue)) {
-    console.warn(`Invalid numeric value for ${key}, using default: ${defaultValue}`);
-    return defaultValue;
-  }
-
-  return numValue;
-}
-
-/**
  * Application configuration object
+ *
+ * IMPORTANT: NEXT_PUBLIC_* variables must be accessed directly as process.env.NEXT_PUBLIC_*
+ * to be embedded at build time. Using functions or variables prevents Next.js from
+ * embedding the values, causing runtime lookups to fail.
  */
 export const config: Config = {
   api: {
-    baseUrl: getEnvVar('NEXT_PUBLIC_API_BASE_URL', 'http://localhost:8000'),
-    version: getOptionalEnvVar('NEXT_PUBLIC_API_VERSION', 'v1'),
-    timeout: getNumericEnvVar('NEXT_PUBLIC_API_TIMEOUT', 30000), // 30 seconds
+    // Direct access required for Next.js to embed at build time
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+    version: process.env.NEXT_PUBLIC_API_VERSION || "v1",
+    timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || "30000", 10),
   },
 
   google: {
-    clientId: getOptionalEnvVar('NEXT_PUBLIC_GOOGLE_CLIENT_ID', ''),
+    clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
   },
 
   app: {
-    name: getOptionalEnvVar('NEXT_PUBLIC_APP_NAME', 'EarthEnable Hub'),
-    companyDomain: getOptionalEnvVar('NEXT_PUBLIC_COMPANY_DOMAIN', 'earthenable.org'),
+    name: process.env.NEXT_PUBLIC_APP_NAME || "EarthEnable Hub",
+    companyDomain: process.env.NEXT_PUBLIC_COMPANY_DOMAIN || "earthenable.org",
   },
 
   token: {
     // SECURITY: Web dashboard uses stricter token expiration than mobile app
     // Mobile app: 7-day refresh threshold (offline capability needed)
     // Web dashboard: 10-minute refresh threshold (no offline needed, higher security)
-    refreshThreshold: getNumericEnvVar('NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD', 10),
+    refreshThreshold: parseInt(process.env.NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD || "10", 10),
 
     // Show critical warning when token is about to expire
     // Default: 2 minutes (gives user time to save work before session ends)
-    criticalThreshold: getNumericEnvVar('NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD', 2),
+    criticalThreshold: parseInt(process.env.NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD || "2", 10),
   },
 
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
+  isDevelopment: process.env.NODE_ENV === "development",
+  isProduction: process.env.NODE_ENV === "production",
 };
 
 /**
@@ -113,7 +82,7 @@ export const config: Config = {
  */
 export function getAPIUrl(path: string): string {
   // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
   return `${config.api.baseUrl}/api/${config.api.version}/${cleanPath}`;
 }
 
@@ -121,17 +90,14 @@ export function getAPIUrl(path: string): string {
  * Validate required environment variables on app startup
  */
 export function validateConfig(): void {
-  const requiredVars = [
-    'NEXT_PUBLIC_API_BASE_URL',
-    'NEXT_PUBLIC_GOOGLE_CLIENT_ID',
-  ];
+  const requiredVars = ["NEXT_PUBLIC_API_BASE_URL", "NEXT_PUBLIC_GOOGLE_CLIENT_ID"];
 
-  const missingVars = requiredVars.filter(key => !process.env[key]);
+  const missingVars = requiredVars.filter((key) => !process.env[key]);
 
   if (missingVars.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missingVars.join(', ')}\n` +
-      'Please check your .env.local file.'
+      `Missing required environment variables: ${missingVars.join(", ")}\n` +
+        "Please check your .env.local file."
     );
   }
 }
