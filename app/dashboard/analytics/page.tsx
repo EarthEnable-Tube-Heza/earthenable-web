@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Analytics Dashboard Page (Admin only)
@@ -6,9 +6,9 @@
  * Displays user analytics with charts and visualizations.
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/src/lib/api';
-import { UserRole, UserRoleLabels } from '@/src/types/user';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/src/lib/api";
+import { UserRole, UserRoleLabels } from "@/src/types/user";
 import {
   PieChart,
   Pie,
@@ -23,18 +23,18 @@ import {
   ResponsiveContainer,
   Area,
   AreaChart,
-} from 'recharts';
-import { useMemo } from 'react';
+} from "recharts";
+import { useMemo } from "react";
 
 const COLORS = {
-  primary: '#EA6A00',
-  secondary: '#78373B',
-  accent: '#D5A34C',
-  green: '#124D37',
-  blue: '#3E57AB',
-  error: '#E04562',
-  warning: '#D5A34C',
-  info: '#3E57AB',
+  primary: "#EA6A00",
+  secondary: "#78373B",
+  accent: "#D5A34C",
+  green: "#124D37",
+  blue: "#3E57AB",
+  error: "#E04562",
+  warning: "#D5A34C",
+  info: "#3E57AB",
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -45,16 +45,20 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default function AnalyticsPage() {
   // Fetch user statistics
-  const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['user-stats'],
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user-stats"],
     queryFn: () => apiClient.getUserStats(),
   });
 
   // Normalize role string (e.g., "UserRole.ADMIN" -> "admin")
   const normalizeRole = (role: string): string => {
     // If it's in the format "UserRole.ADMIN", extract "ADMIN" and lowercase it
-    if (role.startsWith('UserRole.')) {
-      return role.replace('UserRole.', '').toLowerCase();
+    if (role.startsWith("UserRole.")) {
+      return role.replace("UserRole.", "").toLowerCase();
     }
     return role.toLowerCase();
   };
@@ -81,8 +85,8 @@ export default function AnalyticsPage() {
     if (!stats) return [];
     const inactive = stats.total_users - stats.active_users;
     return [
-      { name: 'Active', value: stats.active_users, color: COLORS.green },
-      { name: 'Inactive', value: inactive, color: COLORS.error },
+      { name: "Active", value: stats.active_users, color: COLORS.green },
+      { name: "Inactive", value: inactive, color: COLORS.error },
     ];
   }, [stats]);
 
@@ -93,9 +97,9 @@ export default function AnalyticsPage() {
     // Group signups by date
     const signupsByDate: Record<string, number> = {};
     stats.recent_signups.forEach((user) => {
-      const date = new Date(user.created_at).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
+      const date = new Date(user.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       });
       signupsByDate[date] = (signupsByDate[date] || 0) + 1;
     });
@@ -127,12 +131,8 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">
-          Analytics Dashboard
-        </h1>
-        <p className="text-text-secondary mt-2">
-          User statistics and insights
-        </p>
+        <h1 className="text-3xl font-heading font-bold text-text-primary">Analytics Dashboard</h1>
+        <p className="text-text-secondary mt-2">User statistics and insights</p>
       </div>
 
       {/* Overview Stats Cards */}
@@ -141,13 +141,21 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-text-secondary">Total Users</p>
-              <p className="text-3xl font-bold text-text-primary mt-1">
-                {stats.total_users}
-              </p>
+              <p className="text-3xl font-bold text-text-primary mt-1">{stats.total_users}</p>
             </div>
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <svg
+                className="w-6 h-6 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
               </svg>
             </div>
           </div>
@@ -157,18 +165,26 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-text-secondary">Active Users</p>
-              <p className="text-3xl font-bold text-status-success mt-1">
-                {stats.active_users}
-              </p>
+              <p className="text-3xl font-bold text-status-success mt-1">{stats.active_users}</p>
               <p className="text-xs text-text-secondary mt-1">
                 {stats.total_users > 0
                   ? `${Math.round((stats.active_users / stats.total_users) * 100)}%`
-                  : '0%'}
+                  : "0%"}
               </p>
             </div>
             <div className="w-12 h-12 bg-status-success/10 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-status-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-6 h-6 text-status-success"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
           </div>
@@ -184,12 +200,22 @@ export default function AnalyticsPage() {
               <p className="text-xs text-text-secondary mt-1">
                 {stats.total_users > 0
                   ? `${Math.round(((stats.total_users - stats.active_users) / stats.total_users) * 100)}%`
-                  : '0%'}
+                  : "0%"}
               </p>
             </div>
             <div className="w-12 h-12 bg-status-error/10 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-status-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              <svg
+                className="w-6 h-6 text-status-error"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                />
               </svg>
             </div>
           </div>
@@ -205,8 +231,18 @@ export default function AnalyticsPage() {
               <p className="text-xs text-text-secondary mt-1">Last 30 days</p>
             </div>
             <div className="w-12 h-12 bg-status-info/10 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-status-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <svg
+                className="w-6 h-6 text-status-info"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                />
               </svg>
             </div>
           </div>
@@ -217,9 +253,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Users by Role - Pie Chart */}
         <div className="bg-white rounded-lg shadow-medium p-6">
-          <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
-            Users by Role
-          </h2>
+          <h2 className="text-xl font-heading font-bold text-text-primary mb-4">Users by Role</h2>
           <ResponsiveContainer width="100%" height={350}>
             <PieChart>
               <Pie
@@ -238,9 +272,17 @@ export default function AnalyticsPage() {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingTop: '20px', fontSize: '14px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}
+                wrapperStyle={{
+                  paddingTop: "20px",
+                  fontSize: "14px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
                 iconType="circle"
                 iconSize={10}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value, entry: any) => `${entry.payload.name} (${entry.payload.value})`}
               />
             </PieChart>
@@ -270,9 +312,17 @@ export default function AnalyticsPage() {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingTop: '20px', fontSize: '14px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}
+                wrapperStyle={{
+                  paddingTop: "20px",
+                  fontSize: "14px",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
                 iconType="circle"
                 iconSize={10}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value, entry: any) => `${entry.payload.name} (${entry.payload.value})`}
               />
             </PieChart>
@@ -282,9 +332,7 @@ export default function AnalyticsPage() {
 
       {/* Charts Row 2: Role Distribution Bar Chart */}
       <div className="bg-white rounded-lg shadow-medium p-6">
-        <h2 className="text-xl font-heading font-bold text-text-primary mb-4">
-          Role Distribution
-        </h2>
+        <h2 className="text-xl font-heading font-bold text-text-primary mb-4">Role Distribution</h2>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={roleDistributionData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -294,7 +342,7 @@ export default function AnalyticsPage() {
             <Legend
               verticalAlign="bottom"
               align="center"
-              wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+              wrapperStyle={{ paddingTop: "20px", fontSize: "14px" }}
               iconType="rect"
               iconSize={10}
             />
@@ -322,7 +370,7 @@ export default function AnalyticsPage() {
               <Legend
                 verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
+                wrapperStyle={{ paddingTop: "20px", fontSize: "14px" }}
                 iconType="line"
                 iconSize={10}
               />
@@ -364,9 +412,8 @@ export default function AnalyticsPage() {
             </thead>
             <tbody className="divide-y divide-border-light">
               {roleDistributionData.map((role) => {
-                const percentage = stats.total_users > 0
-                  ? (role.value / stats.total_users) * 100
-                  : 0;
+                const percentage =
+                  stats.total_users > 0 ? (role.value / stats.total_users) * 100 : 0;
                 return (
                   <tr key={role.name} className="hover:bg-background-light transition-colors">
                     <td className="px-6 py-4">
@@ -375,14 +422,10 @@ export default function AnalyticsPage() {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: role.color }}
                         />
-                        <span className="text-sm font-medium text-text-primary">
-                          {role.name}
-                        </span>
+                        <span className="text-sm font-medium text-text-primary">{role.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-text-primary">
-                      {role.value}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-text-primary">{role.value}</td>
                     <td className="px-6 py-4 text-sm text-text-primary">
                       {percentage.toFixed(1)}%
                     </td>

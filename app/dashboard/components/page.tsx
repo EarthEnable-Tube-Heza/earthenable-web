@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Component Showcase Page
@@ -7,15 +7,14 @@
  * Admin-only page for developers and designers.
  */
 
-import { useState } from 'react';
-import { Button, Input, Select, Card, Badge, Spinner, Alert, Toast } from '@/src/components/ui';
+import { useState } from "react";
+import { Button, Input, Select, Card, Badge, Spinner, Alert, Toast } from "@/src/components/ui";
 
 export default function ComponentsPage() {
-  const [inputValue, setInputValue] = useState('');
-  const [selectValue, setSelectValue] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [selectValue, setSelectValue] = useState("");
   const [showToast, setShowToast] = useState(false);
-  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('success');
+  const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info">("success");
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -25,17 +24,15 @@ export default function ComponentsPage() {
           Component Library
         </h1>
         <p className="text-text-secondary">
-          Reusable UI components following the EarthEnable design system.
-          All components use theme constants for consistent styling.
+          Reusable UI components following the EarthEnable design system. All components use theme
+          constants for consistent styling.
         </p>
       </div>
 
       <div className="space-y-12">
         {/* Button Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Button
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Button</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Variants */}
@@ -83,7 +80,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Button } from '@/src/components/ui';
+                  {`import { Button } from '@/src/components/ui';
 
 <Button variant="primary" size="md" onClick={handleClick}>
   Click Me
@@ -100,9 +97,7 @@ export default function ComponentsPage() {
 
         {/* Input Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Input
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Input</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Basic */}
@@ -116,16 +111,8 @@ export default function ComponentsPage() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
-                  <Input
-                    label="Password"
-                    type="password"
-                    placeholder="Enter password"
-                  />
-                  <Input
-                    label="Required Field"
-                    placeholder="This field is required"
-                    required
-                  />
+                  <Input label="Password" type="password" placeholder="Enter password" />
+                  <Input label="Required Field" placeholder="This field is required" required />
                 </div>
               </div>
 
@@ -143,14 +130,8 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">With Icons</h3>
                 <div className="max-w-md space-y-3">
-                  <Input
-                    leftIcon={<span>🔍</span>}
-                    placeholder="Search..."
-                  />
-                  <Input
-                    rightIcon={<span>📧</span>}
-                    placeholder="Email address"
-                  />
+                  <Input leftIcon={<span>🔍</span>} placeholder="Search..." />
+                  <Input rightIcon={<span>📧</span>} placeholder="Email address" />
                 </div>
               </div>
 
@@ -158,21 +139,10 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">States</h3>
                 <div className="max-w-md space-y-3">
-                  <Input
-                    placeholder="Default"
-                  />
-                  <Input
-                    placeholder="With helper text"
-                    helperText="This is a helpful message"
-                  />
-                  <Input
-                    placeholder="With error"
-                    error="This field is required"
-                  />
-                  <Input
-                    placeholder="Disabled"
-                    disabled
-                  />
+                  <Input placeholder="Default" />
+                  <Input placeholder="With helper text" helperText="This is a helpful message" />
+                  <Input placeholder="With error" error="This field is required" />
+                  <Input placeholder="Disabled" disabled />
                 </div>
               </div>
 
@@ -180,7 +150,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Input } from '@/src/components/ui';
+                  {`import { Input } from '@/src/components/ui';
 
 <Input
   label="Email"
@@ -205,19 +175,14 @@ export default function ComponentsPage() {
 
         {/* Select Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Select
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Select</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Basic */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Basic</h3>
                 <div className="max-w-md">
-                  <Select
-                    value={selectValue}
-                    onChange={(e) => setSelectValue(e.target.value)}
-                  >
+                  <Select value={selectValue} onChange={(e) => setSelectValue(e.target.value)}>
                     <option value="">Select an option</option>
                     <option value="1">Option 1</option>
                     <option value="2">Option 2</option>
@@ -265,7 +230,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Select } from '@/src/components/ui';
+                  {`import { Select } from '@/src/components/ui';
 
 <Select
   value={role}
@@ -285,9 +250,7 @@ export default function ComponentsPage() {
 
         {/* Card Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Card
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Card</h2>
           <div className="space-y-6">
             {/* Variants */}
             <div>
@@ -295,21 +258,15 @@ export default function ComponentsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card variant="default" padding="md">
                   <h4 className="font-semibold mb-2">Default Card</h4>
-                  <p className="text-sm text-text-secondary">
-                    Standard card with light border
-                  </p>
+                  <p className="text-sm text-text-secondary">Standard card with light border</p>
                 </Card>
                 <Card variant="bordered" padding="md">
                   <h4 className="font-semibold mb-2">Bordered Card</h4>
-                  <p className="text-sm text-text-secondary">
-                    Card with thicker border
-                  </p>
+                  <p className="text-sm text-text-secondary">Card with thicker border</p>
                 </Card>
                 <Card variant="elevated" padding="md">
                   <h4 className="font-semibold mb-2">Elevated Card</h4>
-                  <p className="text-sm text-text-secondary">
-                    Card with shadow effect
-                  </p>
+                  <p className="text-sm text-text-secondary">Card with shadow effect</p>
                 </Card>
               </div>
             </div>
@@ -353,7 +310,7 @@ export default function ComponentsPage() {
             <Card padding="lg" variant="bordered">
               <h3 className="text-lg font-semibold mb-3">Usage</h3>
               <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Card } from '@/src/components/ui';
+                {`import { Card } from '@/src/components/ui';
 
 <Card variant="elevated" padding="md">
   <h2>Content Title</h2>
@@ -375,9 +332,7 @@ export default function ComponentsPage() {
 
         {/* Badge Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Badge
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Badge</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Variants */}
@@ -398,10 +353,18 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Outline Style</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Badge variant="success" outline>Success</Badge>
-                  <Badge variant="error" outline>Error</Badge>
-                  <Badge variant="warning" outline>Warning</Badge>
-                  <Badge variant="primary" outline>Primary</Badge>
+                  <Badge variant="success" outline>
+                    Success
+                  </Badge>
+                  <Badge variant="error" outline>
+                    Error
+                  </Badge>
+                  <Badge variant="warning" outline>
+                    Warning
+                  </Badge>
+                  <Badge variant="primary" outline>
+                    Primary
+                  </Badge>
                 </div>
               </div>
 
@@ -409,9 +372,15 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Sizes</h3>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Badge size="sm" variant="primary">Small</Badge>
-                  <Badge size="md" variant="primary">Medium</Badge>
-                  <Badge size="lg" variant="primary">Large</Badge>
+                  <Badge size="sm" variant="primary">
+                    Small
+                  </Badge>
+                  <Badge size="md" variant="primary">
+                    Medium
+                  </Badge>
+                  <Badge size="lg" variant="primary">
+                    Large
+                  </Badge>
                 </div>
               </div>
 
@@ -419,9 +388,15 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">With Dot Indicator</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Badge variant="success" dot>Active</Badge>
-                  <Badge variant="error" dot>Error</Badge>
-                  <Badge variant="warning" dot>Pending</Badge>
+                  <Badge variant="success" dot>
+                    Active
+                  </Badge>
+                  <Badge variant="error" dot>
+                    Error
+                  </Badge>
+                  <Badge variant="warning" dot>
+                    Pending
+                  </Badge>
                 </div>
               </div>
 
@@ -429,8 +404,12 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Shape</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Badge variant="primary" rounded>Rounded</Badge>
-                  <Badge variant="primary" rounded={false}>Square</Badge>
+                  <Badge variant="primary" rounded>
+                    Rounded
+                  </Badge>
+                  <Badge variant="primary" rounded={false}>
+                    Square
+                  </Badge>
                 </div>
               </div>
 
@@ -438,7 +417,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Badge } from '@/src/components/ui';
+                  {`import { Badge } from '@/src/components/ui';
 
 <Badge variant="success">Active</Badge>
 <Badge variant="error" outline>Failed</Badge>
@@ -456,9 +435,7 @@ export default function ComponentsPage() {
 
         {/* Spinner Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Spinner
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Spinner</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Sizes */}
@@ -497,7 +474,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Spinner } from '@/src/components/ui';
+                  {`import { Spinner } from '@/src/components/ui';
 
 // Inline
 <Spinner size="sm" variant="primary" />
@@ -515,9 +492,7 @@ export default function ComponentsPage() {
 
         {/* Alert Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Alert
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Alert</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Variants */}
@@ -543,16 +518,14 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Without Icon</h3>
                 <Alert variant="info" showIcon={false}>
-                  This alert doesn't display an icon.
+                  This alert doesn&apos;t display an icon.
                 </Alert>
               </div>
 
               {/* Without Title */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Without Title</h3>
-                <Alert variant="success">
-                  This alert only shows the message without a title.
-                </Alert>
+                <Alert variant="success">This alert only shows the message without a title.</Alert>
               </div>
 
               {/* Dismissible */}
@@ -562,7 +535,7 @@ export default function ComponentsPage() {
                   variant="warning"
                   title="Dismissible Alert"
                   dismissible
-                  onDismiss={() => console.log('Alert dismissed')}
+                  onDismiss={() => console.log("Alert dismissed")}
                 >
                   Click the X button to dismiss this alert.
                 </Alert>
@@ -572,7 +545,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Alert } from '@/src/components/ui';
+                  {`import { Alert } from '@/src/components/ui';
 
 <Alert variant="success" title="Success">
   Your changes have been saved successfully.
@@ -593,9 +566,7 @@ export default function ComponentsPage() {
 
         {/* Toast Component */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Toast
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Toast</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               {/* Interactive Demo */}
@@ -608,7 +579,7 @@ export default function ComponentsPage() {
                   <Button
                     variant="primary"
                     onClick={() => {
-                      setToastType('success');
+                      setToastType("success");
                       setShowToast(true);
                     }}
                   >
@@ -617,7 +588,7 @@ export default function ComponentsPage() {
                   <Button
                     variant="secondary"
                     onClick={() => {
-                      setToastType('error');
+                      setToastType("error");
                       setShowToast(true);
                     }}
                   >
@@ -626,7 +597,7 @@ export default function ComponentsPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setToastType('warning');
+                      setToastType("warning");
                       setShowToast(true);
                     }}
                   >
@@ -635,7 +606,7 @@ export default function ComponentsPage() {
                   <Button
                     variant="ghost"
                     onClick={() => {
-                      setToastType('info');
+                      setToastType("info");
                       setShowToast(true);
                     }}
                   >
@@ -648,7 +619,7 @@ export default function ComponentsPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Usage</h3>
                 <pre className="bg-background-light p-4 rounded-md text-sm overflow-x-auto">
-{`import { Toast } from '@/src/components/ui';
+                  {`import { Toast } from '@/src/components/ui';
 import { useState } from 'react';
 
 function MyComponent() {
@@ -679,13 +650,11 @@ function MyComponent() {
 
         {/* Design Tokens */}
         <section>
-          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">
-            Design Tokens
-          </h2>
+          <h2 className="text-2xl font-heading font-bold text-text-primary mb-4">Design Tokens</h2>
           <Card padding="lg" divided>
             <div className="space-y-6">
               <p className="text-text-secondary">
-                All components use centralized theme constants from{' '}
+                All components use centralized theme constants from{" "}
                 <code className="bg-background-light px-2 py-1 rounded text-sm">
                   src/lib/theme/constants.ts
                 </code>

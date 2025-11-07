@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Breadcrumbs Component
@@ -7,10 +7,10 @@
  * Automatically generates breadcrumbs from current pathname.
  */
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
-import { cn } from '@/src/lib/theme';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+import { cn } from "@/src/lib/theme";
 
 interface BreadcrumbItem {
   label: string;
@@ -18,13 +18,13 @@ interface BreadcrumbItem {
 }
 
 const routeLabels: Record<string, string> = {
-  dashboard: 'Home',
-  users: 'Users',
-  forms: 'Forms',
-  analytics: 'Analytics',
-  components: 'Components',
-  settings: 'Settings',
-  profile: 'Profile',
+  dashboard: "Home",
+  users: "Users",
+  forms: "Forms",
+  analytics: "Analytics",
+  components: "Components",
+  settings: "Settings",
+  profile: "Profile",
 };
 
 export function Breadcrumbs() {
@@ -32,13 +32,13 @@ export function Breadcrumbs() {
 
   const breadcrumbs = useMemo(() => {
     // Split pathname into segments
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = pathname.split("/").filter(Boolean);
 
     // Build breadcrumb items
     const items: BreadcrumbItem[] = [];
-    let currentPath = '';
+    let currentPath = "";
 
-    segments.forEach((segment, index) => {
+    segments.forEach((segment) => {
       currentPath += `/${segment}`;
 
       // Get label from mapping or use segment as-is
@@ -87,15 +87,13 @@ export function Breadcrumbs() {
                 </svg>
               )}
               {isLast ? (
-                <span className="font-medium text-text-primary">
-                  {item.label}
-                </span>
+                <span className="font-medium text-text-primary">{item.label}</span>
               ) : (
                 <Link
                   href={item.href}
                   className={cn(
-                    'hover:text-primary transition-colors',
-                    'focus:outline-none focus:text-primary'
+                    "hover:text-primary transition-colors",
+                    "focus:outline-none focus:text-primary"
                   )}
                 >
                   {item.label}

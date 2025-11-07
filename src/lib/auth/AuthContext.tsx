@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Authentication Context
@@ -7,7 +7,7 @@
  * Manages token storage, user state, and automatic token refresh.
  */
 
-import React, { createContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import {
   AuthContextValue,
   AuthState,
@@ -15,9 +15,9 @@ import {
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
   shouldRefreshToken,
-} from '../../types';
-import { apiClient } from '../api';
-import { config } from '../config';
+} from "../../types";
+import { apiClient } from "../api";
+import { config } from "../config";
 
 /**
  * Initial auth state
@@ -55,6 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   useEffect(() => {
     loadStoredAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, 60 * 1000); // Check every minute
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isAuthenticated, state.tokenExpiry]);
 
   /**
@@ -92,13 +94,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (isExpired) {
           // Token expired, clear storage directly (don't call signOut to avoid circular dependency)
-          console.log('Stored token is expired, clearing auth');
+          console.log("Stored token is expired, clearing auth");
           localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
-          document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
-          setState(prev => ({ ...prev, isLoading: false }));
+          document.cookie =
+            "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+          setState((prev) => ({ ...prev, isLoading: false }));
           return;
         }
 
@@ -121,27 +124,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Verify token is still valid by fetching current user
         try {
           const currentUser = await apiClient.getCurrentUser();
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             user: currentUser,
             isLoading: false,
           }));
-        } catch (error) {
+        } catch {
           // Token invalid, clear storage directly (don't call signOut to avoid circular dependency)
-          console.log('Token verification failed, clearing auth');
+          console.log("Token verification failed, clearing auth");
           localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
-          document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+          document.cookie =
+            "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
           setState(initialAuthState);
         }
       } else {
-        setState(prev => ({ ...prev, isLoading: false }));
+        setState((prev) => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      console.error("Error loading stored auth:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
@@ -150,7 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    */
   const signIn = useCallback(async (googleToken: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // Exchange Google token for JWT
       const tokenResponse = await apiClient.authenticateWithGoogle(googleToken);
@@ -185,8 +189,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
     } catch (err) {
       const error = err as { response?: { data?: { detail?: string } } };
-      const errorMessage = error.response?.data?.detail || 'Authentication failed';
-      setState(prev => ({
+      const errorMessage = error.response?.data?.detail || "Authentication failed";
+      setState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -202,7 +206,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await apiClient.signOut();
     } catch (error) {
-      console.error('Error during sign out:', error);
+      console.error("Error during sign out:", error);
     } finally {
       // Clear localStorage
       localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
@@ -211,7 +215,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
 
       // Clear cookie (set expired date)
-      document.cookie = 'earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie =
+        "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
 
       // Reset state to unauthenticated with isLoading: false
       setState({
@@ -231,12 +236,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const currentUser = await apiClient.getCurrentUser();
 
       // Update user in state
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         user: currentUser,
       }));
     } catch (error) {
-      console.error('Error refreshing token:', error);
+      console.error("Error refreshing token:", error);
       // If refresh fails, sign out
       await signOut();
     }
@@ -246,7 +251,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Clear error state
    */
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
   }, []);
 
   const value: AuthContextValue = {

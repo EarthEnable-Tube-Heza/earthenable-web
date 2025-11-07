@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Profile Page
@@ -6,10 +6,10 @@
  * Displays current user's profile information and account details.
  */
 
-import { useAuth } from '@/src/lib/auth';
-import { UserRoleLabels } from '@/src/types/user';
-import { Card } from '@/src/components/ui/Card';
-import { Badge } from '@/src/components/ui/Badge';
+import { useAuth } from "@/src/lib/auth";
+import { UserRoleLabels } from "@/src/types/user";
+import { Card } from "@/src/components/ui/Card";
+import { Badge } from "@/src/components/ui/Badge";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -33,12 +33,12 @@ export default function ProfilePage() {
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -46,12 +46,8 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">
-          My Profile
-        </h1>
-        <p className="text-text-secondary mt-2">
-          View and manage your account information
-        </p>
+        <h1 className="text-3xl font-heading font-bold text-text-primary">My Profile</h1>
+        <p className="text-text-secondary mt-2">View and manage your account information</p>
       </div>
 
       {/* Profile Overview Card */}
@@ -60,6 +56,7 @@ export default function ProfilePage() {
           {/* Profile Picture */}
           <div className="flex-shrink-0">
             {user.picture ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={user.picture}
                 alt={user.name || user.email}
@@ -77,19 +74,17 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
               <div>
                 <h2 className="text-2xl font-heading font-bold text-text-primary">
-                  {user.name || 'No name set'}
+                  {user.name || "No name set"}
                 </h2>
                 <p className="text-text-secondary">{user.email}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge variant={user.is_active ? 'success' : 'error'} size="lg">
-                  {user.is_active ? 'Active' : 'Inactive'}
+                <Badge variant={user.is_active ? "success" : "error"} size="lg">
+                  {user.is_active ? "Active" : "Inactive"}
                 </Badge>
                 <Badge
                   variant={
-                    user.role === 'admin' ? 'error' :
-                    user.role === 'manager' ? 'info' :
-                    'success'
+                    user.role === "admin" ? "error" : user.role === "manager" ? "info" : "success"
                   }
                   size="lg"
                 >
@@ -106,16 +101,12 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-text-secondary">User ID:</span>
-                <p className="text-text-primary font-mono text-xs break-all mt-1">
-                  {user.id}
-                </p>
+                <p className="text-text-primary font-mono text-xs break-all mt-1">{user.id}</p>
               </div>
               {user.created_at && (
                 <div>
                   <span className="text-text-secondary">Member Since:</span>
-                  <p className="text-text-primary mt-1">
-                    {formatDate(user.created_at)}
-                  </p>
+                  <p className="text-text-primary mt-1">{formatDate(user.created_at)}</p>
                 </div>
               )}
             </div>
@@ -143,15 +134,13 @@ export default function ProfilePage() {
                 Full Name
               </label>
               <div className="px-4 py-3 bg-background-light rounded-lg text-text-primary">
-                {user.name || 'Not set'}
+                {user.name || "Not set"}
               </div>
             </div>
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Role
-              </label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Role</label>
               <div className="px-4 py-3 bg-background-light rounded-lg text-text-primary">
                 {UserRoleLabels[user.role]}
               </div>
@@ -163,8 +152,8 @@ export default function ProfilePage() {
                 Account Status
               </label>
               <div className="px-4 py-3 bg-background-light rounded-lg">
-                <span className={user.is_active ? 'text-status-success' : 'text-status-error'}>
-                  {user.is_active ? 'Active' : 'Inactive'}
+                <span className={user.is_active ? "text-status-success" : "text-status-error"}>
+                  {user.is_active ? "Active" : "Inactive"}
                 </span>
               </div>
             </div>
@@ -198,9 +187,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1">
               <p className="font-medium text-text-primary">Google Account</p>
-              <p className="text-sm text-text-secondary">
-                Connected and verified
-              </p>
+              <p className="text-sm text-text-secondary">Connected and verified</p>
             </div>
             <Badge variant="success">Connected</Badge>
           </div>
@@ -210,14 +197,23 @@ export default function ProfilePage() {
       {/* Security Notice */}
       <Card padding="md">
         <div className="flex items-start gap-3 p-4 bg-status-info/10 rounded-lg">
-          <svg className="w-5 h-5 text-status-info flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          <svg
+            className="w-5 h-5 text-status-info flex-shrink-0 mt-0.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clipRule="evenodd"
+            />
           </svg>
           <div className="flex-1">
             <p className="font-medium text-status-info mb-1">Profile Management</p>
             <p className="text-sm text-status-info/80">
-              Your profile information is synced from your Google account. To update your name or picture,
-              please update your Google account settings. Role and permissions are managed by administrators.
+              Your profile information is synced from your Google account. To update your name or
+              picture, please update your Google account settings. Role and permissions are managed
+              by administrators.
             </p>
           </div>
         </div>

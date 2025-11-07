@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Dashboard Sidebar
@@ -8,13 +8,13 @@
  * - Mobile: Overlay sidebar with hamburger menu
  */
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth, useIsAdmin } from '@/src/lib/auth';
-import { useSidebar } from '@/src/contexts/SidebarContext';
-import { cn } from '@/src/lib/theme';
-import { UserRoleLabels } from '@/src/types/user';
-import { useEffect } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth, useIsAdmin } from "@/src/lib/auth";
+import { useSidebar } from "@/src/contexts/SidebarContext";
+import { cn } from "@/src/lib/theme";
+import { UserRoleLabels } from "@/src/types/user";
+import { useEffect } from "react";
 
 interface NavItem {
   href: string;
@@ -25,32 +25,32 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    href: '/dashboard',
-    label: 'Home',
-    icon: '🏠',
+    href: "/dashboard",
+    label: "Home",
+    icon: "🏠",
   },
   {
-    href: '/dashboard/users',
-    label: 'Users',
-    icon: '👥',
+    href: "/dashboard/users",
+    label: "Users",
+    icon: "👥",
     adminOnly: true,
   },
   {
-    href: '/dashboard/task-subjects',
-    label: 'Task Subjects',
-    icon: '📋',
+    href: "/dashboard/task-subjects",
+    label: "Task Subjects",
+    icon: "📋",
     adminOnly: true,
   },
   {
-    href: '/dashboard/analytics',
-    label: 'Analytics',
-    icon: '📊',
+    href: "/dashboard/analytics",
+    label: "Analytics",
+    icon: "📊",
     adminOnly: true,
   },
   {
-    href: '/dashboard/components',
-    label: 'Components',
-    icon: '🎨',
+    href: "/dashboard/components",
+    label: "Components",
+    icon: "🎨",
     adminOnly: true,
   },
 ];
@@ -67,7 +67,7 @@ export function Sidebar() {
   }, [pathname, closeMobileMenu]);
 
   // Filter nav items based on user role
-  const filteredNavItems = navItems.filter(item => {
+  const filteredNavItems = navItems.filter((item) => {
     if (item.adminOnly) {
       return isAdmin;
     }
@@ -89,38 +89,29 @@ export function Sidebar() {
       <aside
         className={cn(
           // Base styles
-          'bg-white border-r border-border-light h-screen flex flex-col',
-          'transition-all duration-300 ease-in-out',
+          "bg-white border-r border-border-light h-screen flex flex-col",
+          "transition-all duration-300 ease-in-out",
 
           // Mobile: fixed overlay (slides in from left)
-          'fixed inset-y-0 left-0 z-50 w-64',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          "fixed inset-y-0 left-0 z-50 w-64",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
 
           // Desktop: sticky positioning, always visible, responsive width
-          'lg:sticky lg:top-0',
-          isCollapsed ? 'lg:w-20' : 'lg:w-64'
+          "lg:sticky lg:top-0",
+          isCollapsed ? "lg:w-20" : "lg:w-64"
         )}
       >
         {/* Logo */}
-        <div className={cn(
-          'p-6 border-b border-border-light',
-          isCollapsed && 'px-4'
-        )}>
+        <div className={cn("p-6 border-b border-border-light", isCollapsed && "px-4")}>
           <Link href="/dashboard" className="block">
             {isCollapsed ? (
               // Collapsed: Show vertical/square icon
-              <img
-                src="/icon.png"
-                alt="EarthEnable Hub"
-                className="w-12 h-12 mx-auto"
-              />
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/icon.png" alt="EarthEnable Hub" className="w-12 h-12 mx-auto" />
             ) : (
               // Expanded: Show full horizontal logo
-              <img
-                src="/logo.svg"
-                alt="EarthEnable Hub"
-                className="w-full max-w-[180px] h-auto"
-              />
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/logo.svg" alt="EarthEnable Hub" className="w-full max-w-[180px] h-auto" />
             )}
           </Link>
         </div>
@@ -129,18 +120,18 @@ export function Sidebar() {
         <button
           onClick={toggleCollapsed}
           className={cn(
-            'hidden lg:flex absolute -right-3 top-24 z-10',
-            'w-6 h-6 rounded-full bg-white border-2 border-border-light',
-            'items-center justify-center',
-            'hover:bg-background-light transition-colors',
-            'focus:outline-none focus:ring-2 focus:ring-primary'
+            "hidden lg:flex absolute -right-3 top-24 z-10",
+            "w-6 h-6 rounded-full bg-white border-2 border-border-light",
+            "items-center justify-center",
+            "hover:bg-background-light transition-colors",
+            "focus:outline-none focus:ring-2 focus:ring-primary"
           )}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg
             className={cn(
-              'w-3 h-3 text-text-secondary transition-transform',
-              isCollapsed && 'rotate-180'
+              "w-3 h-3 text-text-secondary transition-transform",
+              isCollapsed && "rotate-180"
             )}
             fill="none"
             stroke="currentColor"
@@ -159,20 +150,21 @@ export function Sidebar() {
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {filteredNavItems.map((item) => {
-              const isActive = pathname === item.href ||
-                              (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-lg font-body transition-colors',
-                      'focus:outline-none focus:ring-2 focus:ring-primary',
+                      "flex items-center gap-3 px-4 py-3 rounded-lg font-body transition-colors",
+                      "focus:outline-none focus:ring-2 focus:ring-primary",
                       isActive
-                        ? 'bg-primary text-white'
-                        : 'text-text-primary hover:bg-background-light',
-                      isCollapsed && 'justify-center px-2'
+                        ? "bg-primary text-white"
+                        : "text-text-primary hover:bg-background-light",
+                      isCollapsed && "justify-center px-2"
                     )}
                     title={isCollapsed ? item.label : undefined}
                   >
@@ -190,6 +182,7 @@ export function Sidebar() {
           <div className="p-4 border-t border-border-light bg-background-light">
             <div className="flex items-center gap-3">
               {user.picture ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={user.picture}
                   alt={user.name || user.email}
@@ -205,7 +198,7 @@ export function Sidebar() {
                   {user.name || user.email}
                 </p>
                 <p className="text-xs text-text-secondary truncate">
-                  {user.role ? UserRoleLabels[user.role] : 'Loading...'}
+                  {user.role ? UserRoleLabels[user.role] : "Loading..."}
                 </p>
               </div>
             </div>
@@ -216,6 +209,7 @@ export function Sidebar() {
         {user && isCollapsed && (
           <div className="p-4 border-t border-border-light flex justify-center">
             {user.picture ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={user.picture}
                 alt={user.name || user.email}

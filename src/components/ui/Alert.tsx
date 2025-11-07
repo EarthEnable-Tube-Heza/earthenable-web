@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Alert Component
@@ -7,15 +7,14 @@
  * Features cream background with colored left border.
  */
 
-import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/src/lib/theme';
-import { theme } from '@/src/lib/theme/constants';
+import { HTMLAttributes, forwardRef } from "react";
+import { cn } from "@/src/lib/theme";
 
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * Alert variant/type
    */
-  variant?: 'info' | 'success' | 'warning' | 'error';
+  variant?: "info" | "success" | "warning" | "error";
 
   /**
    * Alert title
@@ -43,7 +42,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
     {
       children,
       className,
-      variant = 'info',
+      variant = "info",
       title,
       showIcon = true,
       dismissible = false,
@@ -99,24 +98,24 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
     // Color mapping matching mobile app
     const colorMap = {
       success: {
-        border: 'border-l-status-success',
-        icon: 'text-status-success',
-        title: 'text-status-success',
+        border: "border-l-status-success",
+        icon: "text-status-success",
+        title: "text-status-success",
       },
       warning: {
-        border: 'border-l-status-warning',
-        icon: 'text-status-warning',
-        title: 'text-status-warning',
+        border: "border-l-status-warning",
+        icon: "text-status-warning",
+        title: "text-status-warning",
       },
       error: {
-        border: 'border-l-status-error',
-        icon: 'text-status-error',
-        title: 'text-status-error',
+        border: "border-l-status-error",
+        icon: "text-status-error",
+        title: "text-status-error",
       },
       info: {
-        border: 'border-l-primary',
-        icon: 'text-primary',
-        title: 'text-primary',
+        border: "border-l-primary",
+        icon: "text-primary",
+        title: "text-primary",
       },
     };
 
@@ -126,9 +125,9 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         role="alert"
         className={cn(
           // Base styles matching mobile app's ThemedAlert
-          'relative p-4 rounded-lg border-l-[6px]',
-          'bg-background-primary', // #F7EDDB - Cream background
-          'shadow-md',
+          "relative p-4 rounded-lg border-l-[6px]",
+          "bg-background-primary", // #F7EDDB - Cream background
+          "shadow-md",
 
           // Variant border color
           colorMap[variant].border,
@@ -141,29 +140,20 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
         <div className="flex gap-3">
           {/* Icon */}
           {showIcon && (
-            <div className={cn('flex-shrink-0', colorMap[variant].icon)}>
-              {iconMap[variant]}
-            </div>
+            <div className={cn("flex-shrink-0", colorMap[variant].icon)}>{iconMap[variant]}</div>
           )}
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             {/* Title */}
             {title && (
-              <h4
-                className={cn(
-                  'font-heading font-bold text-base mb-1',
-                  colorMap[variant].title
-                )}
-              >
+              <h4 className={cn("font-heading font-bold text-base mb-1", colorMap[variant].title)}>
                 {title}
               </h4>
             )}
 
             {/* Message */}
-            <div className="text-sm text-text-secondary font-body leading-relaxed">
-              {children}
-            </div>
+            <div className="text-sm text-text-secondary font-body leading-relaxed">{children}</div>
           </div>
 
           {/* Dismiss button */}
@@ -172,19 +162,14 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
               type="button"
               onClick={onDismiss}
               className={cn(
-                'flex-shrink-0 rounded-md p-1.5',
-                'hover:bg-secondary/10 transition-colors',
-                'text-text-secondary hover:text-text-primary',
-                'focus:outline-none focus:ring-2 focus:ring-primary'
+                "flex-shrink-0 rounded-md p-1.5",
+                "hover:bg-secondary/10 transition-colors",
+                "text-text-secondary hover:text-text-primary",
+                "focus:outline-none focus:ring-2 focus:ring-primary"
               )}
               aria-label="Dismiss"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -200,4 +185,4 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
   }
 );
 
-Alert.displayName = 'Alert';
+Alert.displayName = "Alert";

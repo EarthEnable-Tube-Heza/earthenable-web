@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Dashboard Header
@@ -7,15 +7,15 @@
  * Responsive design for mobile, tablet, and desktop.
  */
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth, useTokenExpiry } from '@/src/lib/auth';
-import { useSidebar } from '@/src/contexts/SidebarContext';
-import { Menu } from '@headlessui/react';
-import { cn } from '@/src/lib/theme';
-import { UserRoleLabels } from '@/src/types/user';
-import { Breadcrumbs } from './Breadcrumbs';
-import { Toast } from '@/src/components/ui/Toast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth, useTokenExpiry } from "@/src/lib/auth";
+import { useSidebar } from "@/src/contexts/SidebarContext";
+import { Menu } from "@headlessui/react";
+import { cn } from "@/src/lib/theme";
+import { UserRoleLabels } from "@/src/types/user";
+import { Breadcrumbs } from "./Breadcrumbs";
+import { Toast } from "@/src/components/ui/Toast";
 
 export function Header() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export function Header() {
       const timeSinceLastToast = now - lastToastShown;
       const shouldShow =
         (minutesRemaining <= 5 && timeSinceLastToast > 2 * 60 * 1000) || // Critical: every 2 min
-        (timeSinceLastToast > 5 * 60 * 1000); // Normal: every 5 min
+        timeSinceLastToast > 5 * 60 * 1000; // Normal: every 5 min
 
       if (shouldShow) {
         setShowExpiryToast(true);
@@ -54,9 +54,9 @@ export function Header() {
     try {
       setIsSigningOut(true);
       await signOut();
-      router.push('/auth/signin');
+      router.push("/auth/signin");
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
       setIsSigningOut(false);
     }
   };
@@ -65,10 +65,10 @@ export function Header() {
    * Format time remaining
    */
   const formatTimeRemaining = (ms: number | null): string => {
-    if (!ms) return '';
+    if (!ms) return "";
     const minutes = Math.floor(ms / 1000 / 60);
-    if (minutes < 1) return 'less than 1 minute';
-    if (minutes === 1) return '1 minute';
+    if (minutes < 1) return "less than 1 minute";
+    if (minutes === 1) return "1 minute";
     return `${minutes} minutes`;
   };
 
@@ -83,8 +83,18 @@ export function Header() {
             className="lg:hidden p-2 rounded-lg hover:bg-background-light transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Toggle menu"
           >
-            <svg className="w-6 h-6 text-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-6 h-6 text-text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
 
@@ -101,6 +111,7 @@ export function Header() {
             <Menu as="div" className="relative">
               <Menu.Button className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-background-light transition-colors">
                 {user.picture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.picture}
                     alt={user.name || user.email}
@@ -112,11 +123,9 @@ export function Header() {
                   </div>
                 )}
                 <div className="text-left hidden md:block">
-                  <p className="text-sm font-medium text-text-primary">
-                    {user.name || user.email}
-                  </p>
+                  <p className="text-sm font-medium text-text-primary">{user.name || user.email}</p>
                   <p className="text-xs text-text-secondary">
-                    {user.role ? UserRoleLabels[user.role] : 'Loading...'}
+                    {user.role ? UserRoleLabels[user.role] : "Loading..."}
                   </p>
                 </div>
                 <svg
@@ -139,10 +148,10 @@ export function Header() {
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        onClick={() => router.push('/dashboard/profile')}
+                        onClick={() => router.push("/dashboard/profile")}
                         className={cn(
-                          'flex items-center gap-3 w-full px-4 py-2 text-sm text-left',
-                          active ? 'bg-background-light' : ''
+                          "flex items-center gap-3 w-full px-4 py-2 text-sm text-left",
+                          active ? "bg-background-light" : ""
                         )}
                       >
                         <span>👤</span>
@@ -154,10 +163,10 @@ export function Header() {
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        onClick={() => router.push('/dashboard/settings')}
+                        onClick={() => router.push("/dashboard/settings")}
                         className={cn(
-                          'flex items-center gap-3 w-full px-4 py-2 text-sm text-left',
-                          active ? 'bg-background-light' : ''
+                          "flex items-center gap-3 w-full px-4 py-2 text-sm text-left",
+                          active ? "bg-background-light" : ""
                         )}
                       >
                         <span>⚙️</span>
@@ -174,13 +183,13 @@ export function Header() {
                         onClick={handleSignOut}
                         disabled={isSigningOut}
                         className={cn(
-                          'flex items-center gap-3 w-full px-4 py-2 text-sm text-left text-status-error',
-                          active ? 'bg-status-error/10' : '',
-                          isSigningOut ? 'opacity-50 cursor-not-allowed' : ''
+                          "flex items-center gap-3 w-full px-4 py-2 text-sm text-left text-status-error",
+                          active ? "bg-status-error/10" : "",
+                          isSigningOut ? "opacity-50 cursor-not-allowed" : ""
                         )}
                       >
                         <span>🚪</span>
-                        <span>{isSigningOut ? 'Signing out...' : 'Sign Out'}</span>
+                        <span>{isSigningOut ? "Signing out..." : "Sign Out"}</span>
                       </button>
                     )}
                   </Menu.Item>
