@@ -10,6 +10,11 @@ jobs:
     name: Deploy to Vercel Preview
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
     environment:
       name: preview
       url: ${{ steps.deploy.outputs.preview_url }}

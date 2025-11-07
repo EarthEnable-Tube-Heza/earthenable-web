@@ -9,6 +9,11 @@ jobs:
     name: Deploy to Vercel Production
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      pull-requests: read
+      issues: read
+
     environment:
       name: production
       url: https://earthenable-web.vercel.app
