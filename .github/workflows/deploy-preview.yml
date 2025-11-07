@@ -56,6 +56,17 @@ jobs:
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Debug - Check embedded API URL in build
+        run: |
+          echo "Checking for API URLs in built files..."
+          grep -r "localhost:8000" .vercel/output/static/_next/ || echo "✓ No localhost:8000 found"
+          grep -r "api.earthenable.org" .vercel/output/static/_next/ || echo "✗ No api.earthenable.org found"
+          echo "Checking config bundle..."
+          find .vercel/output/static/_next/ -name "*.js" -exec grep -l "NEXT_PUBLIC_API_BASE_URL\|baseUrl" {} \; | head -3 | while read file; do
+            echo "=== $file ==="
+            grep -o "baseUrl[^,}]*" "$file" | head -2
+          done
+
       - name: Deploy Project Artifacts to Vercel Preview
         id: deploy
         run: |
