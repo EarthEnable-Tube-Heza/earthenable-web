@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Sign In Page
@@ -6,14 +6,18 @@
  * Google OAuth authentication page for EarthEnable Dashboard.
  */
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useAuth } from '@/src/lib/auth';
-import { config } from '@/src/lib/config';
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { useAuth } from "@/src/lib/auth";
+import { config } from "@/src/lib/config";
 
-export default function SignInPage() {
+/**
+ * SignInContent Component
+ * Handles the sign-in logic with search params
+ */
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, isAuthenticated, isLoading, error: authError } = useAuth();
@@ -23,7 +27,7 @@ export default function SignInPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const redirect = searchParams.get('redirect') || '/dashboard';
+      const redirect = searchParams.get("redirect") || "/dashboard";
       router.push(redirect);
     }
   }, [isAuthenticated, isLoading, router, searchParams]);
@@ -37,19 +41,21 @@ export default function SignInPage() {
       setError(null);
 
       if (!credentialResponse.credential) {
-        throw new Error('No credential received from Google');
+        throw new Error("No credential received from Google");
       }
 
       // Sign in with Google token
       await signIn(credentialResponse.credential);
 
       // Redirect to intended destination or dashboard
-      const redirect = searchParams.get('redirect') || '/dashboard';
+      const redirect = searchParams.get("redirect") || "/dashboard";
       router.push(redirect);
     } catch (err) {
-      console.error('Sign in error:', err);
+      console.error("Sign in error:", err);
       const error = err as { response?: { data?: { detail?: string } }; message?: string };
-      setError(error.response?.data?.detail || error.message || 'Failed to sign in. Please try again.');
+      setError(
+        error.response?.data?.detail || error.message || "Failed to sign in. Please try again."
+      );
       setIsSigningIn(false);
     }
   };
@@ -58,7 +64,7 @@ export default function SignInPage() {
    * Handle Google OAuth error
    */
   const handleGoogleError = () => {
-    setError('Google sign-in was cancelled or failed. Please try again.');
+    setError("Google sign-in was cancelled or failed. Please try again.");
     setIsSigningIn(false);
   };
 
@@ -90,7 +96,8 @@ export default function SignInPage() {
             Configuration Error
           </h2>
           <p className="text-text-secondary mb-4">
-            Google Client ID is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file.
+            Google Client ID is not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your
+            .env.local file.
           </p>
           <p className="text-text-disabled text-sm">
             Contact your system administrator for assistance.
@@ -116,9 +123,7 @@ export default function SignInPage() {
                 className="h-auto"
               />
             </div>
-            <p className="text-xl text-text-secondary font-body">
-              Dashboard Sign In
-            </p>
+            <p className="text-xl text-text-secondary font-body">Dashboard Sign In</p>
           </div>
 
           {/* Sign In Card */}
@@ -166,7 +171,8 @@ export default function SignInPage() {
             {/* Info Note */}
             <div className="mt-6 p-4 bg-background-light rounded-md">
               <p className="text-text-secondary text-xs text-center">
-                <strong>Note:</strong> Only authorized @{config.app.companyDomain} accounts can access this dashboard.
+                <strong>Note:</strong> Only authorized @{config.app.companyDomain} accounts can
+                access this dashboard.
               </p>
             </div>
           </div>
@@ -180,5 +186,26 @@ export default function SignInPage() {
         </div>
       </div>
     </GoogleOAuthProvider>
+  );
+}
+
+/**
+ * SignInPage Component
+ * Wraps SignInContent with Suspense boundary for useSearchParams
+ */
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background-primary">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-text-secondary">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }
