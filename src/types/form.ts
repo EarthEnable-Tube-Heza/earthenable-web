@@ -5,17 +5,54 @@
  */
 
 /**
+ * TaskSubject (evaluation type)
+ */
+export interface TaskSubject {
+  id: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+/**
+ * Create task subject request
+ */
+export interface CreateTaskSubject {
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+}
+
+/**
+ * Paginated task subjects response
+ */
+export interface PaginatedTaskSubjectsResponse {
+  items: TaskSubject[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+/**
  * TaskSubject form mapping
  */
 export interface TaskSubjectForm {
   id: string;
   task_subject_id: string;
   task_subject_name: string;
-  country_code: string;
+  country_code: string | null;
   formyoula_form_id: string;
   is_default: boolean;
-  created_at: string;
-  updated_at: string;
+}
+
+/**
+ * Create form mapping request
+ */
+export interface CreateFormMapping {
+  task_subject_id: string;
+  country_code?: string | null;
+  formyoula_form_id: string;
+  is_default?: boolean;
 }
 
 /**
@@ -33,4 +70,5 @@ export interface PaginatedFormMappingsResponse {
   total: number;
   skip: number;
   limit: number;
+  has_more: boolean;
 }

@@ -22,7 +22,11 @@ import {
   UserRole,
   PaginatedUsersResponse,
   UserStatsResponse,
+  TaskSubject,
+  CreateTaskSubject,
+  PaginatedTaskSubjectsResponse,
   TaskSubjectForm,
+  CreateFormMapping,
   PaginatedFormMappingsResponse,
   UpdateFormMapping,
 } from "../../types";
@@ -327,6 +331,29 @@ class APIClient {
   }
 
   // ============================================================================
+  // TASK SUBJECTS (Admin only)
+  // ============================================================================
+
+  /**
+   * Get paginated list of task subjects with optional filters
+   */
+  async getTaskSubjects(params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    is_active?: boolean;
+  }): Promise<PaginatedTaskSubjectsResponse> {
+    return this.get<PaginatedTaskSubjectsResponse>("/admin/task-subjects", { params });
+  }
+
+  /**
+   * Create a new task subject
+   */
+  async createTaskSubject(data: CreateTaskSubject): Promise<TaskSubject> {
+    return this.post<TaskSubject>("/admin/task-subjects", data);
+  }
+
+  // ============================================================================
   // FORM MANAGEMENT (Admin only)
   // ============================================================================
 
@@ -340,6 +367,13 @@ class APIClient {
     task_subject_id?: string;
   }): Promise<PaginatedFormMappingsResponse> {
     return this.get<PaginatedFormMappingsResponse>("/admin/forms/mappings", { params });
+  }
+
+  /**
+   * Create a new form mapping
+   */
+  async createFormMapping(data: CreateFormMapping): Promise<TaskSubjectForm> {
+    return this.post<TaskSubjectForm>("/admin/forms/mappings", data);
   }
 
   /**
