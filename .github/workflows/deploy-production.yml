@@ -39,11 +39,22 @@ jobs:
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Create production environment file
+        run: |
+          cat << EOF > .env.production.local
+          NEXT_PUBLIC_API_BASE_URL=https://api.earthenable.org
+          NEXT_PUBLIC_API_VERSION=v1
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_APP_NAME=EarthEnable Dashboard
+          NEXT_PUBLIC_COMPANY_DOMAIN=earthenable.org
+          NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10
+          NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2
+          NEXT_PUBLIC_API_TIMEOUT=30000
+          EOF
+          echo "Environment file created:"
+          cat .env.production.local
+
       - name: Build Project Artifacts
-        env:
-          NEXT_PUBLIC_API_BASE_URL: https://api.earthenable.org
-          NEXT_PUBLIC_API_VERSION: v1
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel Production
