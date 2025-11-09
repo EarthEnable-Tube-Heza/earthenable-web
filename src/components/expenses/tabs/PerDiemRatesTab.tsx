@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/components/ui";
+import { Plus, XCircle, Save, Target, User, Edit, Info, CheckCircle } from "@/src/lib/icons";
 
 export function PerDiemRatesTab() {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -70,14 +71,24 @@ export function PerDiemRatesTab() {
           </p>
         </div>
         <Button variant="primary" onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? "❌ Cancel" : "➕ Create Rate"}
+          {showCreateForm ? (
+            <>
+              <XCircle className="w-4 h-4 mr-2" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Rate
+            </>
+          )}
         </Button>
       </div>
 
       {/* Info Banner */}
       <Card variant="bordered" padding="md">
         <div className="flex items-start gap-3">
-          <div className="text-2xl">💡</div>
+          <Info className="w-6 h-6 text-info flex-shrink-0 mt-1" />
           <div className="flex-1">
             <h4 className="font-semibold text-text-primary mb-1">How Per Diem Rates Work</h4>
             <p className="text-sm text-text-secondary">
@@ -93,9 +104,10 @@ export function PerDiemRatesTab() {
       {/* Create Rate Form */}
       {showCreateForm && (
         <Card variant="bordered" padding="md">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">
-            ➕ Create New Per Diem Rate
-          </h3>
+          <div className="flex items-center gap-2 mb-4">
+            <Plus className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-text-primary">Create New Per Diem Rate</h3>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -138,7 +150,8 @@ export function PerDiemRatesTab() {
 
             <div className="flex gap-3">
               <Button type="submit" variant="primary" loading={loading}>
-                💾 Create Rate
+                <Save className="w-4 h-4 mr-2" />
+                Create Rate
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
                 Cancel
@@ -156,7 +169,7 @@ export function PerDiemRatesTab() {
       ) : rates.length === 0 ? (
         <Card variant="bordered">
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎯</div>
+            <Target className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
             <h3 className="text-lg font-semibold text-text-primary mb-2">
               No per diem rates configured
             </h3>
@@ -165,7 +178,8 @@ export function PerDiemRatesTab() {
             </p>
             {!showCreateForm && (
               <Button variant="primary" onClick={() => setShowCreateForm(true)}>
-                ➕ Create Rate
+                <Plus className="w-4 h-4 mr-2" />
+                Create Rate
               </Button>
             )}
           </div>
@@ -186,13 +200,16 @@ export function PerDiemRatesTab() {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ).map(([designation, designationRates]: [string, any]) => (
             <Card key={designation} variant="bordered" padding="md">
-              <h3 className="text-lg font-semibold text-text-primary mb-4">👤 {designation}</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <User className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold text-text-primary">{designation}</h3>
+              </div>
 
               <div className="space-y-3">
                 {}
                 {designationRates
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .sort(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (a: any, b: any) =>
                       new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
                   )
@@ -228,7 +245,8 @@ export function PerDiemRatesTab() {
 
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm">
-                          ✏️ Edit
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
                         </Button>
                         {rate.is_active ? (
                           <Button
@@ -236,11 +254,13 @@ export function PerDiemRatesTab() {
                             size="sm"
                             onClick={() => handleDeactivate(rate.id)}
                           >
-                            🚫 Deactivate
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Deactivate
                           </Button>
                         ) : (
                           <Button variant="ghost" size="sm" onClick={() => handleActivate(rate.id)}>
-                            ✅ Activate
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Activate
                           </Button>
                         )}
                       </div>

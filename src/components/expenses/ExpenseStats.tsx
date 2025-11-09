@@ -6,41 +6,14 @@
  * Displays high-level expense statistics overview
  */
 
-import { useEffect, useState } from "react";
 import { Card, Badge, Spinner } from "@/src/components/ui";
-
-interface ExpenseSummary {
-  total_count: number;
-  total_amount: number;
-  draft_count: number;
-  submitted_count: number;
-  approved_count: number;
-  rejected_count: number;
-  paid_count: number;
-}
+import { useExpenseSummary } from "@/src/hooks/useExpenses";
+import { BarChart, FileText, Clock, CheckCircle, XCircle, DollarSign } from "@/src/lib/icons";
 
 export function ExpenseStats() {
-  const [stats, setStats] = useState<ExpenseSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: stats, isLoading, error } = useExpenseSummary();
 
-  useEffect(() => {
-    // TODO: Fetch from API when implemented
-    // For now, using mock data
-    setTimeout(() => {
-      setStats({
-        total_count: 0,
-        total_amount: 0,
-        draft_count: 0,
-        submitted_count: 0,
-        approved_count: 0,
-        rejected_count: 0,
-        paid_count: 0,
-      });
-      setLoading(false);
-    }, 500);
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <div className="flex items-center justify-center py-8">
@@ -50,7 +23,7 @@ export function ExpenseStats() {
     );
   }
 
-  if (!stats) {
+  if (error || !stats) {
     return (
       <Card variant="bordered">
         <div className="text-center py-4 text-text-secondary">
@@ -73,37 +46,37 @@ export function ExpenseStats() {
       label: "Total Expenses",
       value: stats.total_count,
       sublabel: formatCurrency(stats.total_amount),
-      icon: "📊",
+      icon: <BarChart className="w-6 h-6" />,
       color: "text-blue",
     },
     {
       label: "Draft",
       value: stats.draft_count,
-      icon: "📝",
+      icon: <FileText className="w-6 h-6" />,
       badge: "default" as const,
     },
     {
       label: "Pending Approval",
       value: stats.submitted_count,
-      icon: "⏳",
+      icon: <Clock className="w-6 h-6" />,
       badge: "warning" as const,
     },
     {
       label: "Approved",
       value: stats.approved_count,
-      icon: "✅",
+      icon: <CheckCircle className="w-6 h-6" />,
       badge: "success" as const,
     },
     {
       label: "Rejected",
       value: stats.rejected_count,
-      icon: "❌",
+      icon: <XCircle className="w-6 h-6" />,
       badge: "error" as const,
     },
     {
       label: "Paid",
       value: stats.paid_count,
-      icon: "💸",
+      icon: <DollarSign className="w-6 h-6" />,
       badge: "success" as const,
     },
   ];
@@ -114,7 +87,7 @@ export function ExpenseStats() {
         <Card key={index} variant="bordered" padding="md">
           <div className="flex flex-col">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">{stat.icon}</span>
+              <span className="text-primary">{stat.icon}</span>
               {stat.badge && (
                 <Badge variant={stat.badge} size="sm">
                   {stat.value}

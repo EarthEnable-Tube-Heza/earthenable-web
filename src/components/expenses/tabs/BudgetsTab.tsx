@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/components/ui";
+import { Plus, XCircle, Save, Briefcase, Edit, BarChart, Trash2 } from "@/src/lib/icons";
 
 export function BudgetsTab() {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -73,14 +74,27 @@ export function BudgetsTab() {
           </p>
         </div>
         <Button variant="primary" onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? "❌ Cancel" : "➕ Create Budget"}
+          {showCreateForm ? (
+            <>
+              <XCircle className="w-4 h-4 mr-2" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Budget
+            </>
+          )}
         </Button>
       </div>
 
       {/* Create Budget Form */}
       {showCreateForm && (
         <Card variant="bordered" padding="md">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">➕ Create New Budget</h3>
+          <div className="flex items-center gap-2 mb-4">
+            <Plus className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold text-text-primary">Create New Budget</h3>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <LabeledSelect
@@ -158,7 +172,8 @@ export function BudgetsTab() {
 
             <div className="flex gap-3">
               <Button type="submit" variant="primary" loading={loading}>
-                💾 Create Budget
+                <Save className="w-4 h-4 mr-2" />
+                Create Budget
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
                 Cancel
@@ -176,14 +191,15 @@ export function BudgetsTab() {
       ) : budgets.length === 0 ? (
         <Card variant="bordered">
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">💼</div>
+            <Briefcase className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
             <h3 className="text-lg font-semibold text-text-primary mb-2">No budgets configured</h3>
             <p className="text-text-secondary mb-4">
               Create your first budget to start tracking expenses against limits.
             </p>
             {!showCreateForm && (
               <Button variant="primary" onClick={() => setShowCreateForm(true)}>
-                ➕ Create Budget
+                <Plus className="w-4 h-4 mr-2" />
+                Create Budget
               </Button>
             )}
           </div>
@@ -256,13 +272,16 @@ export function BudgetsTab() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
-                    ✏️ Edit
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
                   </Button>
                   <Button variant="ghost" size="sm">
-                    📊 View Details
+                    <BarChart className="w-4 h-4 mr-1" />
+                    View Details
                   </Button>
                   <Button variant="ghost" size="sm">
-                    🗑️ Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Delete
                   </Button>
                 </div>
               </Card>

@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { Input, Button, LabeledSelect, Badge, Card, Spinner } from "@/src/components/ui";
+import { Search, RefreshCw, BarChart, FileText, CheckCircle, XCircle, Eye } from "@/src/lib/icons";
 
 export function AllExpensesTab() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,9 +93,10 @@ export function AllExpensesTab() {
     <div className="space-y-6">
       {/* Advanced Search Filters */}
       <Card variant="bordered" padding="md">
-        <h3 className="text-lg font-semibold text-text-primary mb-4">
-          🔍 Advanced Search & Filters
-        </h3>
+        <div className="flex items-center gap-2 mb-4">
+          <Search className="w-5 h-5 text-primary" />
+          <h3 className="text-lg font-semibold text-text-primary">Advanced Search & Filters</h3>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Basic Search */}
@@ -196,12 +198,17 @@ export function AllExpensesTab() {
         {/* Action Buttons */}
         <div className="flex gap-3 mt-4">
           <Button variant="primary" onClick={handleSearch}>
-            🔍 Search
+            <Search className="w-4 h-4 mr-2" />
+            Search
           </Button>
           <Button variant="outline" onClick={handleReset}>
-            🔄 Reset Filters
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Reset Filters
           </Button>
-          <Button variant="secondary">📊 Export Results</Button>
+          <Button variant="secondary">
+            <BarChart className="w-4 h-4 mr-2" />
+            Export Results
+          </Button>
         </div>
       </Card>
 
@@ -213,7 +220,7 @@ export function AllExpensesTab() {
       ) : expenses.length === 0 ? (
         <Card variant="bordered">
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📋</div>
+            <FileText className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
             <h3 className="text-lg font-semibold text-text-primary mb-2">No expenses found</h3>
             <p className="text-text-secondary">
               Try adjusting your search filters or check back later.
@@ -261,15 +268,18 @@ export function AllExpensesTab() {
                   {expense.status === "submitted" && (
                     <>
                       <Button variant="primary" size="sm" onClick={() => handleApprove(expense.id)}>
-                        ✅ Approve
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Approve
                       </Button>
                       <Button variant="danger" size="sm" onClick={() => handleReject(expense.id)}>
-                        ❌ Reject
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Reject
                       </Button>
                     </>
                   )}
                   <Button variant="ghost" size="sm">
-                    👁️ View Details
+                    <Eye className="w-4 h-4 mr-1" />
+                    View Details
                   </Button>
                 </div>
               </div>

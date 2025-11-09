@@ -7,9 +7,23 @@
  */
 
 import { useState } from "react";
-import { Input, Button, LabeledSelect, Textarea, Card } from "@/src/components/ui";
+import { Input, Button, LabeledSelect, Textarea, Card, Spinner } from "@/src/components/ui";
+import {
+  useCreateExpense,
+  useCalculatePerDiem,
+  useDepartments,
+  useExpenseCategories,
+} from "@/src/hooks/useExpenses";
+import { useAuth } from "@/src/lib/auth";
+import { Save, Check, XCircle, Info } from "@/src/lib/icons";
 
 export function NewRequestTab() {
+  const { user } = useAuth();
+  const { data: departments, isLoading: loadingDepartments } = useDepartments();
+  const { data: categories, isLoading: loadingCategories } = useExpenseCategories();
+  const createMutation = useCreateExpense();
+  const perDiemMutation = useCalculatePerDiem();
+
   const [formData, setFormData] = useState({
     expenseType: "expense",
     title: "",
@@ -25,17 +39,28 @@ export function NewRequestTab() {
   const [perDiemDesignation, setPerDiemDesignation] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [perDiemCalculation, setPerDiemCalculation] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    // TODO: API call to create expense
-    console.log("Creating expense:", formData);
+    if (!user?.entity_id) {
+      alert("User entity not found");
+      return;
+    }
 
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await createMutation.mutateAsync({
+        entityId: user.entity_id,
+        departmentId: formData.departmentId,
+        categoryId: formData.categoryId,
+        expenseType: formData.expenseType as "expense" | "per_diem" | "advance",
+        title: formData.title,
+        amount: parseFloat(formData.amount),
+        currency: formData.currency,
+        expenseDate: formData.expenseDate,
+        description: formData.description || undefined,
+      });
+
       alert("Expense created successfully!");
       // Reset form
       setFormData({
@@ -48,7 +73,11 @@ export function NewRequestTab() {
         categoryId: "",
         departmentId: "",
       });
-    }, 1000);
+      setPerDiemCalculation(null);
+    } catch (error) {
+      alert("Failed to create expense");
+      console.error(error);
+    }
   };
 
   const calculatePerDiem = async () => {
@@ -57,20 +86,30 @@ export function NewRequestTab() {
       return;
     }
 
-    // TODO: API call to calculate per diem
-    const mockCalculation = {
-      designation: perDiemDesignation,
-      days: parseInt(perDiemDays),
-      rate_per_day: 25000,
-      total_amount: 25000 * parseInt(perDiemDays),
-    };
+    try {
+      const result = await perDiemMutation.mutateAsync({
+        designation: perDiemDesignation,
+        days: parseInt(perDiemDays),
+      });
 
-    setPerDiemCalculation(mockCalculation);
-    setFormData((prev) => ({
-      ...prev,
-      amount: String(mockCalculation.total_amount),
-    }));
+      setPerDiemCalculation(result);
+      setFormData((prev) => ({
+        ...prev,
+        amount: String(result.total_amount),
+      }));
+    } catch (error) {
+      alert("Failed to calculate per diem");
+      console.error(error);
+    }
   };
+
+  if (loadingDepartments || loadingCategories) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Spinner size="lg" variant="primary" />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -93,7 +132,10 @@ export function NewRequestTab() {
       {/* Per Diem Calculator */}
       {formData.expenseType === "per_diem" && (
         <Card variant="bordered" padding="md">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">💡 Per Diem Calculator</h3>
+          <div className="flex items-center gap-2 mb-4">
+            <Info className="w-5 h-5 text-info" />
+            <h3 className="text-lg font-semibold text-text-primary">Per Diem Calculator</h3>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
               label="Designation"
@@ -148,9 +190,10 @@ export function NewRequestTab() {
             onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
             options={[
               { value: "", label: "Select category" },
-              { value: "travel", label: "Travel" },
-              { value: "office", label: "Office Supplies" },
-              { value: "equipment", label: "Equipment" },
+              ...(categories?.categories || []).map((cat) => ({
+                value: cat.id,
+                label: cat.name,
+              })),
             ]}
             required
           />
@@ -190,9 +233,10 @@ export function NewRequestTab() {
             onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
             options={[
               { value: "", label: "Select department" },
-              { value: "ops", label: "Operations" },
-              { value: "fin", label: "Finance" },
-              { value: "hr", label: "Human Resources" },
+              ...(departments?.departments || []).map((dept) => ({
+                value: dept.id,
+                label: dept.name,
+              })),
             ]}
             required
           />
@@ -211,14 +255,17 @@ export function NewRequestTab() {
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        <Button type="submit" variant="primary" loading={loading}>
-          💾 Save as Draft
+        <Button type="submit" variant="primary" loading={createMutation.isPending}>
+          <Save className="w-4 h-4 mr-2" />
+          Save as Draft
         </Button>
-        <Button type="button" variant="secondary" loading={loading}>
-          ✅ Submit for Approval
+        <Button type="button" variant="secondary" loading={createMutation.isPending}>
+          <Check className="w-4 h-4 mr-2" />
+          Submit for Approval
         </Button>
         <Button type="button" variant="outline">
-          ❌ Cancel
+          <XCircle className="w-4 h-4 mr-2" />
+          Cancel
         </Button>
       </div>
     </form>
