@@ -6,31 +6,34 @@
  */
 
 // Form components
-export { Button } from './Button';
-export type { ButtonProps } from './Button';
+export { Button } from "./Button";
+export type { ButtonProps } from "./Button";
 
-export { Input } from './Input';
-export type { InputProps } from './Input';
+export { Input } from "./Input";
+export type { InputProps } from "./Input";
 
-export { Textarea } from './Textarea';
-export type { TextareaProps } from './Textarea';
+export { Textarea } from "./Textarea";
+export type { TextareaProps } from "./Textarea";
 
-export { Select } from './Select';
-export type { SelectProps } from './Select';
+export { Select } from "./Select";
+export type { SelectProps } from "./Select";
+
+export { LabeledSelect } from "./LabeledSelect";
+export type { LabeledSelectProps } from "./LabeledSelect";
 
 // Layout components
-export { Card } from './Card';
-export type { CardProps } from './Card';
+export { Card } from "./Card";
+export type { CardProps } from "./Card";
 
 // Feedback components
-export { Badge } from './Badge';
-export type { BadgeProps } from './Badge';
+export { Badge } from "./Badge";
+export type { BadgeProps } from "./Badge";
 
-export { Spinner } from './Spinner';
-export type { SpinnerProps } from './Spinner';
+export { Spinner } from "./Spinner";
+export type { SpinnerProps } from "./Spinner";
 
-export { Alert } from './Alert';
-export type { AlertProps } from './Alert';
+export { Alert } from "./Alert";
+export type { AlertProps } from "./Alert";
 
-export { Toast } from './Toast';
-export type { ToastProps, ToastType, ToastPosition } from './Toast';
+export { Toast } from "./Toast";
+export type { ToastProps, ToastType, ToastPosition } from "./Toast";

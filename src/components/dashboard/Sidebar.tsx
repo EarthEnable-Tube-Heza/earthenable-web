@@ -30,6 +30,11 @@ const navItems: NavItem[] = [
     icon: "🏠",
   },
   {
+    href: "/dashboard/expenses",
+    label: "Expenses",
+    icon: "💰",
+  },
+  {
     href: "/dashboard/users",
     label: "Users",
     icon: "👥",
