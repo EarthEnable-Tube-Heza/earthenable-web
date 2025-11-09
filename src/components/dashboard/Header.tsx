@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useTokenExpiry } from "@/src/lib/auth";
 import { useSidebar } from "@/src/contexts/SidebarContext";
+import { useScrollbarCompensation } from "@/src/hooks/useScrollbarCompensation";
 import { Menu } from "@headlessui/react";
 import { cn } from "@/src/lib/theme";
 import { UserRoleLabels } from "@/src/types/user";
@@ -25,6 +26,9 @@ export function Header() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showExpiryToast, setShowExpiryToast] = useState(false);
   const [lastToastShown, setLastToastShown] = useState<number>(0);
+
+  // Prevent layout shift when dropdown menu opens
+  useScrollbarCompensation();
 
   // Show toast when token is expiring (but not constantly)
   useEffect(() => {
