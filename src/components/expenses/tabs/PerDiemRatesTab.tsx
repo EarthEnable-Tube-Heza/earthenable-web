@@ -9,10 +9,10 @@
 import { useState } from "react";
 import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/components/ui";
 import { Plus, XCircle, Save, Target, User, Edit, Info, CheckCircle } from "@/src/lib/icons";
+import { usePerDiemRates, useCreatePerDiemRate } from "@/src/hooks/useExpenses";
 
 export function PerDiemRatesTab() {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     designation: "",
     ratePerDay: "",
@@ -21,19 +21,23 @@ export function PerDiemRatesTab() {
     isActive: true,
   });
 
-  // Mock data - will be replaced with API call
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rates: any[] = [];
+  const { data, isLoading } = usePerDiemRates();
+  const createPerDiemRate = useCreatePerDiemRate();
+
+  const rates = data?.rates || [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    // TODO: API call to create per diem rate
-    console.log("Creating per diem rate:", formData);
+    try {
+      await createPerDiemRate.mutateAsync({
+        designation: formData.designation,
+        ratePerDay: parseFloat(formData.ratePerDay),
+        currency: formData.currency,
+        effectiveDate: formData.effectiveDate,
+        isActive: formData.isActive,
+      });
 
-    setTimeout(() => {
-      setLoading(false);
       alert("Per diem rate created successfully!");
       setShowCreateForm(false);
       setFormData({
@@ -43,7 +47,10 @@ export function PerDiemRatesTab() {
         effectiveDate: new Date().toISOString().split("T")[0],
         isActive: true,
       });
-    }, 1000);
+    } catch (error) {
+      alert("Failed to create per diem rate. Please try again.");
+      console.error(error);
+    }
   };
 
   const handleDeactivate = async (rateId: string) => {
@@ -149,7 +156,7 @@ export function PerDiemRatesTab() {
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" variant="primary" loading={loading}>
+              <Button type="submit" variant="primary" loading={createPerDiemRate.isPending}>
                 <Save className="w-4 h-4 mr-2" />
                 Create Rate
               </Button>
@@ -162,7 +169,7 @@ export function PerDiemRatesTab() {
       )}
 
       {/* Rates List */}
-      {loading ? (
+      {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Spinner size="lg" variant="primary" />
         </div>

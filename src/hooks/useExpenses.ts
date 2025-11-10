@@ -192,3 +192,98 @@ export function usePerDiemRates() {
     enabled: !!entityId,
   });
 }
+
+/**
+ * Hook to create per diem rate
+ */
+export function useCreatePerDiemRate() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const entityId = user?.entity_id || "";
+
+  return useMutation({
+    mutationFn: (data: Parameters<typeof expenseAPI.createPerDiemRate>[1]) =>
+      expenseAPI.createPerDiemRate(entityId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["per-diem-rates"] });
+    },
+  });
+}
+
+/**
+ * Hook to get all entities
+ */
+export function useEntities() {
+  return useQuery({
+    queryKey: ["entities"],
+    queryFn: () => expenseAPI.getEntities(),
+  });
+}
+
+/**
+ * Hook to create entity
+ */
+export function useCreateEntity() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: expenseAPI.createEntity,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["entities"] });
+    },
+  });
+}
+
+/**
+ * Hook to update entity
+ */
+export function useUpdateEntity() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Parameters<typeof expenseAPI.updateEntity>[1];
+    }) => expenseAPI.updateEntity(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["entities"] });
+    },
+  });
+}
+
+/**
+ * Hook to create department
+ */
+export function useCreateDepartment() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const entityId = user?.entity_id || "";
+
+  return useMutation({
+    mutationFn: (data: Parameters<typeof expenseAPI.createDepartment>[1]) =>
+      expenseAPI.createDepartment(entityId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+  });
+}
+
+/**
+ * Hook to create expense category
+ */
+export function useCreateExpenseCategory() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const entityId = user?.entity_id || "";
+
+  return useMutation({
+    mutationFn: (data: Parameters<typeof expenseAPI.createExpenseCategory>[1]) =>
+      expenseAPI.createExpenseCategory(entityId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
+    },
+  });
+}

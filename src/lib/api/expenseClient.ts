@@ -46,14 +46,29 @@ export interface ExpenseSummary {
 
 export interface Department {
   id: string;
+  entity_id: string;
   name: string;
   code: string;
+  location?: string;
+  is_active: boolean;
+  gl_code?: string;
+  gl_class_id?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ExpenseCategory {
   id: string;
+  entity_id: string;
   name: string;
-  code?: string;
+  code: string;
+  description?: string;
+  requires_receipt: boolean;
+  is_active: boolean;
+  gl_code?: string;
+  gl_class_id?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PerDiemCalculation {
@@ -88,6 +103,20 @@ export interface PerDiemRate {
   effective_date: string;
   is_active: boolean;
   created_at: string;
+}
+
+export interface Entity {
+  id: string;
+  name: string;
+  code: string;
+  country_code: string;
+  currency: string;
+  is_active: boolean;
+  quickbooks_company_id?: string;
+  quickbooks_realm_id?: string;
+  quickbooks_enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -259,6 +288,153 @@ export async function getBudgets(entityId: string): Promise<{ budgets: Budget[] 
 export async function getPerDiemRates(entityId: string): Promise<{ rates: PerDiemRate[] }> {
   const response = await apiClient.get<{ rates: PerDiemRate[] }>(
     `/admin/entities/${entityId}/per-diem-rates`
+  );
+  return response;
+}
+
+/**
+ * Create per diem rate
+ */
+export async function createPerDiemRate(
+  entityId: string,
+  data: {
+    designation: string;
+    ratePerDay: number;
+    currency: string;
+    effectiveDate: string;
+    isActive?: boolean;
+  }
+): Promise<PerDiemRate> {
+  const response = await apiClient.post<PerDiemRate>(
+    `/admin/entities/${entityId}/per-diem-rates`,
+    {
+      designation: data.designation,
+      rate_per_day: data.ratePerDay,
+      currency: data.currency,
+      effective_date: data.effectiveDate,
+      is_active: data.isActive ?? true,
+    }
+  );
+  return response;
+}
+
+/**
+ * Get all entities
+ */
+export async function getEntities(): Promise<{ entities: Entity[] }> {
+  const response = await apiClient.get<{ entities: Entity[] }>("/admin/entities");
+  return response;
+}
+
+/**
+ * Create entity
+ */
+export async function createEntity(data: {
+  name: string;
+  code: string;
+  countryCode: string;
+  currency: string;
+  isActive?: boolean;
+  quickbooksCompanyId?: string;
+  quickbooksRealmId?: string;
+  quickbooksEnabled?: boolean;
+}): Promise<Entity> {
+  const response = await apiClient.post<Entity>("/admin/entities", {
+    name: data.name,
+    code: data.code,
+    country_code: data.countryCode,
+    currency: data.currency,
+    is_active: data.isActive ?? true,
+    quickbooks_company_id: data.quickbooksCompanyId,
+    quickbooks_realm_id: data.quickbooksRealmId,
+    quickbooks_enabled: data.quickbooksEnabled ?? false,
+  });
+  return response;
+}
+
+/**
+ * Update entity
+ */
+export async function updateEntity(
+  entityId: string,
+  data: Partial<{
+    name: string;
+    code: string;
+    countryCode: string;
+    currency: string;
+    isActive: boolean;
+    quickbooksCompanyId: string;
+    quickbooksRealmId: string;
+    quickbooksEnabled: boolean;
+  }>
+): Promise<Entity> {
+  const response = await apiClient.put<Entity>(`/admin/entities/${entityId}`, {
+    name: data.name,
+    code: data.code,
+    country_code: data.countryCode,
+    currency: data.currency,
+    is_active: data.isActive,
+    quickbooks_company_id: data.quickbooksCompanyId,
+    quickbooks_realm_id: data.quickbooksRealmId,
+    quickbooks_enabled: data.quickbooksEnabled,
+  });
+  return response;
+}
+
+/**
+ * Create department
+ */
+export async function createDepartment(
+  entityId: string,
+  data: {
+    name: string;
+    code: string;
+    location?: string;
+    isActive?: boolean;
+    glCode?: string;
+    glClassId?: string;
+  }
+): Promise<Department> {
+  const response = await apiClient.post<Department>(
+    `/admin/entities/${entityId}/departments`,
+    {
+      name: data.name,
+      code: data.code,
+      location: data.location,
+      is_active: data.isActive ?? true,
+      gl_code: data.glCode,
+      gl_class_id: data.glClassId,
+    }
+  );
+  return response;
+}
+
+/**
+ * Create expense category
+ */
+export async function createExpenseCategory(
+  entityId: string,
+  data: {
+    name: string;
+    code: string;
+    description?: string;
+    requiresReceipt?: boolean;
+    isActive?: boolean;
+    glCode?: string;
+    glClassId?: string;
+  }
+): Promise<ExpenseCategory> {
+  const response = await apiClient.post<ExpenseCategory>(
+    `/admin/entities/${entityId}/expense-categories`,
+    {
+      name: data.name,
+      code: data.code,
+      description: data.description,
+      requires_receipt: data.requiresReceipt ?? true,
+      is_active: data.isActive ?? true,
+      gl_code: data.glCode,
+      gl_class_id: data.glClassId,
+    }
   );
   return response;
 }
