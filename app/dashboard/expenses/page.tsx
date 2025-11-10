@@ -20,9 +20,12 @@ import { NewRequestTab } from "@/src/components/expenses/tabs/NewRequestTab";
 import { AllExpensesTab } from "@/src/components/expenses/tabs/AllExpensesTab";
 import { BudgetsTab } from "@/src/components/expenses/tabs/BudgetsTab";
 import { PerDiemRatesTab } from "@/src/components/expenses/tabs/PerDiemRatesTab";
+import { EntitiesTab } from "@/src/components/expenses/tabs/EntitiesTab";
+import { DepartmentsTab } from "@/src/components/expenses/tabs/DepartmentsTab";
+import { CategoriesTab } from "@/src/components/expenses/tabs/CategoriesTab";
 import { useIsAdmin } from "@/src/lib/auth";
 
-type TabId = "my-expenses" | "new-request" | "all-expenses" | "budgets" | "per-diem";
+type TabId = "my-expenses" | "new-request" | "all-expenses" | "budgets" | "per-diem" | "entities" | "departments" | "categories";
 
 interface Tab {
   id: TabId;
@@ -52,6 +55,24 @@ const tabs: Tab[] = [
     id: "budgets",
     label: "Budgets",
     icon: "💼",
+    adminOnly: true,
+  },
+  {
+    id: "entities",
+    label: "Entities",
+    icon: "🏢",
+    adminOnly: true,
+  },
+  {
+    id: "departments",
+    label: "Departments",
+    icon: "👥",
+    adminOnly: true,
+  },
+  {
+    id: "categories",
+    label: "Categories",
+    icon: "🏷️",
     adminOnly: true,
   },
   {
@@ -117,6 +138,9 @@ export default function ExpensesPage() {
           {activeTab === "new-request" && <NewRequestTab />}
           {activeTab === "all-expenses" && <AllExpensesTab />}
           {activeTab === "budgets" && <BudgetsTab />}
+          {activeTab === "entities" && <EntitiesTab />}
+          {activeTab === "departments" && <DepartmentsTab />}
+          {activeTab === "categories" && <CategoriesTab />}
           {activeTab === "per-diem" && <PerDiemRatesTab />}
         </div>
       </Card>
