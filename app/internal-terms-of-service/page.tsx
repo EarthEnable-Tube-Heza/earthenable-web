@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Privacy Policy Page
+ * Internal Terms of Service Page
  *
- * Public page displaying EarthEnable's privacy policy
+ * Internal page displaying EarthEnable's terms of service for employees and contractors
+ * (Not the public-facing terms for website visitors)
  */
 
 import { useEffect, useState } from "react";
@@ -11,16 +12,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Spinner } from "@/src/components/ui";
 
-export default function PrivacyPolicyPage() {
+export default function TermsOfServicePage() {
   const [content, setContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch the privacy policy markdown file
-    fetch("/PRIVACY_POLICY.md")
+    // Fetch the terms of service markdown file
+    fetch("/TERMS_OF_SERVICE.md")
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to load privacy policy");
+        if (!res.ok) throw new Error("Failed to load terms of service");
         return res.text();
       })
       .then((text) => {
@@ -28,8 +29,8 @@ export default function PrivacyPolicyPage() {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error("Error loading privacy policy:", err);
-        setError("Failed to load privacy policy. Please try again later.");
+        console.error("Error loading terms of service:", err);
+        setError("Failed to load terms of service. Please try again later.");
         setIsLoading(false);
       });
   }, []);
@@ -44,10 +45,10 @@ export default function PrivacyPolicyPage() {
           </Link>
           <div className="flex gap-4">
             <Link
-              href="/terms-of-service"
+              href="/internal-privacy-policy"
               className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
             >
-              Terms of Service
+              Privacy Policy
             </Link>
             <Link
               href="/auth/signin"
@@ -65,7 +66,7 @@ export default function PrivacyPolicyPage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Spinner size="lg" variant="primary" />
-              <p className="text-text-secondary mt-4">Loading privacy policy...</p>
+              <p className="text-text-secondary mt-4">Loading terms of service...</p>
             </div>
           ) : error ? (
             <div className="text-center py-16">
@@ -91,12 +92,12 @@ export default function PrivacyPolicyPage() {
         {/* Footer */}
         <footer className="mt-8 text-center">
           <p className="text-text-secondary text-sm mb-2">
-            For privacy inquiries, contact us at{" "}
+            For inquiries about these terms, contact us at{" "}
             <a
-              href="mailto:privacy@earthenable.org"
+              href="mailto:info@earthenable.org"
               className="text-primary hover:text-primary-dark underline"
             >
-              privacy@earthenable.org
+              info@earthenable.org
             </a>
           </p>
           <p className="text-text-disabled text-xs">
