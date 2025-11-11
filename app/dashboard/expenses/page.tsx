@@ -22,10 +22,22 @@ import { BudgetsTab } from "@/src/components/expenses/tabs/BudgetsTab";
 import { PerDiemRatesTab } from "@/src/components/expenses/tabs/PerDiemRatesTab";
 import { EntitiesTab } from "@/src/components/expenses/tabs/EntitiesTab";
 import { DepartmentsTab } from "@/src/components/expenses/tabs/DepartmentsTab";
+import { BranchesTab } from "@/src/components/expenses/tabs/BranchesTab";
 import { CategoriesTab } from "@/src/components/expenses/tabs/CategoriesTab";
+import { JobRolesTab } from "@/src/components/expenses/tabs/JobRolesTab";
 import { useIsAdmin } from "@/src/lib/auth";
 
-type TabId = "my-expenses" | "new-request" | "all-expenses" | "budgets" | "per-diem" | "entities" | "departments" | "categories";
+type TabId =
+  | "my-expenses"
+  | "new-request"
+  | "all-expenses"
+  | "budgets"
+  | "per-diem"
+  | "entities"
+  | "departments"
+  | "branches"
+  | "categories"
+  | "job-roles";
 
 interface Tab {
   id: TabId;
@@ -70,6 +82,12 @@ const tabs: Tab[] = [
     adminOnly: true,
   },
   {
+    id: "branches",
+    label: "Branches",
+    icon: "📍",
+    adminOnly: true,
+  },
+  {
     id: "categories",
     label: "Categories",
     icon: "🏷️",
@@ -79,6 +97,12 @@ const tabs: Tab[] = [
     id: "per-diem",
     label: "Per Diem Rates",
     icon: "🎯",
+    adminOnly: true,
+  },
+  {
+    id: "job-roles",
+    label: "Job Roles",
+    icon: "💼",
     adminOnly: true,
   },
 ];
@@ -140,8 +164,10 @@ export default function ExpensesPage() {
           {activeTab === "budgets" && <BudgetsTab />}
           {activeTab === "entities" && <EntitiesTab />}
           {activeTab === "departments" && <DepartmentsTab />}
+          {activeTab === "branches" && <BranchesTab />}
           {activeTab === "categories" && <CategoriesTab />}
           {activeTab === "per-diem" && <PerDiemRatesTab />}
+          {activeTab === "job-roles" && <JobRolesTab />}
         </div>
       </Card>
     </div>

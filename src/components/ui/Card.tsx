@@ -35,6 +35,11 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
    * Whether to show dividers between header/body/footer
    */
   divided?: boolean;
+
+  /**
+   * Whether to show hover effects
+   */
+  hoverable?: boolean;
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -47,6 +52,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       header,
       footer,
       divided = false,
+      hoverable = false,
       ...props
     },
     ref
@@ -87,6 +93,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 
           // No padding if header/footer exists (padding applied to sections)
           !header && !footer && paddingStyles[padding],
+
+          // Hover effects
+          hoverable && "cursor-pointer hover:shadow-lg",
 
           // Custom className
           className

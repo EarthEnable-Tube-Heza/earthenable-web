@@ -49,6 +49,19 @@ export interface Department {
   entity_id: string;
   name: string;
   code: string;
+  budget_limit?: number;
+  is_active: boolean;
+  gl_code?: string;
+  gl_class_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Branch {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
   location?: string;
   is_active: boolean;
   gl_code?: string;
@@ -115,6 +128,18 @@ export interface Entity {
   quickbooks_company_id?: string;
   quickbooks_realm_id?: string;
   quickbooks_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobRole {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
+  level: string;
+  description?: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -301,20 +326,19 @@ export async function createPerDiemRate(
     designation: string;
     ratePerDay: number;
     currency: string;
+    dayNight: string;
     effectiveDate: string;
     isActive?: boolean;
   }
 ): Promise<PerDiemRate> {
-  const response = await apiClient.post<PerDiemRate>(
-    `/admin/entities/${entityId}/per-diem-rates`,
-    {
-      designation: data.designation,
-      rate_per_day: data.ratePerDay,
-      currency: data.currency,
-      effective_date: data.effectiveDate,
-      is_active: data.isActive ?? true,
-    }
-  );
+  const response = await apiClient.post<PerDiemRate>(`/admin/entities/${entityId}/per-diem-rates`, {
+    designation: data.designation,
+    rate_per_day: data.ratePerDay,
+    currency: data.currency,
+    day_night: data.dayNight,
+    effective_date: data.effectiveDate,
+    is_active: data.isActive ?? true,
+  });
   return response;
 }
 
@@ -389,23 +413,55 @@ export async function createDepartment(
   data: {
     name: string;
     code: string;
-    location?: string;
+    budgetLimit?: number;
     isActive?: boolean;
     glCode?: string;
     glClassId?: string;
   }
 ): Promise<Department> {
-  const response = await apiClient.post<Department>(
-    `/admin/entities/${entityId}/departments`,
-    {
-      name: data.name,
-      code: data.code,
-      location: data.location,
-      is_active: data.isActive ?? true,
-      gl_code: data.glCode,
-      gl_class_id: data.glClassId,
-    }
+  const response = await apiClient.post<Department>(`/admin/entities/${entityId}/departments`, {
+    name: data.name,
+    code: data.code,
+    budget_limit: data.budgetLimit,
+    is_active: data.isActive ?? true,
+    gl_code: data.glCode,
+    gl_class_id: data.glClassId,
+  });
+  return response;
+}
+
+/**
+ * Get branches for entity
+ */
+export async function getBranches(entityId: string): Promise<{ branches: Branch[] }> {
+  const response = await apiClient.get<{ branches: Branch[] }>(
+    `/admin/entities/${entityId}/branches`
   );
+  return response;
+}
+
+/**
+ * Create branch
+ */
+export async function createBranch(
+  entityId: string,
+  data: {
+    name: string;
+    code: string;
+    location?: string;
+    isActive?: boolean;
+    glCode?: string;
+    glClassId?: string;
+  }
+): Promise<Branch> {
+  const response = await apiClient.post<Branch>(`/admin/entities/${entityId}/branches`, {
+    name: data.name,
+    code: data.code,
+    location: data.location,
+    is_active: data.isActive ?? true,
+    gl_code: data.glCode,
+    gl_class_id: data.glClassId,
+  });
   return response;
 }
 
@@ -436,5 +492,38 @@ export async function createExpenseCategory(
       gl_class_id: data.glClassId,
     }
   );
+  return response;
+}
+
+/**
+ * Get job roles for entity
+ */
+export async function getJobRoles(entityId: string): Promise<{ job_roles: JobRole[] }> {
+  const response = await apiClient.get<{ job_roles: JobRole[] }>(
+    `/admin/entities/${entityId}/job-roles`
+  );
+  return response;
+}
+
+/**
+ * Create job role
+ */
+export async function createJobRole(
+  entityId: string,
+  data: {
+    name: string;
+    code: string;
+    level: string;
+    description?: string;
+    isActive?: boolean;
+  }
+): Promise<JobRole> {
+  const response = await apiClient.post<JobRole>(`/admin/entities/${entityId}/job-roles`, {
+    name: data.name,
+    code: data.code,
+    level: data.level,
+    description: data.description,
+    is_active: data.isActive ?? true,
+  });
   return response;
 }
