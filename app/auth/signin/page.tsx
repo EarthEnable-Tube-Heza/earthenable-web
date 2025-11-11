@@ -9,6 +9,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuth } from "@/src/lib/auth";
 import { config } from "@/src/lib/config";
@@ -180,7 +181,21 @@ function SignInContent() {
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-text-disabled text-sm">
-              By signing in, you agree to our Terms of Service and Privacy Policy.
+              By signing in, you agree to our{" "}
+              <Link
+                href="/terms-of-service"
+                className="text-primary hover:text-primary-dark underline transition-colors"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy-policy"
+                className="text-primary hover:text-primary-dark underline transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              .
             </p>
           </div>
         </div>

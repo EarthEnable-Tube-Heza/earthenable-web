@@ -46,3 +46,6 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+# Symbolic links to root markdown files
+public/PRIVACY_POLICY.md
+public/TERMS_OF_SERVICE.md
