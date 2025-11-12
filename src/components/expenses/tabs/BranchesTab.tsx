@@ -1,37 +1,37 @@
 "use client";
 
 /**
- * Departments Tab (Admin Only)
+ * Branches Tab (Admin Only)
  *
- * Department/Branch management with GL code configuration
+ * Branch management with GL code configuration
  */
 
 import { useState } from "react";
 import { Input, Button, Card, Spinner, Badge, Select, Toast } from "@/src/components/ui";
 import type { ToastType } from "@/src/components/ui/Toast";
-import { Plus, XCircle, Save, Users, Edit, Info } from "@/src/lib/icons";
-import { useDepartments, useCreateDepartment, useEntities } from "@/src/hooks/useExpenses";
-import type { Department } from "@/src/lib/api/expenseClient";
+import { Plus, XCircle, Save, MapPin, Edit, Info } from "@/src/lib/icons";
+import { useBranches, useCreateBranch, useEntities } from "@/src/hooks/useExpenses";
+import type { Branch } from "@/src/lib/api/expenseClient";
 
-export function DepartmentsTab() {
+export function BranchesTab() {
   const [selectedEntityId, setSelectedEntityId] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    budgetLimit: "",
+    location: "",
     isActive: true,
     glCode: "",
     glClassId: "",
   });
 
   const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
-  const { data, isLoading } = useDepartments(selectedEntityId);
-  const createDepartment = useCreateDepartment(selectedEntityId);
+  const { data, isLoading } = useBranches(selectedEntityId);
+  const createBranch = useCreateBranch(selectedEntityId);
 
   const entities = entitiesData?.entities || [];
-  const departments = data?.departments || [];
+  const branches = data?.branches || [];
 
   // Auto-select first entity if none selected
   if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
@@ -42,21 +42,21 @@ export function DepartmentsTab() {
     e.preventDefault();
 
     try {
-      await createDepartment.mutateAsync({
+      await createBranch.mutateAsync({
         name: formData.name,
         code: formData.code,
-        budgetLimit: formData.budgetLimit ? parseFloat(formData.budgetLimit) : undefined,
+        location: formData.location || undefined,
         isActive: formData.isActive,
         glCode: formData.glCode || undefined,
         glClassId: formData.glClassId || undefined,
       });
 
-      setToast({ visible: true, type: "success", message: "Department created successfully!" });
+      setToast({ visible: true, type: "success", message: "Branch created successfully!" });
       setShowCreateForm(false);
       setFormData({
         name: "",
         code: "",
-        budgetLimit: "",
+        location: "",
         isActive: true,
         glCode: "",
         glClassId: "",
@@ -65,7 +65,7 @@ export function DepartmentsTab() {
       setToast({
         visible: true,
         type: "error",
-        message: "Failed to create department. Please try again.",
+        message: "Failed to create branch. Please try again.",
       });
       console.error(error);
     }
@@ -105,9 +105,9 @@ export function DepartmentsTab() {
       {/* Header Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-text-primary">Departments</h3>
+          <h3 className="text-lg font-semibold text-text-primary">Branches</h3>
           <p className="text-sm text-text-secondary">
-            Manage departments/branches with accounting integration
+            Manage physical branch locations with accounting integration
           </p>
         </div>
         <Button
@@ -123,7 +123,7 @@ export function DepartmentsTab() {
           ) : (
             <>
               <Plus className="w-4 h-4 mr-2" />
-              Create Department
+              Create Branch
             </>
           )}
         </Button>
@@ -134,21 +134,21 @@ export function DepartmentsTab() {
         <div className="flex items-start gap-3">
           <Info className="w-6 h-6 text-info flex-shrink-0 mt-1" />
           <div className="flex-1">
-            <h4 className="font-semibold text-text-primary mb-1">About Departments</h4>
+            <h4 className="font-semibold text-text-primary mb-1">About Branches</h4>
             <p className="text-sm text-text-secondary">
-              Departments represent organizational units within an entity. Each department can have
-              a budget limit, GL codes for accounting integration, and QuickBooks class mapping.
+              Branches represent physical locations within an entity. Each branch can have GL codes
+              for accounting integration and QuickBooks class mapping.
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Create Department Form */}
+      {/* Create Branch Form */}
       {showCreateForm && (
         <Card variant="bordered" padding="md">
           <div className="flex items-center gap-2 mb-4">
             <Plus className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold text-text-primary">Create New Department</h3>
+            <h3 className="text-lg font-semibold text-text-primary">Create New Branch</h3>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Basic Information */}
@@ -156,27 +156,26 @@ export function DepartmentsTab() {
               <h4 className="font-medium text-text-primary">Basic Information</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Department Name"
+                  label="Branch Name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Operations, Sales, Admin"
+                  placeholder="e.g., Kigali Office, Nairobi Branch"
                   required
                 />
 
                 <Input
-                  label="Department Code"
+                  label="Branch Code"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  placeholder="e.g., OPS, SALES, ADMIN"
+                  placeholder="e.g., KGL, NBO, DAR"
                   required
                 />
 
                 <Input
-                  label="Budget Limit"
-                  type="number"
-                  value={formData.budgetLimit}
-                  onChange={(e) => setFormData({ ...formData, budgetLimit: e.target.value })}
-                  placeholder="e.g., 50000 (Optional)"
+                  label="Location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="e.g., Kigali, Kenya, Tanzania (Optional)"
                 />
               </div>
             </div>
@@ -209,15 +208,15 @@ export function DepartmentsTab() {
                   className="w-4 h-4 rounded border-border-default"
                 />
                 <label htmlFor="isActive" className="text-sm text-text-primary">
-                  Department is active
+                  Branch is active
                 </label>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <Button type="submit" variant="primary" loading={createDepartment.isPending}>
+              <Button type="submit" variant="primary" loading={createBranch.isPending}>
                 <Save className="w-4 h-4 mr-2" />
-                Create Department
+                Create Branch
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
                 Cancel
@@ -227,14 +226,14 @@ export function DepartmentsTab() {
         </Card>
       )}
 
-      {/* Departments List */}
+      {/* Branches List */}
       {!selectedEntityId ? (
         <Card variant="bordered">
           <div className="text-center py-12">
             <Info className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
             <h3 className="text-lg font-semibold text-text-primary mb-2">Select an entity</h3>
             <p className="text-text-secondary">
-              Please select an entity from the dropdown above to view and manage departments.
+              Please select an entity from the dropdown above to view and manage branches.
             </p>
           </div>
         </Card>
@@ -242,37 +241,35 @@ export function DepartmentsTab() {
         <div className="flex items-center justify-center py-12">
           <Spinner size="lg" variant="primary" />
         </div>
-      ) : departments.length === 0 ? (
+      ) : branches.length === 0 ? (
         <Card variant="bordered">
           <div className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">
-              No departments configured
-            </h3>
+            <MapPin className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
+            <h3 className="text-lg font-semibold text-text-primary mb-2">No branches configured</h3>
             <p className="text-text-secondary mb-4">
-              Create your first department to organize expense tracking.
+              Create your first branch to organize expense tracking by location.
             </p>
             {!showCreateForm && (
               <Button variant="primary" onClick={() => setShowCreateForm(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Create Department
+                Create Branch
               </Button>
             )}
           </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {departments.map((dept: Department) => (
-            <Card key={dept.id} variant="bordered" padding="md">
+          {branches.map((branch: Branch) => (
+            <Card key={branch.id} variant="bordered" padding="md">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
+                  <MapPin className="w-5 h-5 text-primary" />
                   <div>
-                    <h3 className="font-semibold text-text-primary">{dept.name}</h3>
-                    <p className="text-sm text-text-secondary">{dept.code}</p>
+                    <h3 className="font-semibold text-text-primary">{branch.name}</h3>
+                    <p className="text-sm text-text-secondary">{branch.code}</p>
                   </div>
                 </div>
-                {dept.is_active ? (
+                {branch.is_active ? (
                   <Badge variant="success" size="sm">
                     Active
                   </Badge>
@@ -283,32 +280,30 @@ export function DepartmentsTab() {
                 )}
               </div>
 
-              {dept.budget_limit && (
-                <div className="text-sm text-text-secondary mb-3">
-                  💰 Budget Limit: {dept.budget_limit.toLocaleString()}
-                </div>
+              {branch.location && (
+                <div className="text-sm text-text-secondary mb-3">📍 {branch.location}</div>
               )}
 
               {/* GL Codes */}
-              {(dept.gl_code || dept.gl_class_id) && (
+              {(branch.gl_code || branch.gl_class_id) && (
                 <div className="bg-background-light p-3 rounded-lg mb-3 space-y-1">
-                  {dept.gl_code && (
+                  {branch.gl_code && (
                     <div className="text-sm">
                       <span className="text-text-secondary">GL Code:</span>{" "}
-                      <span className="font-medium text-text-primary">{dept.gl_code}</span>
+                      <span className="font-medium text-text-primary">{branch.gl_code}</span>
                     </div>
                   )}
-                  {dept.gl_class_id && (
+                  {branch.gl_class_id && (
                     <div className="text-sm">
                       <span className="text-text-secondary">GL Class ID:</span>{" "}
-                      <span className="font-medium text-text-primary">{dept.gl_class_id}</span>
+                      <span className="font-medium text-text-primary">{branch.gl_class_id}</span>
                     </div>
                   )}
                 </div>
               )}
 
               <div className="text-xs text-text-tertiary mb-3">
-                Created: {new Date(dept.created_at).toLocaleDateString()}
+                Created: {new Date(branch.created_at).toLocaleDateString()}
               </div>
 
               <Button variant="outline" size="sm">

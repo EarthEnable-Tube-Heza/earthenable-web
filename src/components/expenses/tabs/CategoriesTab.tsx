@@ -7,13 +7,20 @@
  */
 
 import { useState } from "react";
-import { Input, Button, Card, Spinner, Badge } from "@/src/components/ui";
+import { Input, Button, Card, Spinner, Badge, Select, Toast } from "@/src/components/ui";
+import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Tag, Edit, Info } from "@/src/lib/icons";
-import { useExpenseCategories, useCreateExpenseCategory } from "@/src/hooks/useExpenses";
+import {
+  useExpenseCategories,
+  useCreateExpenseCategory,
+  useEntities,
+} from "@/src/hooks/useExpenses";
 import type { ExpenseCategory } from "@/src/lib/api/expenseClient";
 
 export function CategoriesTab() {
+  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -24,10 +31,17 @@ export function CategoriesTab() {
     glClassId: "",
   });
 
-  const { data, isLoading } = useExpenseCategories();
-  const createCategory = useCreateExpenseCategory();
+  const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
+  const { data, isLoading } = useExpenseCategories(selectedEntityId);
+  const createCategory = useCreateExpenseCategory(selectedEntityId);
 
+  const entities = entitiesData?.entities || [];
   const categories = data?.categories || [];
+
+  // Auto-select first entity if none selected
+  if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
+    setSelectedEntityId(entities[0].id);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +57,11 @@ export function CategoriesTab() {
         glClassId: formData.glClassId || undefined,
       });
 
-      alert("Expense category created successfully!");
+      setToast({
+        visible: true,
+        type: "success",
+        message: "Expense category created successfully!",
+      });
       setShowCreateForm(false);
       setFormData({
         name: "",
@@ -55,13 +73,46 @@ export function CategoriesTab() {
         glClassId: "",
       });
     } catch (error) {
-      alert("Failed to create expense category. Please try again.");
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Failed to create expense category. Please try again.",
+      });
       console.error(error);
     }
   };
 
   return (
     <div className="space-y-6">
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast({ ...toast, visible: false })}
+      />
+
+      {/* Entity Selection */}
+      <Card variant="bordered" padding="md">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-text-primary whitespace-nowrap">
+            Select Entity:
+          </label>
+          <Select
+            value={selectedEntityId}
+            onChange={(e) => setSelectedEntityId(e.target.value)}
+            disabled={entitiesLoading || entities.length === 0}
+            className="flex-1 max-w-md"
+          >
+            <option value="">Select an entity...</option>
+            {entities.map((entity) => (
+              <option key={entity.id} value={entity.id}>
+                {entity.name} ({entity.code})
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+
       {/* Header Actions */}
       <div className="flex items-center justify-between">
         <div>
@@ -70,7 +121,11 @@ export function CategoriesTab() {
             Manage expense categories with accounting integration
           </p>
         </div>
-        <Button variant="primary" onClick={() => setShowCreateForm(!showCreateForm)}>
+        <Button
+          variant="primary"
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          disabled={!selectedEntityId}
+        >
           {showCreateForm ? (
             <>
               <XCircle className="w-4 h-4 mr-2" />
@@ -207,7 +262,17 @@ export function CategoriesTab() {
       )}
 
       {/* Categories List */}
-      {isLoading ? (
+      {!selectedEntityId ? (
+        <Card variant="bordered">
+          <div className="text-center py-12">
+            <Info className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Select an entity</h3>
+            <p className="text-text-secondary">
+              Please select an entity from the dropdown above to view and manage expense categories.
+            </p>
+          </div>
+        </Card>
+      ) : isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Spinner size="lg" variant="primary" />
         </div>

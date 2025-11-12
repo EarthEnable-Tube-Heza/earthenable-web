@@ -7,24 +7,44 @@
  */
 
 import { useState } from "react";
-import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/components/ui";
+import {
+  Input,
+  Button,
+  LabeledSelect,
+  Card,
+  Spinner,
+  Badge,
+  Select,
+  Toast,
+} from "@/src/components/ui";
+import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Target, User, Edit, Info, CheckCircle } from "@/src/lib/icons";
-import { usePerDiemRates, useCreatePerDiemRate } from "@/src/hooks/useExpenses";
+import { usePerDiemRates, useCreatePerDiemRate, useEntities } from "@/src/hooks/useExpenses";
 
 export function PerDiemRatesTab() {
+  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
     designation: "",
     ratePerDay: "",
     currency: "RWF",
+    dayNight: "day",
     effectiveDate: new Date().toISOString().split("T")[0],
     isActive: true,
   });
 
-  const { data, isLoading } = usePerDiemRates();
-  const createPerDiemRate = useCreatePerDiemRate();
+  const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
+  const { data, isLoading } = usePerDiemRates(selectedEntityId);
+  const createPerDiemRate = useCreatePerDiemRate(selectedEntityId);
 
+  const entities = entitiesData?.entities || [];
   const rates = data?.rates || [];
+
+  // Auto-select first entity if none selected
+  if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
+    setSelectedEntityId(entities[0].id);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,41 +54,74 @@ export function PerDiemRatesTab() {
         designation: formData.designation,
         ratePerDay: parseFloat(formData.ratePerDay),
         currency: formData.currency,
+        dayNight: formData.dayNight,
         effectiveDate: formData.effectiveDate,
         isActive: formData.isActive,
       });
 
-      alert("Per diem rate created successfully!");
+      setToast({ visible: true, type: "success", message: "Per diem rate created successfully!" });
       setShowCreateForm(false);
       setFormData({
         designation: "",
         ratePerDay: "",
         currency: "RWF",
+        dayNight: "day",
         effectiveDate: new Date().toISOString().split("T")[0],
         isActive: true,
       });
     } catch (error) {
-      alert("Failed to create per diem rate. Please try again.");
+      setToast({
+        visible: true,
+        type: "error",
+        message: "Failed to create per diem rate. Please try again.",
+      });
       console.error(error);
     }
   };
 
   const handleDeactivate = async (rateId: string) => {
-    if (!confirm("Are you sure you want to deactivate this rate?")) return;
-
     // TODO: API call to deactivate rate
     console.log("Deactivating rate:", rateId);
-    alert("Rate deactivated successfully!");
+    setToast({ visible: true, type: "warning", message: "Deactivate functionality coming soon!" });
   };
 
   const handleActivate = async (rateId: string) => {
     // TODO: API call to activate rate
     console.log("Activating rate:", rateId);
-    alert("Rate activated successfully!");
+    setToast({ visible: true, type: "info", message: "Activate functionality coming soon!" });
   };
 
   return (
     <div className="space-y-6">
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast({ ...toast, visible: false })}
+      />
+
+      {/* Entity Selection */}
+      <Card variant="bordered" padding="md">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-text-primary whitespace-nowrap">
+            Select Entity:
+          </label>
+          <Select
+            value={selectedEntityId}
+            onChange={(e) => setSelectedEntityId(e.target.value)}
+            disabled={entitiesLoading || entities.length === 0}
+            className="flex-1 max-w-md"
+          >
+            <option value="">Select an entity...</option>
+            {entities.map((entity) => (
+              <option key={entity.id} value={entity.id}>
+                {entity.name} ({entity.code})
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Card>
+
       {/* Header Actions */}
       <div className="flex items-center justify-between">
         <div>
@@ -77,7 +130,11 @@ export function PerDiemRatesTab() {
             Manage per diem rates by designation and track effective dates
           </p>
         </div>
-        <Button variant="primary" onClick={() => setShowCreateForm(!showCreateForm)}>
+        <Button
+          variant="primary"
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          disabled={!selectedEntityId}
+        >
           {showCreateForm ? (
             <>
               <XCircle className="w-4 h-4 mr-2" />
@@ -146,6 +203,17 @@ export function PerDiemRatesTab() {
                 required
               />
 
+              <LabeledSelect
+                label="Day/Night Rate"
+                value={formData.dayNight}
+                onChange={(e) => setFormData({ ...formData, dayNight: e.target.value })}
+                options={[
+                  { value: "day", label: "Day Rate" },
+                  { value: "night", label: "Night Rate" },
+                ]}
+                required
+              />
+
               <Input
                 label="Effective Date"
                 type="date"
@@ -169,7 +237,17 @@ export function PerDiemRatesTab() {
       )}
 
       {/* Rates List */}
-      {isLoading ? (
+      {!selectedEntityId ? (
+        <Card variant="bordered">
+          <div className="text-center py-12">
+            <Info className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Select an entity</h3>
+            <p className="text-text-secondary">
+              Please select an entity from the dropdown above to view and manage per diem rates.
+            </p>
+          </div>
+        </Card>
+      ) : isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Spinner size="lg" variant="primary" />
         </div>
