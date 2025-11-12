@@ -149,8 +149,16 @@ function formatMarkdownToHTML(markdown: string): string {
 
     // Check if this line starts a table (has pipes at start and end)
     if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
-      // Check if next line is a separator line (dashes and pipes)
-      if (i + 1 < lines.length && /^\|[\s\-:]+\|$/.test(lines[i + 1].trim())) {
+      // Check if next line is a separator line (dashes, pipes, spaces, colons)
+      // Matches patterns like: |---|---| or |-----|--------| etc.
+      const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+      const isSeparator =
+        nextLine.startsWith("|") &&
+        nextLine.endsWith("|") &&
+        /^[\|\s\-:]+$/.test(nextLine) &&
+        nextLine.includes("-");
+
+      if (isSeparator) {
         // Found a table! Parse it
         const headerLine = line;
 
@@ -216,6 +224,12 @@ function formatMarkdownToHTML(markdown: string): string {
   }
 
   html = processedLines.join("\n");
+
+  // Code blocks (triple backticks) - process before inline code
+  html = html.replace(
+    /```([^`]+)```/g,
+    '<pre class="bg-background-light border border-border-light rounded p-4 my-4 overflow-x-auto"><code class="text-sm font-mono text-text-primary">$1</code></pre>'
+  );
 
   // Bold
   html = html.replace(
