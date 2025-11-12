@@ -139,54 +139,83 @@ function formatMarkdownToHTML(markdown: string): string {
     '<h1 class="text-3xl font-bold mt-4 mb-6 text-text-primary">$1</h1>'
   );
 
-  // Tables (process before other replacements)
-  // Matches tables with optional blank lines between rows
-  html = html.replace(
-    /^\|(.+)\|\s*\n\s*\|[\s\-:]+\|\s*\n((?:\s*\|.+\|\s*\n?)+)/gim,
-    (match, headerRow, bodyRows) => {
-      // Parse header cells
-      const headers = headerRow
-        .split("|")
-        .map((h: string) => h.trim())
-        .filter((h: string) => h);
+  // Tables - process line by line to find and convert tables
+  const lines = html.split("\n");
+  const processedLines: string[] = [];
+  let i = 0;
 
-      // Parse body rows (filter out empty lines)
-      const rows = bodyRows
-        .trim()
-        .split("\n")
-        .filter((row: string) => row.trim() && row.includes("|"))
-        .map((row: string) => {
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Check if this line starts a table (has pipes at start and end)
+    if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+      // Check if next line is a separator line (dashes and pipes)
+      if (i + 1 < lines.length && /^\|[\s\-:]+\|$/.test(lines[i + 1].trim())) {
+        // Found a table! Parse it
+        const headerLine = line;
+
+        // Parse header
+        const headers = headerLine
+          .split("|")
+          .map((h) => h.trim())
+          .filter((h) => h);
+
+        // Collect all table rows (continue while lines start with |)
+        const tableRows: string[] = [];
+        let j = i + 2;
+        while (
+          j < lines.length &&
+          lines[j].trim().startsWith("|") &&
+          lines[j].trim().endsWith("|")
+        ) {
+          tableRows.push(lines[j]);
+          j++;
+        }
+
+        // Parse rows
+        const rows = tableRows.map((row) => {
           return row
             .split("|")
-            .map((cell: string) => cell.trim())
-            .filter((cell: string) => cell);
+            .map((cell) => cell.trim())
+            .filter((cell) => cell);
         });
 
-      // Build HTML table
-      let tableHtml = '<table class="min-w-full my-6 border-collapse">';
+        // Build HTML table
+        let tableHtml = '<table class="min-w-full my-6 border-collapse">';
 
-      // Table header
-      tableHtml += '<thead class="bg-background-light border-b-2 border-border-light">';
-      tableHtml += "<tr>";
-      headers.forEach((header: string) => {
-        tableHtml += `<th class="px-4 py-3 text-left text-sm font-semibold text-text-primary">${header}</th>`;
-      });
-      tableHtml += "</tr></thead>";
-
-      // Table body
-      tableHtml += '<tbody class="divide-y divide-border-light">';
-      rows.forEach((cells: string[]) => {
-        tableHtml += '<tr class="hover:bg-background-light transition-colors">';
-        cells.forEach((cell: string) => {
-          tableHtml += `<td class="px-4 py-3 text-sm text-text-secondary">${cell}</td>`;
+        // Table header
+        tableHtml += '<thead class="bg-background-light border-b-2 border-border-light">';
+        tableHtml += "<tr>";
+        headers.forEach((header) => {
+          tableHtml += `<th class="px-4 py-3 text-left text-sm font-semibold text-text-primary">${header}</th>`;
         });
-        tableHtml += "</tr>";
-      });
-      tableHtml += "</tbody></table>";
+        tableHtml += "</tr></thead>";
 
-      return tableHtml;
+        // Table body
+        tableHtml += '<tbody class="divide-y divide-border-light">';
+        rows.forEach((cells) => {
+          tableHtml += '<tr class="hover:bg-background-light transition-colors">';
+          cells.forEach((cell) => {
+            tableHtml += `<td class="px-4 py-3 text-sm text-text-secondary">${cell}</td>`;
+          });
+          tableHtml += "</tr>";
+        });
+        tableHtml += "</tbody></table>";
+
+        processedLines.push(tableHtml);
+
+        // Skip past the table lines we just processed
+        i = j;
+        continue;
+      }
     }
-  );
+
+    // Not a table, keep the line as is
+    processedLines.push(line);
+    i++;
+  }
+
+  html = processedLines.join("\n");
 
   // Bold
   html = html.replace(
