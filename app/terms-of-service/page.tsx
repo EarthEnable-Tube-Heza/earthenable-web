@@ -140,8 +140,9 @@ function formatMarkdownToHTML(markdown: string): string {
   );
 
   // Tables (process before other replacements)
+  // Matches tables with optional blank lines between rows
   html = html.replace(
-    /^\|(.+)\|\n\|[\s\-:]+\|\n((?:\|.+\|\n?)+)/gim,
+    /^\|(.+)\|\s*\n\s*\|[\s\-:]+\|\s*\n((?:\s*\|.+\|\s*\n?)+)/gim,
     (match, headerRow, bodyRows) => {
       // Parse header cells
       const headers = headerRow
@@ -149,10 +150,11 @@ function formatMarkdownToHTML(markdown: string): string {
         .map((h: string) => h.trim())
         .filter((h: string) => h);
 
-      // Parse body rows
+      // Parse body rows (filter out empty lines)
       const rows = bodyRows
         .trim()
         .split("\n")
+        .filter((row: string) => row.trim() && row.includes("|"))
         .map((row: string) => {
           return row
             .split("|")
