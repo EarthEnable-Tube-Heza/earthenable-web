@@ -117,7 +117,15 @@ export default function PrivacyPolicyPage() {
 function formatMarkdownToHTML(markdown: string): string {
   let html = markdown;
 
-  // Headers
+  // Headers (process from most specific to least specific)
+  html = html.replace(
+    /^##### (.*$)/gim,
+    '<h5 class="text-base font-bold mt-4 mb-2 text-text-primary">$1</h5>'
+  );
+  html = html.replace(
+    /^#### (.*$)/gim,
+    '<h4 class="text-lg font-bold mt-5 mb-2 text-text-primary">$1</h4>'
+  );
   html = html.replace(
     /^### (.*$)/gim,
     '<h3 class="text-xl font-bold mt-6 mb-3 text-text-primary">$1</h3>'
