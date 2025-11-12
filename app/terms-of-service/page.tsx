@@ -117,7 +117,15 @@ export default function TermsOfServicePage() {
 function formatMarkdownToHTML(markdown: string): string {
   let html = markdown;
 
-  // Headers
+  // Headers (process from most specific to least specific)
+  html = html.replace(
+    /^##### (.*$)/gim,
+    '<h5 class="text-base font-bold mt-4 mb-2 text-text-primary">$1</h5>'
+  );
+  html = html.replace(
+    /^#### (.*$)/gim,
+    '<h4 class="text-lg font-bold mt-5 mb-2 text-text-primary">$1</h4>'
+  );
   html = html.replace(
     /^### (.*$)/gim,
     '<h3 class="text-xl font-bold mt-6 mb-3 text-text-primary">$1</h3>'
@@ -131,14 +139,109 @@ function formatMarkdownToHTML(markdown: string): string {
     '<h1 class="text-3xl font-bold mt-4 mb-6 text-text-primary">$1</h1>'
   );
 
+  // Tables - process line by line to find and convert tables
+  const lines = html.split("\n");
+  const processedLines: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Check if this line starts a table (has pipes at start and end)
+    if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+      // Check if next line is a separator line (dashes, pipes, spaces, colons)
+      // Matches patterns like: |---|---| or |-----|--------| etc.
+      const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+      const isSeparator =
+        nextLine.startsWith("|") &&
+        nextLine.endsWith("|") &&
+        /^[\|\s\-:]+$/.test(nextLine) &&
+        nextLine.includes("-");
+
+      if (isSeparator) {
+        // Found a table! Parse it
+        const headerLine = line;
+
+        // Parse header
+        const headers = headerLine
+          .split("|")
+          .map((h) => h.trim())
+          .filter((h) => h);
+
+        // Collect all table rows (continue while lines start with |)
+        const tableRows: string[] = [];
+        let j = i + 2;
+        while (
+          j < lines.length &&
+          lines[j].trim().startsWith("|") &&
+          lines[j].trim().endsWith("|")
+        ) {
+          tableRows.push(lines[j]);
+          j++;
+        }
+
+        // Parse rows
+        const rows = tableRows.map((row) => {
+          return row
+            .split("|")
+            .map((cell) => cell.trim())
+            .filter((cell) => cell);
+        });
+
+        // Build HTML table
+        let tableHtml = '<table class="min-w-full my-6 border-collapse">';
+
+        // Table header
+        tableHtml += '<thead class="bg-background-light border-b-2 border-border-light">';
+        tableHtml += "<tr>";
+        headers.forEach((header) => {
+          tableHtml += `<th class="px-4 py-3 text-left text-sm font-semibold text-text-primary">${header}</th>`;
+        });
+        tableHtml += "</tr></thead>";
+
+        // Table body
+        tableHtml += '<tbody class="divide-y divide-border-light">';
+        rows.forEach((cells) => {
+          tableHtml += '<tr class="hover:bg-background-light transition-colors">';
+          cells.forEach((cell) => {
+            tableHtml += `<td class="px-4 py-3 text-sm text-text-secondary">${cell}</td>`;
+          });
+          tableHtml += "</tr>";
+        });
+        tableHtml += "</tbody></table>";
+
+        processedLines.push(tableHtml);
+
+        // Skip past the table lines we just processed
+        i = j;
+        continue;
+      }
+    }
+
+    // Not a table, keep the line as is
+    processedLines.push(line);
+    i++;
+  }
+
+  html = processedLines.join("\n");
+
+  // Code blocks (triple backticks) - process before inline code
+  html = html.replace(
+    /```([^`]+)```/g,
+    '<pre class="bg-background-light border border-border-light rounded p-4 my-4 overflow-x-auto"><code class="text-sm font-mono text-text-primary">$1</code></pre>'
+  );
+
   // Bold
   html = html.replace(
     /\*\*(.*?)\*\*/g,
     '<strong class="font-semibold text-text-primary">$1</strong>'
   );
 
-  // Italic
+  // Italic (asterisks)
   html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+  // Italic (underscores)
+  html = html.replace(/_([^_]+)_/g, '<em class="italic">$1</em>');
 
   // Links
   html = html.replace(
@@ -153,9 +256,9 @@ function formatMarkdownToHTML(markdown: string): string {
   html = html.replace(/^\- (.*$)/gim, '<li class="ml-6 mb-2 text-text-secondary">$1</li>');
   html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc my-4">$1</ul>');
 
-  // Paragraphs
+  // Paragraphs (exclude tables, headers, lists, hr)
   html = html.replace(
-    /^(?!<[uh]|<li|<hr)(.*$)/gim,
+    /^(?!<[uht]|<li|<hr)(.*$)/gim,
     '<p class="mb-4 text-text-secondary leading-relaxed">$1</p>'
   );
 

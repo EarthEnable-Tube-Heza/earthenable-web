@@ -49,7 +49,7 @@ For purposes of this Agreement:
 - **&quot;Content&quot;** means all data, text, photos, videos, signatures, location information, reports, and other materials created, uploaded, or transmitted through the Services in the course of work.
 - **&quot;Customer&quot;** means end customers of EarthEnable (homeowners, property owners) whose information you access through the Services.
 - **&quot;Customer Data&quot;** means personal and business information about Customers, including names, addresses, phone numbers, payment information, and installation details.
-- **&quot;Task&quot;** means work assignments, evaluations, surveys, or field operations assigned to you through the Services.
+- **&quot;Task&quot;** means work assignments, evaluations, surveys, or field operations assigned to you through the Services or directly by your supervisor/manager, whether originating from the system or assigned manually.
 - **&quot;Account&quot;** means your work account and credentials created and managed by EarthEnable HR and Systems teams for accessing the Services.
 - **&quot;Employer&quot;** means the EarthEnable regional legal entity that employs you or has contracted with you (EarthEnable Rwanda Ltd, Kenya Ltd, or Uganda Ltd).
 
@@ -429,9 +429,9 @@ The following do NOT count as Downtime for SLA purposes:
 - User device or browser incompatibilities
 - User-caused issues (account lockouts, incorrect configurations)
 
-### 11.2 SLA Remedies
+### 11.2 Service Accountability
 
-If we fail to meet the Uptime Commitment:
+If we fail to meet the Uptime Commitment, EarthEnable commits to:
 
 | Uptime Achieved | Response |
 |-----------------|----------|
@@ -439,19 +439,14 @@ If we fail to meet the Uptime Commitment:
 | 97.0% - 98.4% | Investigation report provided to affected teams within 15 days |
 | Below 97.0% | Formal incident review, corrective action plan, and management notification |
 
-**Note:** Since these are internal work systems provided as part of your employment/contractor agreement (not paid subscriptions), remedies focus on transparency, accountability, and service improvement rather than financial credits.
+**Note:** These are internal work systems provided as part of your employment/contractor agreement. Our commitment focuses on transparency, accountability, and continuous service improvement.
 
-### 11.3 Requesting SLA Credits
+### 11.3 Reporting Downtime
 
-To request an SLA credit or report downtime:
-1. Submit a support ticket to legal@earthenable.org within 30 days of the downtime incident
-2. Include: dates/times of downtime, description of impact, affected users
-3. We will investigate and respond within 15 business days
-4. Credit determinations are final
-
-### 11.4 Sole Remedy
-
-SLA credits are your sole and exclusive remedy for Service unavailability. EarthEnable is not liable for any indirect, incidental, or consequential damages arising from downtime.
+To report significant downtime or service issues:
+1. Contact your supervisor or IT support immediately
+2. For persistent issues, email support@earthenable.org with dates/times, description of impact, and affected users
+3. We will investigate and provide updates on resolution progress
 
 ---
 
@@ -506,52 +501,42 @@ TO THE MAXIMUM EXTENT PERMITTED BY LAW, EARTHENABLE AND ITS AFFILIATES, OFFICERS
 
 ### 13.2 Cap on Liability
 
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, EARTHENABLE&apos;S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATED TO THESE TERMS OR THE SERVICES SHALL BE LIMITED TO REASONABLE DAMAGES DIRECTLY CAUSED BY EARTH ENABLE&apos;S NEGLIGENCE OR BREACH OF THESE TERMS.
-
-Reasonable damages shall be determined based on:
-- Direct, foreseeable harm caused by the breach
-- Actual losses incurred (not speculative or consequential damages)
-- Mitigation efforts undertaken by the affected party
+EarthEnable's liability for issues with the Services shall be limited to reasonable damages directly caused by EarthEnable's negligence or breach of these Terms, as determined by:
+- Direct, foreseeable harm caused by the issue
+- Actual losses incurred
 - Applicable employment or contractor agreement provisions
+- Requirements under local labor law
 
-### 13.3 Basis of the Bargain
-
-You acknowledge that these limitations of liability are an essential basis of the agreement, and that EarthEnable would not provide the Services without these limitations.
-
-### 13.4 Jurisdiction-Specific Variations
+### 13.3 Jurisdiction-Specific Variations
 
 Some jurisdictions do not allow limitation of liability for personal injury, death, or fraud. If applicable law prohibits these limitations, they may not apply to you, and liability may be as provided by law.
 
 ---
 
-## 14. Indemnification
+## 14. User Responsibility & Accountability
 
-### 14.1 User Indemnification Obligation
+### 14.1 Accountability for Your Actions
 
-You agree to indemnify, defend, and hold harmless EarthEnable, its affiliates, officers, directors, employees, agents, partners, and licensors from and against any and all claims, liabilities, damages, losses, costs, expenses, or fees (including reasonable attorneys&apos; fees) arising from:
+As an employee or contractor using these Services, you are responsible for:
 
-1. **Your use or misuse of the Services**
-2. **Your violation of these Terms**
-3. **Your violation of any law or regulation**
-4. **Your violation of third-party rights** (intellectual property, privacy, publicity rights)
-5. **User Content you submit** (defamatory, infringing, or unlawful content)
-6. **Fraudulent activities** (accepting unreported payments, falsifying data, GPS spoofing)
-7. **Misuse of Customer Data** (unauthorized contact, data theft, personal use)
-8. **Negligence or willful misconduct** in performing your duties
-9. **Injury or damage caused to Customers or third parties** during field operations
+1. **Proper use of the Services** in accordance with these Terms
+2. **Compliance with laws and regulations** while performing your duties
+3. **Respecting third-party rights** (intellectual property, privacy)
+4. **Accuracy of content you submit** through the Services
+5. **Ethical conduct** (no fraudulent activities, falsifying data, GPS spoofing)
+6. **Protecting Customer Data** (no unauthorized contact, data theft, or personal use)
+7. **Professional conduct** in performing your duties
+8. **Safety and care** during field operations to prevent injury or damage
 
-### 14.2 Indemnification Process
+### 14.2 Consequences of Misconduct
 
-EarthEnable will:
-1. Notify you promptly of any claim subject to indemnification
-2. Allow you to control the defense (at your expense, with counsel we reasonably approve)
-3. Cooperate reasonably in the defense (at your expense)
+Violations of these Terms or misuse of the Services may result in:
+- Account suspension or termination
+- Disciplinary action per your employment/contractor agreement
+- Legal action where appropriate (fraud, data theft, serious misconduct)
+- Liability for damages you directly cause through intentional misconduct or gross negligence
 
-You may not settle any claim without EarthEnable&apos;s prior written consent if the settlement imposes obligations on EarthEnable or admits liability on EarthEnable&apos;s behalf.
-
-### 14.3 EarthEnable&apos;s Right to Defend
-
-EarthEnable reserves the right to assume exclusive defense and control of any matter subject to indemnification, at your expense.
+EarthEnable will handle claims and disputes in accordance with applicable employment law and your employment/contractor agreement.
 
 ---
 
@@ -701,13 +686,12 @@ If mediation does not resolve the dispute within 60 days, either party may comme
 #### 16.3.1 Jurisdiction & Venue
 - Disputes will be resolved in the courts of **Rwanda** (primary jurisdiction - see Section 17.1)
 - For Employees/Contractors in Kenya or Uganda, local courts have jurisdiction per Section 17.2
-- You consent to personal jurisdiction in the designated courts per your employment/contractor agreement
-- You waive any objections to venue or inconvenient forum
+- Jurisdiction and venue are as specified in your employment/contractor agreement and in accordance with local labor law
 
-#### 16.3.2 Class Action Waiver
-- You agree to resolve disputes individually, not as a class member
-- You waive the right to participate in class actions or representative proceedings
-- **Exception:** Where prohibited by law (e.g., employment claims in certain jurisdictions)
+#### 16.3.2 Individual Dispute Resolution
+- Disputes will generally be resolved on an individual basis
+- **Important:** This does not affect your rights under applicable employment law, including the right to participate in collective or class actions where permitted by local labor law
+- Any waiver of class action rights is subject to mandatory employment law protections in your jurisdiction
 
 #### 16.3.3 Small Claims Court
 - Either party may bring claims in small claims court if eligible
@@ -1006,11 +990,11 @@ These Terms are effective as of the Effective Date and apply to all use of the S
 
 ## 24. Additional Resources
 
-- **Privacy Policy:** See PRIVACY_POLICY.md or https://hub.earthenable.org/privacy-policy
+- **Privacy Policy:** See https://hub.earthenable.org/privacy-policy
 - **Acceptable Use Policy:** Detailed in Section 7 of these Terms
 - **SLA Details:** Section 11
 - **Data Processing Agreement (Enterprise):** Available upon request for organizational customers
-- **Employee Handbook:** [If applicable, link to internal handbook]
+- **Employee Handbook:** Physical copy available from HR
 
 ---
 
