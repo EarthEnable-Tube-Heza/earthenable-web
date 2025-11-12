@@ -380,7 +380,7 @@ We may retain data longer when:
 - **In Transit:** TLS 1.2+ encryption for all API communications
 - **At Rest:** Database encryption on cloud infrastructure
 - **Tokens:** JWT tokens signed with secure secret keys
-- **Offline Data:** SQLCipher encryption for WatermelonDB local database storage
+- **Offline Data:** Standard SQLite database for local storage (SQLCipher encryption planned for future release)
 
 #### 10.1.2 Authentication & Access Control
 - Multi-factor authentication for administrative access
