@@ -139,14 +139,64 @@ function formatMarkdownToHTML(markdown: string): string {
     '<h1 class="text-3xl font-bold mt-4 mb-6 text-text-primary">$1</h1>'
   );
 
+  // Tables (process before other replacements)
+  html = html.replace(
+    /^\|(.+)\|\n\|[\s\-:]+\|\n((?:\|.+\|\n?)+)/gim,
+    (match, headerRow, bodyRows) => {
+      // Parse header cells
+      const headers = headerRow
+        .split("|")
+        .map((h: string) => h.trim())
+        .filter((h: string) => h);
+
+      // Parse body rows
+      const rows = bodyRows
+        .trim()
+        .split("\n")
+        .map((row: string) => {
+          return row
+            .split("|")
+            .map((cell: string) => cell.trim())
+            .filter((cell: string) => cell);
+        });
+
+      // Build HTML table
+      let tableHtml = '<table class="min-w-full my-6 border-collapse">';
+
+      // Table header
+      tableHtml += '<thead class="bg-background-light border-b-2 border-border-light">';
+      tableHtml += "<tr>";
+      headers.forEach((header: string) => {
+        tableHtml += `<th class="px-4 py-3 text-left text-sm font-semibold text-text-primary">${header}</th>`;
+      });
+      tableHtml += "</tr></thead>";
+
+      // Table body
+      tableHtml += '<tbody class="divide-y divide-border-light">';
+      rows.forEach((cells: string[]) => {
+        tableHtml += '<tr class="hover:bg-background-light transition-colors">';
+        cells.forEach((cell: string) => {
+          tableHtml += `<td class="px-4 py-3 text-sm text-text-secondary">${cell}</td>`;
+        });
+        tableHtml += "</tr>";
+      });
+      tableHtml += "</tbody></table>";
+
+      return tableHtml;
+    }
+  );
+
   // Bold
   html = html.replace(
     /\*\*(.*?)\*\*/g,
     '<strong class="font-semibold text-text-primary">$1</strong>'
   );
 
-  // Italic
+  // Italic (asterisks)
   html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+  // Italic (underscores)
+  html = html.replace(/_([^_]+)_/g, '<em class="italic">$1</em>');
 
   // Links
   html = html.replace(
@@ -161,9 +211,9 @@ function formatMarkdownToHTML(markdown: string): string {
   html = html.replace(/^\- (.*$)/gim, '<li class="ml-6 mb-2 text-text-secondary">$1</li>');
   html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc my-4">$1</ul>');
 
-  // Paragraphs
+  // Paragraphs (exclude tables, headers, lists, hr)
   html = html.replace(
-    /^(?!<[uh]|<li|<hr)(.*$)/gim,
+    /^(?!<[uht]|<li|<hr)(.*$)/gim,
     '<p class="mb-4 text-text-secondary leading-relaxed">$1</p>'
   );
 
