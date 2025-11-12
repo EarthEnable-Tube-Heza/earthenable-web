@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Internal Terms of Service Page
+ * Privacy Policy Page
  *
- * Internal page displaying EarthEnable's terms of service for employees and contractors
- * (Not the public-facing terms for website visitors)
+ * Displays EarthEnable Hub's privacy policy for employees and contractors
+ * Deployed at hub.earthenable.org/privacy-policy (internal use)
+ * Note: earthenable.org/privacy-policy is separate (public website visitors)
  */
 
 import { useEffect, useState } from "react";
@@ -12,16 +13,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Spinner } from "@/src/components/ui";
 
-export default function TermsOfServicePage() {
+export default function PrivacyPolicyPage() {
   const [content, setContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch the terms of service markdown file
-    fetch("/TERMS_OF_SERVICE.md")
+    // Fetch the privacy policy markdown file
+    fetch("/PRIVACY_POLICY.md")
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to load terms of service");
+        if (!res.ok) throw new Error("Failed to load privacy policy");
         return res.text();
       })
       .then((text) => {
@@ -29,8 +30,8 @@ export default function TermsOfServicePage() {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error("Error loading terms of service:", err);
-        setError("Failed to load terms of service. Please try again later.");
+        console.error("Error loading privacy policy:", err);
+        setError("Failed to load privacy policy. Please try again later.");
         setIsLoading(false);
       });
   }, []);
@@ -45,10 +46,10 @@ export default function TermsOfServicePage() {
           </Link>
           <div className="flex gap-4">
             <Link
-              href="/internal-privacy-policy"
+              href="/terms-of-service"
               className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
             >
-              Privacy Policy
+              Terms of Service
             </Link>
             <Link
               href="/auth/signin"
@@ -66,7 +67,7 @@ export default function TermsOfServicePage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Spinner size="lg" variant="primary" />
-              <p className="text-text-secondary mt-4">Loading terms of service...</p>
+              <p className="text-text-secondary mt-4">Loading privacy policy...</p>
             </div>
           ) : error ? (
             <div className="text-center py-16">
@@ -92,12 +93,12 @@ export default function TermsOfServicePage() {
         {/* Footer */}
         <footer className="mt-8 text-center">
           <p className="text-text-secondary text-sm mb-2">
-            For inquiries about these terms, contact us at{" "}
+            For privacy inquiries, contact us at{" "}
             <a
-              href="mailto:info@earthenable.org"
+              href="mailto:privacy@earthenable.org"
               className="text-primary hover:text-primary-dark underline"
             >
-              info@earthenable.org
+              privacy@earthenable.org
             </a>
           </p>
           <p className="text-text-disabled text-xs">

@@ -183,14 +183,14 @@ function SignInContent() {
             <p className="text-text-disabled text-sm">
               By signing in, you agree to our{" "}
               <Link
-                href="/internal-terms-of-service"
+                href="/terms-of-service"
                 className="text-primary hover:text-primary-dark underline transition-colors"
               >
                 Terms of Service
               </Link>{" "}
               and{" "}
               <Link
-                href="/internal-privacy-policy"
+                href="/privacy-policy"
                 className="text-primary hover:text-primary-dark underline transition-colors"
               >
                 Privacy Policy
