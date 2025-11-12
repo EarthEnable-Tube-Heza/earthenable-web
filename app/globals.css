@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f7eddb;
+    --foreground: #1f2937;
+    --font-heading: "Ropa Sans", sans-serif;
+    --font-body: "Lato", sans-serif;
+    --font-flourish: "Literata", serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #1f2937;
+      --foreground: #f7eddb;
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background-primary text-text-primary;
+    font-family: var(--font-body);
+  }
+}

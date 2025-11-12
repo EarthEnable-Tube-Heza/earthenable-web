@@ -1,0 +1,169 @@
+"use client";
+
+/**
+ * Privacy Policy Page
+ *
+ * Displays EarthEnable Hub's privacy policy for employees and contractors
+ * Deployed at hub.earthenable.org/privacy-policy (internal use)
+ * Note: earthenable.org/privacy-policy is separate (public website visitors)
+ */
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Spinner } from "@/src/components/ui";
+
+export default function PrivacyPolicyPage() {
+  const [content, setContent] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch the privacy policy markdown file
+    fetch("/PRIVACY_POLICY.md")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load privacy policy");
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading privacy policy:", err);
+        setError("Failed to load privacy policy. Please try again later.");
+        setIsLoading(false);
+      });
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background-primary">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-border-light">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Image src="/logo.svg" alt="EarthEnable Logo" width={120} height={69} priority />
+          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/terms-of-service"
+              className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              href="/auth/signin"
+              className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-medium p-8 md:p-12">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Spinner size="lg" variant="primary" />
+              <p className="text-text-secondary mt-4">Loading privacy policy...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-status-error mb-4">{error}</p>
+              <Link
+                href="/"
+                className="text-primary hover:text-primary-dark transition-colors underline"
+              >
+                Return to Home
+              </Link>
+            </div>
+          ) : (
+            <div className="prose prose-lg max-w-none">
+              {/* Render markdown content as HTML */}
+              <div
+                className="markdown-content"
+                dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(content) }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-8 text-center">
+          <p className="text-text-secondary text-sm mb-2">
+            For privacy inquiries, contact us at{" "}
+            <a
+              href="mailto:privacy@earthenable.org"
+              className="text-primary hover:text-primary-dark underline"
+            >
+              privacy@earthenable.org
+            </a>
+          </p>
+          <p className="text-text-disabled text-xs">
+            © {new Date().getFullYear()} EarthEnable. All rights reserved.
+          </p>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+/**
+ * Simple markdown to HTML converter
+ * Handles basic markdown formatting for display
+ */
+function formatMarkdownToHTML(markdown: string): string {
+  let html = markdown;
+
+  // Headers
+  html = html.replace(
+    /^### (.*$)/gim,
+    '<h3 class="text-xl font-bold mt-6 mb-3 text-text-primary">$1</h3>'
+  );
+  html = html.replace(
+    /^## (.*$)/gim,
+    '<h2 class="text-2xl font-bold mt-8 mb-4 text-text-primary">$1</h2>'
+  );
+  html = html.replace(
+    /^# (.*$)/gim,
+    '<h1 class="text-3xl font-bold mt-4 mb-6 text-text-primary">$1</h1>'
+  );
+
+  // Bold
+  html = html.replace(
+    /\*\*(.*?)\*\*/g,
+    '<strong class="font-semibold text-text-primary">$1</strong>'
+  );
+
+  // Italic
+  html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+  // Links
+  html = html.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+
+  // Horizontal rules
+  html = html.replace(/^---$/gim, '<hr class="my-8 border-border-light" />');
+
+  // Unordered lists
+  html = html.replace(/^\- (.*$)/gim, '<li class="ml-6 mb-2 text-text-secondary">$1</li>');
+  html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc my-4">$1</ul>');
+
+  // Paragraphs
+  html = html.replace(
+    /^(?!<[uh]|<li|<hr)(.*$)/gim,
+    '<p class="mb-4 text-text-secondary leading-relaxed">$1</p>'
+  );
+
+  // Code blocks
+  html = html.replace(
+    /`([^`]+)`/g,
+    '<code class="bg-background-light px-2 py-1 rounded text-sm font-mono text-text-primary">$1</code>'
+  );
+
+  return html;
+}

@@ -1,0 +1,127 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-production:
+    name: Deploy to Vercel Production
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: read
+      issues: read
+
+    environment:
+      name: production
+      url: https://earthenable-web.vercel.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for changelog generation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Create production environment file
+        run: |
+          cat << EOF > .env.production.local
+          NEXT_PUBLIC_API_BASE_URL=https://api.earthenable.org
+          NEXT_PUBLIC_API_VERSION=v1
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_APP_NAME=EarthEnable Dashboard
+          NEXT_PUBLIC_COMPANY_DOMAIN=earthenable.org
+          NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10
+          NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2
+          NEXT_PUBLIC_API_TIMEOUT=30000
+          EOF
+          echo "Environment file created:"
+          cat .env.production.local
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel Production
+        id: deploy
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "production_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployment URL: $DEPLOYMENT_URL"
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --reverse)
+          fi
+
+          # Save changelog to file
+          echo "$COMMITS" > CHANGELOG.txt
+          echo "Generated changelog with $(echo "$COMMITS" | wc -l) commits"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## 🚀 Production Deployment
+
+            **Version:** v${{ steps.version.outputs.version }}
+            **Deployed to:** ${{ steps.deploy.outputs.production_url }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+
+            ## 📝 Changes
+
+            $(cat CHANGELOG.txt)
+
+            ## 🔗 Links
+
+            - [Production Dashboard](${{ steps.deploy.outputs.production_url }})
+            - [Commit History](https://github.com/${{ github.repository }}/commits/main)
+            - [Full Changelog](https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.version }}...main)
+
+            ---
+            *Automatically deployed by GitHub Actions*
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Production deployment successful to ${{ steps.deploy.outputs.production_url }}"
+            echo "🎉 Release v${{ steps.version.outputs.version }} created"
+          else
+            echo "❌ Production deployment failed"
+            exit 1
+          fi

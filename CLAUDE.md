@@ -1,14 +1,14 @@
-# CLAUDE.md - EarthEnable Web Dashboard
+# CLAUDE.md - EarthEnable Hub
 
-This file provides guidance to Claude Code when working with the EarthEnable Web Dashboard.
+This file provides guidance to Claude Code when working with the EarthEnable Hub.
 
 ## Project Overview
 
-The EarthEnable Web Dashboard is a Next.js admin interface for managing users, forms, and viewing analytics for the EarthEnable field operations system.
+The EarthEnable Hub is a Next.js admin interface for managing users, forms, and viewing analytics for the EarthEnable field operations system.
 
 ## Local Development Path
 
-**Web Dashboard**: `/home/c4pt_mvm0/Poubelle/earthenable/earthenable-web`
+**Web Hub**: `/home/c4pt_mvm0/Poubelle/earthenable/earthenable-web`
 
 ## Repository Structure
 
@@ -31,7 +31,7 @@ earthenable-web/
 
 ### Color Palette
 
-The web dashboard uses **the exact same theme** as the React Native mobile app for visual consistency:
+The web hub uses **the exact same theme** as the React Native mobile app for visual consistency:
 
 **Brand Colors:**
 - Primary Orange: `#EA6A00`
@@ -73,11 +73,29 @@ Theme is configured in `tailwind.config.ts` to match the mobile app's design sys
 4. Store access + refresh tokens (localStorage)
 5. Redirect to `/dashboard`
 
-**Token Management:**
-- Access token: 30 days expiry
-- Refresh token: 90 days expiry
-- Auto-refresh: 7 days before expiry
-- Refresh threshold: Configurable via environment
+**Token Management (Security-Focused for Admin Dashboard):**
+
+⚠️ **IMPORTANT SECURITY NOTE**: The web hub uses **much stricter** token expiration than the mobile app to protect sensitive admin/manager operations:
+
+| Setting | Mobile App | Web Hub | Reason |
+|---------|-----------|---------------|---------|
+| Access token expiry | 30 days | **1 hour** (backend) | No offline needs, higher security |
+| Refresh token expiry | 90 days | **7 days** (backend) | Limit session hijacking window |
+| Auto-refresh threshold | 7 days before | **10 minutes before** | Seamless UX with security |
+| Critical warning | 24 hours before | **2 minutes before** | Time to save work |
+
+**Why stricter expiration?**
+- Web hub doesn't need offline capability
+- Admin/Manager roles have elevated permissions
+- Shorter sessions reduce risk of unauthorized access if session is compromised
+- Forces re-authentication regularly for sensitive operations
+- Mitigates session hijacking and malicious actor risks
+
+**Configuration** (in `.env.local`):
+```bash
+NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10  # minutes before expiry to auto-refresh
+NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2  # minutes before expiry to show warning
+```
 
 **Protected Routes:**
 - Middleware checks auth status
@@ -218,9 +236,9 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 NEXT_PUBLIC_APP_NAME=EarthEnable Dashboard
 NEXT_PUBLIC_COMPANY_DOMAIN=earthenable.org
 
-# Token Management
-NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10080  # Minutes (7 days)
-NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=1440  # Minutes (24 hours)
+# Token Management (Security-focused for admin dashboard)
+NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10  # Minutes (10 min - tight security)
+NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2  # Minutes (2 min - time to save)
 ```
 
 ### Environment-Specific URLs
@@ -233,7 +251,7 @@ NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=1440  # Minutes (24 hours)
 
 ### Admin Endpoints
 
-The dashboard communicates with these backend endpoints:
+The hub communicates with these backend endpoints:
 
 ```
 GET    /api/v1/admin/users              # List users
@@ -269,6 +287,88 @@ export interface User {
   created_at: string;
 }
 ```
+
+## UI Component Library
+
+The hub uses a comprehensive component library built with the EarthEnable design system. All components are located in `src/components/ui/` and use centralized theme constants.
+
+### Available Components
+
+**Form Components:**
+- `Button` - Primary interaction component with 5 variants (primary, secondary, outline, ghost, danger)
+- `Input` - Text input with label, error states, icons, and password visibility toggle
+- `Select` - Dropdown select with consistent styling and theme integration
+
+**Layout Components:**
+- `Card` - Container component with variants (default, bordered, elevated) and optional header/footer
+
+**Feedback Components:**
+- `Badge` - Status indicators and labels with multiple variants and sizes
+- `Spinner` - Loading indicators with configurable size and color
+
+### Component Usage
+
+Import components from the central export:
+
+```typescript
+import { Button, Input, Card, Badge, Spinner } from '@/src/components/ui';
+
+// Button examples
+<Button variant="primary" size="md" onClick={handleClick}>
+  Save Changes
+</Button>
+
+<Button variant="outline" loading>
+  Loading...
+</Button>
+
+// Input examples
+<Input
+  label="Email"
+  type="email"
+  placeholder="Enter your email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  error={errors.email}
+  required
+/>
+
+// Card examples
+<Card variant="elevated" padding="lg" header="User Details" divided>
+  <p>Card content</p>
+</Card>
+
+// Badge examples
+<Badge variant="success" dot>Active</Badge>
+<Badge variant="error" outline>Failed</Badge>
+
+// Spinner examples
+<Spinner size="md" variant="primary" />
+<Spinner centered label="Loading data..." />
+```
+
+### Component Showcase
+
+Visit `/dashboard/components` to see all components with interactive examples and code snippets. This admin-only page serves as a living style guide.
+
+### Design Principles
+
+All components follow these principles:
+1. **Theme Constants** - All styling uses values from `src/lib/theme/constants.ts`
+2. **Consistent Sizing** - Components use 3 standard sizes (sm: 36px, md: 44px, lg: 52px)
+3. **Accessibility** - ARIA labels, keyboard navigation, focus states
+4. **TypeScript** - Full type safety with exported prop interfaces
+5. **Mobile Consistency** - Design matches the React Native mobile app
+
+### Creating New Components
+
+When adding new components:
+1. Create in `src/components/ui/ComponentName.tsx`
+2. Use `forwardRef` for ref forwarding
+3. Export props interface (e.g., `ButtonProps`)
+4. Use theme constants from `src/lib/theme/constants.ts`
+5. Add to `src/components/ui/index.ts`
+6. Add examples to `/dashboard/components` showcase page
 
 ## Component Patterns
 
