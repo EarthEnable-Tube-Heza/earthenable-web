@@ -5,42 +5,33 @@
  * Runs on every request before rendering pages.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Protected route patterns
  */
-const protectedRoutes = [
-  '/dashboard',
-];
+const protectedRoutes = ["/dashboard"];
 
 /**
  * Admin-only route patterns
  */
-const adminRoutes = [
-  '/dashboard/users',
-  '/dashboard/forms',
-  '/dashboard/analytics',
-];
+const adminRoutes = ["/dashboard/users", "/dashboard/forms", "/dashboard/analytics"];
 
 /**
  * Public routes that don't require authentication
  */
-const publicRoutes = [
-  '/',
-  '/auth/signin',
-];
+const publicRoutes = ["/", "/auth/signin", "/privacy-policy", "/terms-of-service", "/app-docs*"];
 
 /**
  * Check if route matches any pattern in the list
  */
 function matchesRoute(pathname: string, routes: string[]): boolean {
-  return routes.some(route => {
-    if (route.endsWith('*')) {
+  return routes.some((route) => {
+    if (route.endsWith("*")) {
       // Wildcard match
       return pathname.startsWith(route.slice(0, -1));
     }
-    return pathname === route || pathname.startsWith(route + '/');
+    return pathname === route || pathname.startsWith(route + "/");
   });
 }
 
@@ -52,9 +43,9 @@ export function middleware(request: NextRequest) {
 
   // Skip middleware for static files and Next.js internals
   if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.') // Static files (images, etc.)
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".") // Static files (images, etc.)
   ) {
     return NextResponse.next();
   }
@@ -67,15 +58,16 @@ export function middleware(request: NextRequest) {
   // Check for access token in cookies/headers
   // Note: In a real implementation, we'd validate the token here
   // For now, we check for the presence of the token
-  const accessToken = request.cookies.get('earthenable_access_token')?.value ||
-                      request.headers.get('authorization')?.replace('Bearer ', '');
+  const accessToken =
+    request.cookies.get("earthenable_access_token")?.value ||
+    request.headers.get("authorization")?.replace("Bearer ", "");
 
   // Check if route requires authentication
   if (matchesRoute(pathname, protectedRoutes)) {
     if (!accessToken) {
       // Redirect to sign-in with return URL
-      const signInUrl = new URL('/auth/signin', request.url);
-      signInUrl.searchParams.set('redirect', pathname);
+      const signInUrl = new URL("/auth/signin", request.url);
+      signInUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(signInUrl);
     }
   }
@@ -85,8 +77,8 @@ export function middleware(request: NextRequest) {
   // The actual role check will be done client-side and server-side in API calls
   if (matchesRoute(pathname, adminRoutes)) {
     if (!accessToken) {
-      const signInUrl = new URL('/auth/signin', request.url);
-      signInUrl.searchParams.set('redirect', pathname);
+      const signInUrl = new URL("/auth/signin", request.url);
+      signInUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(signInUrl);
     }
 
@@ -110,6 +102,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
