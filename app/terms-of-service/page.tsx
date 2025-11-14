@@ -10,8 +10,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Spinner } from "@/src/components/ui";
+import { PublicPageHeader } from "@/src/components/layout/PublicPageHeader";
 
 export default function TermsOfServicePage() {
   const [content, setContent] = useState<string>("");
@@ -39,27 +39,24 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-border-light">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <Image src="/logo.svg" alt="EarthEnable Logo" width={120} height={69} priority />
-          </Link>
-          <div className="flex gap-4">
+      <PublicPageHeader
+        rightContent={
+          <>
             <Link
               href="/privacy-policy"
-              className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
+              className="text-sm font-medium text-text-secondary transition-colors hover:text-primary"
             >
               Privacy Policy
             </Link>
             <Link
               href="/auth/signin"
-              className="text-text-secondary hover:text-primary transition-colors text-sm font-medium"
+              className="text-sm font-medium text-text-secondary transition-colors hover:text-primary"
             >
               Sign In
             </Link>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8">

@@ -6,11 +6,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { BookOpen, Download, HelpCircle, FileText } from "lucide-react";
 import { LanguageToggle } from "@/src/components/docs/LanguageToggle";
 import { useLanguage } from "@/src/hooks/useLanguage";
+import { PublicPageHeader } from "@/src/components/layout/PublicPageHeader";
 
 export default function AppDocsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -26,25 +26,20 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-border-light bg-white shadow-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <Link href="/app-docs" className="flex items-center gap-3 hover:opacity-80">
-            <Image src="/logo.svg" alt="EarthEnable" width={120} height={69} priority />
-            <span className="hidden text-lg font-semibold text-text-primary sm:inline">
-              App Docs
-            </span>
-          </Link>
-
-          {/* Language Toggle */}
-          <div className="flex items-center gap-4">
+      <PublicPageHeader
+        subtitle="App Docs"
+        rightContent={
+          <>
             <LanguageToggle currentLanguage={language} onLanguageChange={setLanguage} />
-            <Link href="/" className="text-sm font-medium text-text-secondary hover:text-primary">
+            <Link
+              href="/"
+              className="text-sm font-medium text-text-secondary transition-colors hover:text-primary"
+            >
               Back to Hub
             </Link>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <div className="container mx-auto flex">
         {/* Sidebar Navigation */}
