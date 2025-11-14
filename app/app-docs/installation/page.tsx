@@ -89,10 +89,10 @@ function formatMarkdownToHTML(markdown: string): string {
     '<h1 class="text-3xl font-bold mt-4 mb-6 text-text-primary">$1</h1>'
   );
 
-  // Images (before links to avoid conflicts)
+  // Images (before links to avoid conflicts) - mobile device size
   html = html.replace(
     /!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<figure class="my-6"><img src="$2" alt="$1" class="rounded-lg border border-border-light shadow-md cursor-zoom-in hover:opacity-90 transition-opacity" /><figcaption class="mt-2 text-center text-sm text-text-secondary">$1</figcaption></figure>'
+    '<figure class="my-6 mx-auto max-w-[375px]"><img src="$2" alt="$1" class="w-full rounded-lg border border-border-light shadow-md cursor-zoom-in hover:opacity-90 transition-opacity" /><figcaption class="mt-2 text-center text-sm text-text-secondary">$1</figcaption></figure>'
   );
 
   // Bold

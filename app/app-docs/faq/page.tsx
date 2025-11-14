@@ -86,7 +86,7 @@ function formatMarkdownToHTML(markdown: string): string {
   );
   html = html.replace(
     /!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<figure class="my-6"><img src="$2" alt="$1" class="rounded-lg border border-border-light shadow-md max-w-full h-auto" /><figcaption class="mt-2 text-center text-sm text-text-secondary">$1</figcaption></figure>'
+    '<figure class="my-6 mx-auto max-w-[375px]"><img src="$2" alt="$1" class="w-full rounded-lg border border-border-light shadow-md cursor-zoom-in hover:opacity-90 transition-opacity" /><figcaption class="mt-2 text-center text-sm text-text-secondary">$1</figcaption></figure>'
   );
   html = html.replace(
     /\*\*(.*?)\*\*/g,
