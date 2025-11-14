@@ -12,23 +12,34 @@ Mbere yo gutangira, reba niba ufite:
 
 - **Telefone ya Android** ikoresha Android 7.0 (Nougat) cyangwa irenga (API level 24+, Target SDK 36)
 - **Byibuze 150MB** y'umwanya uhari
-- **Imeri ya earthenable.org** (imeri y'ikigo)
+- **Imeri ya earthenable.org** (imeri y'ikigo) yashyizwe kuri telefone yawe
 - **Umuhuza wa interineti** kugira ngo umanure kandi ushyireho porogaramu bwa mbere
-- **Kugera kuri Managed Google Play** (telefone yawe igomba kuba yanditswe)
 
 ---
 
-## Intambwe za 1-6: Gushyiraho Porogaramu
+## Intambwe zo Gushyiraho Porogaramu
 
 ### Ntabwo ubusobanuro bwuzuye buhari muri iki gihe
 
 Ibisobanuro byuzuye byo gushyiraho porogaramu bizaba byahinduwe mu Kinyarwanda vuba aha. Kugeza ubwo:
 
-1. **Fungura Google Play Store** kuri telefone yawe
-2. **Shakisha "EarthEnable"** muri Work tab
-3. **Kanda "Install"** kugira ngo umanure porogaramu
-4. **Injira ukoresheje konti yawe ya @earthenable.org**
-5. **Tegereza sync ya mbere irangire**
+1. **Menya neza ko imeri yawe ya @earthenable.org iri kuri telefone yawe**
+   - Jya kuri Settings → Accounts
+   - Niba imeri yawe itariboneka, ongeramo konti ya Google
+
+2. **Fungura Google Play Store**
+   - Kanda icon ya profil yawe hejuru iburyo
+   - Hindura kuri konti yawe ya @earthenable.org
+
+3. **Shakisha "EarthEnable"** cyangwa **"EarthEnable Apps"**
+   - Ntabwo ukeneye kujya muri Work tab
+   - Shakisha gusa mugihe uri kuri konti yawe ya @earthenable.org
+
+4. **Kanda "Install"** kugira ngo umanure porogaramu
+
+5. **Injira ukoresheje konti yawe ya @earthenable.org**
+
+6. **Tegereza sync ya mbere irangire**
 
 ---
 
@@ -41,9 +52,11 @@ Ibisobanuro byuzuye byo gushyiraho porogaramu bizaba byahinduwe mu Kinyarwanda v
 - Reba niba Android version yawe iri hejuru ya 7.0 (API level 24+)
 - Hamagara IT niba ari munsi ya 7.0
 
-**"Ntushobora kubona porogaramu muri Managed Google Play"**
+**"Ntushobora kubona porogaramu muri Google Play Store"**
 
-- Reba niba uri muri "Work" tab, ntabwo ari Play Store isanzwe
+- Menya neza ko uri kuri konti yawe ya **@earthenable.org** muri Play Store
+- Kanda icon ya profil yawe reba konti ikora
+- Shakisha "EarthEnable" cyangwa "EarthEnable Apps" neza
 - Hamagara umuyobozi wawe cyangwa IT administrator
 
 **"Sign in failed - Invalid account"**

@@ -227,7 +227,7 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 - Ibintu bishya bikomeye
 - Impinduka nini
-- Jya kuri Managed Google Play → My apps & games → Updates
+- Jya kuri Google Play Store → My apps & games → Updates (ukoresha konti yawe ya @earthenable.org)
 
 ---
 

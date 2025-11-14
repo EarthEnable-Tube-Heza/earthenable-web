@@ -12,43 +12,57 @@ Before you begin, make sure you have:
 
 - **Android device** running Android 7.0 (Nougat) or higher (API level 24+, Target SDK 36)
 - **At least 150MB** of free storage space
-- **earthenable.org email address** (company email)
+- **earthenable.org email address** (company email) added to your device
 - **Internet connection** for initial download and setup
-- **Access to Managed Google Play** (your device should be enrolled)
 
 ---
 
-## Step 1: Access Managed Google Play
+## Step 1: Sign In with Your EarthEnable Email
 
-The EarthEnable app is distributed through **Managed Google Play** for internal use by EarthEnable staff only.
+Ensure your earthenable.org email is added to your Android device:
 
 ### On Your Android Device:
 
-1. Open the **Google Play Store** app on your device
-2. Look for the **"Work"** tab at the bottom of the screen (indicated by a briefcase icon)
-3. Tap on the **"Work"** tab to access your organization's managed apps
-
-![Managed Google Play Work Tab](/images/app-screenshots/managed-play-work-tab.png)
-
-> **Note:** If you don't see a "Work" tab, your device may not be enrolled in Managed Google Play. Contact your IT administrator for assistance.
+1. Go to **Settings** → **Accounts**
+2. If you don't see your **@earthenable.org** email listed:
+   - Tap **"Add account"** → **"Google"**
+   - Sign in with your **earthenable.org** email and password
+   - Complete the sign-in process
 
 ---
 
-## Step 2: Find the EarthEnable App
+## Step 2: Access Google Play Store
 
-Once you're in the Managed Google Play (Work tab):
+The EarthEnable app is available through **Google Play Store** for internal use by EarthEnable staff only.
+
+### Open Play Store with Your Work Account:
+
+1. Open the **Google Play Store** app on your device
+2. Tap your **profile icon** in the top-right corner
+3. If multiple accounts are shown, **tap to switch** to your **@earthenable.org** account
+4. You should now see the Play Store with your work account active
+
+![Google Play Store Account Switch](/images/app-screenshots/play-store-account-switch.png)
+
+> **Note:** The app is only visible when signed in with your earthenable.org account.
+
+---
+
+## Step 3: Find the EarthEnable App
+
+With your work account active in Play Store:
 
 1. Use the **search bar** at the top
-2. Type **"EarthEnable"** or **"EarthEnable App"**
+2. Type **"EarthEnable"** or **"EarthEnable Apps"**
 3. The app should appear in your search results with the EarthEnable logo
 
-![Search for EarthEnable App](/images/app-screenshots/search-earth Enable.png)
+![Search for EarthEnable App](/images/app-screenshots/search-earthenable.png)
 
-> **Alternative:** Your IT administrator may have already pushed the app to your device. Check your app drawer or notifications for automatic installation.
+> **Tip:** If you don't see the app, make sure you're signed in with your @earthenable.org account in Play Store.
 
 ---
 
-## Step 3: Install the App
+## Step 4: Install the App
 
 1. Tap on the **EarthEnable** app from the search results
 2. Review the app permissions:
@@ -67,7 +81,7 @@ Once you're in the Managed Google Play (Work tab):
 
 ---
 
-## Step 4: First Launch & Sign In
+## Step 5: First Launch & Sign In
 
 After installation is complete:
 
@@ -86,7 +100,7 @@ After installation is complete:
 
 ---
 
-## Step 5: Initial Sync
+## Step 6: Initial Sync
 
 After successful sign-in:
 
@@ -103,7 +117,7 @@ After successful sign-in:
 
 ---
 
-## Step 6: Explore the App
+## Step 7: Explore the App
 
 Once the initial sync is complete, you're ready to start using the app!
 
@@ -137,14 +151,17 @@ The app has three main sections accessible from the bottom navigation:
 - Minimum required: Android 7.0 (Nougat) - API level 24+
 - If below 7.0, contact IT for a device upgrade
 
-### Issue: "Can't find the app in Managed Google Play"
+### Issue: "Can't find the app in Google Play Store"
 
-**Cause:** Device not enrolled in Managed Google Play, or app not approved for your account.
+**Cause:** Not signed in with your earthenable.org account, or app not approved for your account.
 
 **Solution:**
 
-- Verify you're looking in the "Work" tab, not the regular Play Store
-- Contact your manager or IT administrator
+- Verify you're signed in with your **@earthenable.org** account in Play Store
+  - Tap your profile icon in Play Store and check which account is active
+  - Switch to your earthenable.org account if needed
+- Search for "EarthEnable" or "EarthEnable Apps" (exact spelling matters)
+- If still not visible, contact your manager or IT administrator
 - Email: support@earthenable.org
 
 ### Issue: "Installation failed - Insufficient storage"

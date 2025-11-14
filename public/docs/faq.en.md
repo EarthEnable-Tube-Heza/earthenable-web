@@ -489,14 +489,14 @@ This is because task data comes from external systems (Salesforce) that are in E
 
 **5. Update the app:**
 
-- Check for app updates in Managed Google Play
+- Check for app updates in Google Play Store
 - Install any available updates
 
 **6. Reinstall (last resort):**
 
 - Only if support team recommends
-- Uninstall → Reinstall from Managed Google Play
-- Sign in again
+- Uninstall → Reinstall from Google Play Store
+- Make sure you're signed in with your @earthenable.org account
 - Wait for full sync
 
 ---
@@ -687,7 +687,7 @@ If significantly higher, report the issue.
 
 - Major new features
 - Large changes
-- Go to Managed Google Play → My apps & games → Updates
+- Go to Google Play Store → My apps & games → Updates (with your @earthenable.org account)
 - Tap "Update" next to EarthEnable
 
 **Best Practice:** Always install updates when prompted for the best experience and latest features.
