@@ -25,7 +25,7 @@ Iki gitabo gikubiyemo amakuru yose ku bikoresho n'ubushobozi bwa porogaramu ya E
 
 ### Porogaramu ya EarthEnable ni iki?
 
-Porogaramu ya EarthEnable ni **igikoresho cyo gucunga imirimo** gishobora gukoreshwa hatabaye interineti. Ifasha abakozi muri Rwanda, Kenya, Zambia, n'Ubuhinde gucunga imirimo yabo, kuzuza ubushakashatsi, no gukurikirana iterambere—nubwo nta muhuza wa interineti.
+Porogaramu ya EarthEnable ni **igikoresho cyo gucunga imirimo** gishobora gukoreshwa hatabaye interineti. Ifasha abakozi muri Rwanda, Ubugande, na Kenya gucunga imirimo yabo, kuzuza ubushakashatsi, no gukurikirana iterambere—nubwo nta muhuza wa interineti.
 
 ### Ibintu by'Ingenzi:
 

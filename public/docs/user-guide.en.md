@@ -25,7 +25,7 @@ This comprehensive guide covers all features and capabilities of the EarthEnable
 
 ### What is the EarthEnable App?
 
-The EarthEnable mobile app is an **offline-first field operations tool** that allows staff across Rwanda, Kenya, Zambia, and India to manage their tasks, complete surveys, and track progress—even without an internet connection.
+The EarthEnable mobile app is an **offline-first field operations tool** that allows staff across Rwanda, Uganda, and Kenya to manage their tasks, complete surveys, and track progress—even without an internet connection.
 
 ### Key Features:
 

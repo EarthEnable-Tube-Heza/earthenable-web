@@ -58,7 +58,7 @@ export default function AppDocsPage() {
         <h2 className="mb-4 text-2xl font-bold text-text-primary">About the App</h2>
         <p className="mb-4 text-text-secondary">
           The EarthEnable mobile app is an offline-first field operations tool designed for staff
-          across Rwanda, Kenya, Zambia, and India. It enables field workers to:
+          across Rwanda, Uganda, and Kenya. It enables field workers to:
         </p>
         <ul className="ml-6 list-disc space-y-2 text-text-secondary">
           <li>
