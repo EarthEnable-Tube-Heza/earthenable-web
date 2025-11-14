@@ -34,7 +34,7 @@ export function PublicPageHeader({
 }: PublicPageHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border-light bg-white shadow-sm">
-      <div className="container mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
           <Image src="/logo.svg" alt="EarthEnable" width={120} height={69} priority />
