@@ -41,9 +41,9 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
         }
       />
 
-      <div className="container mx-auto flex">
+      <div className="flex">
         {/* Sidebar Navigation */}
-        <aside className="hidden w-64 border-r border-border-light bg-white p-6 md:block">
+        <aside className="hidden w-64 flex-shrink-0 border-r border-border-light bg-white p-6 md:block">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
