@@ -10,7 +10,7 @@ This guide will walk you through the process of installing the EarthEnable mobil
 
 Before you begin, make sure you have:
 
-- **Android device** running Android 8.0 (Oreo) or higher
+- **Android device** running Android 7.0 (Nougat) or higher (API level 24+, Target SDK 36)
 - **At least 150MB** of free storage space
 - **earthenable.org email address** (company email)
 - **Internet connection** for initial download and setup
@@ -134,8 +134,8 @@ The app has three main sections accessible from the bottom navigation:
 **Solution:**
 
 - Check your Android version: Settings → About phone → Android version
-- Minimum required: Android 8.0 (Oreo)
-- If below 8.0, contact IT for a device upgrade
+- Minimum required: Android 7.0 (Nougat) - API level 24+
+- If below 7.0, contact IT for a device upgrade
 
 ### Issue: "Can't find the app in Managed Google Play"
 

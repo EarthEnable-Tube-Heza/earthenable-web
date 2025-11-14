@@ -744,7 +744,7 @@ Support will respond within 2-3 business days, often faster for critical issues.
 
 ### Q: What Android version do I need?
 
-**A:** **Minimum required:** Android 8.0 (Oreo) or higher
+**A:** **Minimum required:** Android 7.0 (Nougat) or higher (API level 24+, Target SDK 36)
 
 **Recommended:** Android 10 or higher for best performance
 
@@ -756,7 +756,7 @@ Support will respond within 2-3 business days, often faster for critical issues.
 
 - Contact IT for a device upgrade
 - Older devices may not receive security updates
-- App may not install on very old Android versions (below 8.0)
+- App may not install on very old Android versions (below 7.0)
 
 ---
 

@@ -10,7 +10,7 @@ Iyi nyandiko izagufasha mu gushyiraho porogaramu ya EarthEnable kuri telefone ya
 
 Mbere yo gutangira, reba niba ufite:
 
-- **Telefone ya Android** ikoresha Android 8.0 (Oreo) cyangwa irenga
+- **Telefone ya Android** ikoresha Android 7.0 (Nougat) cyangwa irenga (API level 24+, Target SDK 36)
 - **Byibuze 150MB** y'umwanya uhari
 - **Imeri ya earthenable.org** (imeri y'ikigo)
 - **Umuhuza wa interineti** kugira ngo umanure kandi ushyireho porogaramu bwa mbere
@@ -38,8 +38,8 @@ Ibisobanuro byuzuye byo gushyiraho porogaramu bizaba byahinduwe mu Kinyarwanda v
 
 **"Porogaramu ntabwo ihuye na telefone yawe"**
 
-- Reba niba Android version yawe iri hejuru ya 8.0
-- Hamagara IT niba ari munsi ya 8.0
+- Reba niba Android version yawe iri hejuru ya 7.0 (API level 24+)
+- Hamagara IT niba ari munsi ya 7.0
 
 **"Ntushobora kubona porogaramu muri Managed Google Play"**
 

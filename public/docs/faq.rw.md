@@ -235,7 +235,7 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 ### Ikibazo: Android version nkeneye ni iyihe?
 
-**Igisubizo:** **Ntoya isabwa:** Android 8.0 (Oreo) cyangwa irenga
+**Igisubizo:** **Ntoya isabwa:** Android 7.0 (Nougat) cyangwa irenga (API level 24+, Target SDK 36)
 
 **Birasabwa:** Android 10 cyangwa irenga kugira ngo bikorere neza
 
