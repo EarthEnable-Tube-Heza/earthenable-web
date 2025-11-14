@@ -57,30 +57,57 @@ export default function AppDocsPage() {
       <div className="mb-12 rounded-lg border border-border-light bg-white p-8 shadow-sm">
         <h2 className="mb-4 text-2xl font-bold text-text-primary">About the App</h2>
         <p className="mb-4 text-text-secondary">
-          The EarthEnable mobile app is an offline-first field operations tool designed for staff
-          across Rwanda, Uganda, and Kenya. It enables field workers to:
+          The EarthEnable mobile app is an offline-first cross-platform field operations tool
+          designed for staff across Rwanda, Uganda, and Kenya. It enables users to:
         </p>
         <ul className="ml-6 list-disc space-y-2 text-text-secondary">
           <li>
-            <strong>Manage tasks offline</strong> - View and update task status without internet
-            connection
-          </li>
-          <li>
-            <strong>Automatic sync</strong> - Data syncs automatically when connection is restored
-          </li>
-          <li>
-            <strong>Secure authentication</strong> - Sign in with your earthenable.org Google
+            <strong>Secure authentication</strong> - Sign in safely with your earthenable.org Google
             account
           </li>
           <li>
-            <strong>Multilingual support</strong> - Available in English and Kinyarwanda
+            <strong>Multilingual support</strong> - Switch between English and Kinyarwanda for your
+            preferred language
           </li>
           <li>
-            <strong>FormYoula integration</strong> - Access quality assurance surveys directly from
-            tasks
+            <strong>Offline task management</strong> - View complete task lists and update status
+            even without internet connection
           </li>
           <li>
-            <strong>Real-time progress tracking</strong> - Monitor task completion across your team
+            <strong>Location mapping with navigation</strong> - View task locations on Google Maps
+            and navigate directly (requires internet unless offline maps are pre-downloaded)
+          </li>
+          <li>
+            <strong>Task completion statistics</strong> - Monitor progress with real-time stats for
+            full visibility into task completion
+          </li>
+          <li>
+            <strong>Detailed task information</strong> - Access all relevant customer details and
+            task requirements
+          </li>
+          <li>
+            <strong>Flexible task completion</strong> - Complete tasks via phone calls and/or
+            redirect to FormYoula for quality evaluation surveys
+          </li>
+          <li>
+            <strong>Offline status updates</strong> - Update task status immediately, syncs to
+            Salesforce when connection is restored
+          </li>
+          <li>
+            <strong>Automatic data sync</strong> - Task data synchronizes automatically when online,
+            keeping everything up to date
+          </li>
+          <li>
+            <strong>Dynamic feedback surveys</strong> - Collect structured feedback and quality
+            assurance data
+          </li>
+          <li>
+            <strong>Built-in issue reporting</strong> - Report bugs and technical issues directly
+            from the app with automatic device diagnostics
+          </li>
+          <li>
+            <strong>Seamless updates</strong> - Receive automatic updates via Google Play Store and
+            over-the-air (OTA) for instant bug fixes
           </li>
         </ul>
       </div>
