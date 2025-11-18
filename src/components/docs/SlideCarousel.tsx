@@ -80,7 +80,7 @@ export function SlideCarousel({ slides, initialSlide = 0 }: SlideCarouselProps) 
   const progress = ((currentSlide + 1) / slides.length) * 100;
 
   return (
-    <div className="relative pb-20 sm:pb-20 md:pb-24">
+    <div className="relative pb-0 sm:pb-0 md:pb-0">
       {/* Slide Container - Full height to eliminate scrolling */}
       <div
         className="relative overflow-hidden px-2 sm:px-4 pt-0 pb-2"
@@ -99,7 +99,7 @@ export function SlideCarousel({ slides, initialSlide = 0 }: SlideCarouselProps) 
               <div
                 className="overflow-hidden rounded-lg border-2 border-primary p-2 sm:p-4 md:p-6"
                 style={{
-                  height: "calc(100vh - 150px)", // Mobile: ~56px header + 16px padding + 76px bottom nav + 2px borders
+                  height: "calc(100vh - 180px)", // Mobile: ~56px header + 16px padding + 76px bottom nav + 2px borders
                 }}
               >
                 <div className="h-full overflow-y-auto overflow-x-hidden">
@@ -149,16 +149,16 @@ export function SlideCarousel({ slides, initialSlide = 0 }: SlideCarouselProps) 
                 />
               </div>
 
-              {/* Slide Indicators */}
-              <div className="flex items-center gap-1.5 sm:gap-1.5">
+              {/* Slide Indicators - Hidden on mobile to prevent overflow with many slides */}
+              <div className="hidden sm:flex items-center gap-1.5">
                 {slides.map((slide, index) => (
                   <button
                     key={slide.id}
                     onClick={() => goToSlide(index)}
-                    className={`h-1.5 sm:h-1.5 rounded-full transition-all ${
+                    className={`h-1.5 rounded-full transition-all ${
                       index === currentSlide
-                        ? "w-6 sm:w-6 bg-primary"
-                        : "w-1.5 sm:w-1.5 bg-border-light hover:bg-primary/50"
+                        ? "w-6 bg-primary"
+                        : "w-1.5 bg-border-light hover:bg-primary/50"
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                     aria-current={index === currentSlide ? "true" : "false"}

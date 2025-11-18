@@ -42,8 +42,34 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
         }
       />
 
+      {/* Mobile/Tablet Navigation - Horizontal Tabs */}
+      <div className="md:hidden border-b border-border-light bg-white sticky top-[56px] z-30">
+        <nav className="overflow-x-auto">
+          <div className="flex gap-1 px-2 py-2 min-w-max">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap ${
+                    isActive
+                      ? "bg-primary text-white"
+                      : "text-text-secondary bg-background-light hover:bg-primary/10 hover:text-text-primary"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+
       <div className="flex overflow-hidden">
-        {/* Sidebar Navigation */}
+        {/* Sidebar Navigation - Desktop Only */}
         <aside className="hidden w-64 flex-shrink-0 border-r border-border-light bg-white p-6 md:block">
           <nav className="space-y-1">
             {navItems.map((item) => {
