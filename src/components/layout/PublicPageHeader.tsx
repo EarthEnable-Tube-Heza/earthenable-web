@@ -34,14 +34,19 @@ export function PublicPageHeader({
 }: PublicPageHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border-light bg-white shadow-sm">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 sm:gap-3 px-2 sm:px-4 py-2 sm:py-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-          <Image src="/logo.svg" alt="EarthEnable" width={120} height={69} priority />
+        <Link
+          href="/"
+          className="flex items-center gap-2 sm:gap-3 transition-opacity hover:opacity-80 flex-shrink-0"
+        >
+          <div className="relative h-10 w-[69px] sm:h-[69px] sm:w-[120px]">
+            <Image src="/logo.svg" alt="EarthEnable" fill className="object-contain" priority />
+          </div>
           {subtitle && (
             <span
-              className={`text-lg font-semibold text-text-primary ${
-                hideSubtitleOnMobile ? "hidden sm:inline" : ""
+              className={`text-sm sm:text-lg font-semibold text-text-primary whitespace-nowrap ${
+                hideSubtitleOnMobile ? "hidden lg:inline" : ""
               }`}
             >
               {subtitle}
@@ -50,7 +55,9 @@ export function PublicPageHeader({
         </Link>
 
         {/* Right Side Content */}
-        {rightContent && <div className="flex items-center gap-4">{rightContent}</div>}
+        {rightContent && (
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">{rightContent}</div>
+        )}
       </div>
     </header>
   );

@@ -27,21 +27,22 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
     <div className="min-h-screen bg-background-primary">
       {/* Header */}
       <PublicPageHeader
-        subtitle="App Docs"
+        subtitle="Docs"
+        hideSubtitleOnMobile={true}
         rightContent={
           <>
             <LanguageToggle currentLanguage={language} onLanguageChange={setLanguage} />
             <Link
               href="/"
-              className="text-sm font-medium text-text-secondary transition-colors hover:text-primary"
+              className="text-xs sm:text-sm font-medium text-text-secondary transition-colors hover:text-primary whitespace-nowrap"
             >
-              Back to Hub
+              Hub
             </Link>
           </>
         }
       />
 
-      <div className="flex">
+      <div className="flex overflow-hidden">
         {/* Sidebar Navigation */}
         <aside className="hidden w-64 flex-shrink-0 border-r border-border-light bg-white p-6 md:block">
           <nav className="space-y-1">
@@ -74,19 +75,21 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 py-8 md:px-12">
-          <div className="mx-auto max-w-4xl">{children}</div>
+        <main className="flex-1 min-w-0 px-2 sm:px-4 md:px-12 py-2 overflow-x-hidden">
+          <div className="mx-auto max-w-4xl w-full">{children}</div>
 
           {/* Footer */}
-          <footer className="mx-auto mt-16 max-w-4xl border-t border-border-light pt-8">
-            <div className="flex flex-col items-center justify-between gap-4 text-sm text-text-secondary sm:flex-row">
-              <p>
+          <footer className="mx-auto mt-12 sm:mt-16 max-w-4xl w-full border-t border-border-light pt-6 sm:pt-8">
+            <div className="flex flex-col items-center justify-between gap-3 sm:gap-4 text-xs sm:text-sm text-text-secondary sm:flex-row">
+              <p className="text-center sm:text-left break-words">
                 For support, contact{" "}
                 <a href="mailto:support@earthenable.org" className="text-primary hover:underline">
                   support@earthenable.org
                 </a>
               </p>
-              <p>© {new Date().getFullYear()} EarthEnable. All rights reserved.</p>
+              <p className="text-center sm:text-right break-words">
+                © {new Date().getFullYear()} EarthEnable. All rights reserved.
+              </p>
             </div>
           </footer>
         </main>

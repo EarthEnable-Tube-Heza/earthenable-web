@@ -39,7 +39,14 @@ Ibisobanuro byuzuye byo gushyiraho porogaramu bizaba byahinduwe mu Kinyarwanda v
 
 5. **Injira ukoresheje konti yawe ya @earthenable.org**
 
-6. **Tegereza sync ya mbere irangire**
+6. **Uzabona Dashboard - kugera hano bivuze ko gushyiraho byagenze neza!**
+   - Uzabona ifoto yawe ya profil, ikuzo ryihariye, n'ibice byo kuvugurura ururimi
+   - Ikarita z'indangagaciro za EarthEnable zizakuzunguruka
+   - Kanda **Tasks** kugira ngo urebe imirimo yawe
+
+7. **Navigation Drawer** (Ifungura ry'Ibikubiye)
+   - Kanda ifoto yawe ya profil kuri icyerekezo cy'ibumoso hejuru
+   - Uzabona: **Report Issue** (Kumenyesha ikibazo), **App Version** (Verisiyo ya porogaramu), **Logout** (Gusohoka)
 
 ---
 

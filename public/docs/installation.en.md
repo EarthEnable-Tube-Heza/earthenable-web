@@ -42,7 +42,7 @@ The EarthEnable app is available through **Google Play Store** for internal use 
 3. If multiple accounts are shown, **tap to switch** to your **@earthenable.org** account
 4. You should now see the Play Store with your work account active
 
-![Google Play Store Account Switch](/images/app-screenshots/play-store-account-switch.png)
+![Google Play Store Account Switch](/images/app-screenshots/play-store-account-switch.jpg)
 
 > **Note:** The app is only visible when signed in with your earthenable.org account.
 
@@ -56,7 +56,7 @@ With your work account active in Play Store:
 2. Type **"EarthEnable"** or **"EarthEnable Apps"**
 3. The app should appear in your search results with the EarthEnable logo
 
-![Search for EarthEnable App](/images/app-screenshots/search-earthenable.png)
+![Search for EarthEnable App](/images/app-screenshots/google-play-store-search-earthenable.jpg)
 
 > **Tip:** If you don't see the app, make sure you're signed in with your @earthenable.org account in Play Store.
 
@@ -72,7 +72,7 @@ With your work account active in Play Store:
 3. Tap the **"Install"** button
 4. Wait for the download and installation to complete (typically 1-2 minutes)
 
-![Install EarthEnable App](/images/app-screenshots/install-screen.png)
+![Install EarthEnable App](/images/app-screenshots/install-screen.jpg)
 
 ### Installation Size:
 
@@ -89,7 +89,7 @@ After installation is complete:
 2. The app will open to the **splash screen**
 3. You'll be greeted with the **sign-in screen**
 
-![Sign In Screen](/images/app-screenshots/sign-in-screen.png)
+![Sign In Screen](/images/app-screenshots/sign-in-screen.jpg)
 
 4. Tap the **"Sign in with Google"** button
 5. Select your **earthenable.org email account**
@@ -100,42 +100,47 @@ After installation is complete:
 
 ---
 
-## Step 6: Initial Sync
+## Step 6: Welcome to EarthEnable!
 
-After successful sign-in:
+After successful sign-in, you'll land on the **Dashboard** - this confirms your installation is complete!
 
-1. The app will perform an **initial sync** to download your tasks and data
-2. You'll see a progress indicator showing "Syncing data..."
-3. This may take **2-5 minutes** depending on:
-   - Your internet connection speed
-   - Amount of data to download
-   - Number of tasks assigned to you
+### What You'll See on the Dashboard:
 
-![Initial Sync Progress](/images/app-screenshots/initial-sync.png)
+**Top Section:**
 
-> **Tip:** Ensure you have a stable Wi-Fi connection for the initial sync. Subsequent syncs will be much faster.
+- **Profile picture** - Your Google account photo
+- **Personalized greeting** - "Welcome back, [Your Name]!"
+- **Language toggle** - Switch between English and Kinyarwanda
+- **Values icon** - Tap the heart icon to view "Welcome to EarthEnable" values
+
+**Main Content:**
+
+- **Rotating value cards** - EarthEnable core values displayed in a carousel
+- **Feature cards** - Navigation cards for different app features:
+  - **Tasks** (Active) - View and manage your assigned tasks
+  - **Other features** (Coming soon) - Additional functionality
+
+![App Dashboard](/images/app-screenshots/dashboard.jpeg)
+
+> **Note:** Task data syncs automatically in the background. When you tap the **Tasks** card for the first time, syncing is usually already complete.
 
 ---
 
-## Step 7: Explore the App
+## Step 7: Navigation Drawer
 
-Once the initial sync is complete, you're ready to start using the app!
+Tap your **profile picture** in the top-left corner to reveal the navigation drawer.
 
-You'll see the **Dashboard** with:
+### Available Options:
 
-- **Task statistics** - Overview of your tasks by status
-- **Quick actions** - Buttons to view tasks and access features
-- **Sync status** - Last sync time and connection status
+- **Report Issue** - Submit bug reports and technical issues with automatic device diagnostics
+- **App Version** - View current app version number and build information
+- **Logout** - Sign out of your account and return to the sign-in screen
 
-![App Dashboard](/images/app-screenshots/dashboard.png)
+![Navigation Drawer](/images/app-screenshots/navigation-drawer.jpeg)
 
-### Navigation:
+### You're All Set!
 
-The app has three main sections accessible from the bottom navigation:
-
-1. **Dashboard** (Home icon) - Overview and statistics
-2. **Tasks** (List icon) - View and manage your tasks
-3. **Settings** (Gear icon) - App preferences and account settings
+Installation is complete. You can now explore the app features. For detailed instructions on using specific features, see the **[User Guide](/app-docs/user-guide)**.
 
 ---
 
@@ -184,15 +189,17 @@ The app has three main sections accessible from the bottom navigation:
 - Check with your manager that your account is activated
 - Try signing out of all Google accounts and signing in again
 
-### Issue: "Initial sync stuck or taking too long"
+### Issue: "Tasks not loading or syncing"
 
-**Cause:** Poor internet connection or server issues.
+**Cause:** Poor internet connection or background sync not completing.
 
 **Solution:**
 
-- Connect to a stable Wi-Fi network
-- Close and reopen the app to retry sync
-- If issue persists after 10 minutes, contact support
+- Ensure you have a stable internet connection (Wi-Fi recommended)
+- Tap the **Tasks** card from the dashboard to trigger manual sync
+- Pull down on the task list to refresh
+- If tasks still don't appear after a few minutes, close and reopen the app
+- Contact support if issue persists: support@earthenable.org
 
 ---
 

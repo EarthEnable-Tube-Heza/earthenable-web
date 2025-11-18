@@ -14,28 +14,30 @@ interface LanguageToggleProps {
 
 export function LanguageToggle({ currentLanguage, onLanguageChange }: LanguageToggleProps) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-background-light p-1">
+    <div className="flex items-center gap-1 rounded-md bg-background-light p-1">
       <button
         onClick={() => onLanguageChange("en")}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+        className={`px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm font-medium transition-colors ${
           currentLanguage === "en"
             ? "bg-primary text-white"
             : "text-text-secondary hover:text-text-primary"
         }`}
         aria-label="Switch to English"
       >
-        English
+        <span className="hidden sm:inline">English</span>
+        <span className="sm:hidden">EN</span>
       </button>
       <button
         onClick={() => onLanguageChange("rw")}
-        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+        className={`px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm font-medium transition-colors ${
           currentLanguage === "rw"
             ? "bg-primary text-white"
             : "text-text-secondary hover:text-text-primary"
         }`}
         aria-label="Switch to Kinyarwanda"
       >
-        Kinyarwanda
+        <span className="hidden sm:inline">Kinyarwanda</span>
+        <span className="sm:hidden">RW</span>
       </button>
     </div>
   );
