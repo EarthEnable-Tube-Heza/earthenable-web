@@ -4,6 +4,21 @@
 
 This guide will walk you through the process of installing the EarthEnable mobile app on your Android device.
 
+![Install EarthEnable App](/images/app-screenshots/install-screen.jpg)
+
+### Quick Installation Steps:
+
+1. **Prerequisites** - Ensure you have Android 7.0+, 150MB free space, and earthenable.org email
+2. **Sign In with Your EarthEnable Email** - Add your @earthenable.org account to your device
+3. **Access Google Play Store** - Switch to your work account in Play Store
+4. **Find the EarthEnable App** - Search for "EarthEnable" in Play Store
+5. **Install the App** - Tap Install and wait for download to complete
+6. **First Launch & Sign In** - Open the app and sign in with Google
+7. **Welcome to EarthEnable!** - Explore the dashboard and app features
+8. **Navigation Drawer** - Access settings and additional options
+
+> **Tip:** If you need detailed instructions, continue to the next slides. Otherwise, follow the steps above!
+
 ---
 
 ## Prerequisites

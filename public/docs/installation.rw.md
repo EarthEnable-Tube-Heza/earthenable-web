@@ -4,6 +4,21 @@
 
 Iyi nyandiko izagufasha mu gushyiraho porogaramu ya EarthEnable kuri telefone yawe ya Android.
 
+![Gushyiraho Porogaramu ya EarthEnable](/images/app-screenshots/install-screen.jpg)
+
+### Intambwe z'Ihuse zo Kwishyiriraho:
+
+1. **Ibisabwa Mbere yo Gutangira** - Menya ko ufite Android 7.0+, umwanya wa 150MB uhari, n'imeri ya earthenable.org
+2. **Injira Ukoresheje Imeri Yawe ya EarthEnable** - Ongeraho konti yawe ya @earthenable.org kuri telefone yawe
+3. **Fungura Google Play Store** - Hindura konti kugeza ku konti y'akazi yawe muri Play Store
+4. **Shakisha Porogaramu ya EarthEnable** - Shakisha "EarthEnable" muri Play Store
+5. **Shyiraho Porogaramu** - Kanda Install kandi utegereze kugeza gumanurwa birangiye
+6. **Gufungura bwa Mbere & Kwinjira** - Fungura porogaramu kandi winjire ukoresheje Google
+7. **Murakaza neza kuri EarthEnable!** - Reba dashboard n'ibindi biranga porogaramu
+8. **Urubuga rwo Kuyobora** - Kubona igenamiterere n'ubundi bushobozi
+
+> **Inama:** Niba ukeneye amabwiriza arambuye, komeza kuri slides zikurikira. Niba ataribyo, kurikiza intambwe hejuru!
+
 ---
 
 ## Ibisabwa Mbere yo Gutangira
