@@ -126,7 +126,7 @@ const translations = {
       description:
         "Found a bug or have feedback? Use the app's built-in issue reporting feature or contact our support team directly. We appreciate your feedback!",
       inApp: "In-App Reporting",
-      inAppPath: "Profile Picture (Navigation Drawer) → Issue Report",
+      inAppPath: "Profile Picture (Navigation Drawer) → Report Issue",
       email: "Email Support",
     },
     copyright: `© ${new Date().getFullYear()} EarthEnable. All rights reserved.`,
