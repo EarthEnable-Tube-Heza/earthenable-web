@@ -88,17 +88,19 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
       slides.push({
         id,
         content: (
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start max-w-full overflow-hidden">
-            {/* Text content - left side on desktop */}
-            <div className="flex-1 prose prose-sm sm:prose-lg max-w-full overflow-hidden">
-              <div
-                className="markdown-content break-words"
-                dangerouslySetInnerHTML={{ __html: html }}
-              />
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start max-w-full overflow-hidden">
+            {/* Text content - left side on desktop, takes more space */}
+            <div className="flex-1 order-2 lg:order-1 min-w-0">
+              <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
+                <div
+                  className="markdown-content break-words"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              </div>
             </div>
 
-            {/* Phone mockup - right side on desktop, below on mobile */}
-            <div className="flex-shrink-0 lg:sticky lg:top-24">
+            {/* Phone mockup - right side on desktop, center on mobile, appears first on mobile */}
+            <div className="flex-shrink-0 order-1 lg:order-2 mx-auto lg:mx-0 lg:sticky lg:top-24">
               <PhoneMockup src={imageSrc} alt={imageAlt} />
             </div>
           </div>
