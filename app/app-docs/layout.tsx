@@ -9,10 +9,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Download, HelpCircle, FileText } from "lucide-react";
 import { LanguageToggle } from "@/src/components/docs/LanguageToggle";
-import { useLanguage } from "@/src/hooks/useLanguage";
+import { LanguageProvider, useLanguage } from "@/src/contexts/LanguageContext";
 import { PublicPageHeader } from "@/src/components/layout/PublicPageHeader";
 
-export default function AppDocsLayout({ children }: { children: React.ReactNode }) {
+function AppDocsLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
 
@@ -121,5 +121,13 @@ export default function AppDocsLayout({ children }: { children: React.ReactNode 
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AppDocsLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LanguageProvider>
+      <AppDocsLayoutContent>{children}</AppDocsLayoutContent>
+    </LanguageProvider>
   );
 }
