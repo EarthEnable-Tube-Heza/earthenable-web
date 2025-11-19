@@ -5,7 +5,7 @@
 
 "use client";
 
-import { Language } from "@/src/hooks/useLanguage";
+import { Language } from "@/src/contexts/LanguageContext";
 
 interface LanguageToggleProps {
   currentLanguage: Language;

@@ -6,7 +6,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/src/hooks/useLanguage";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import { Spinner } from "@/src/components/ui";
 import { SlideCarousel, Slide } from "@/src/components/docs/SlideCarousel";
 
