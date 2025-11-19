@@ -29,7 +29,15 @@ export function PhoneMockup({ src, alt, caption }: PhoneMockupProps) {
 
             {/* Screen content */}
             <div className="relative w-[280px] h-[560px] bg-white">
-              <Image src={src} alt={alt} fill className="object-cover object-top" sizes="280px" />
+              <Image
+                src={src}
+                alt={alt}
+                fill
+                className="object-cover object-top"
+                sizes="280px"
+                priority
+                unoptimized
+              />
             </div>
           </div>
 

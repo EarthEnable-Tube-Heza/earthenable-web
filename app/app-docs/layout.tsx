@@ -102,7 +102,7 @@ function AppDocsLayoutContent({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <main className="flex-1 min-w-0 px-2 sm:px-4 md:px-12 py-2 overflow-x-hidden">
-          <div className="mx-auto max-w-4xl w-full">{children}</div>
+          <div className="mx-auto max-w-7xl w-full">{children}</div>
 
           {/* Footer */}
           <footer className="mx-auto mt-12 sm:mt-16 max-w-4xl w-full border-t border-border-light pt-6 sm:pt-8">
