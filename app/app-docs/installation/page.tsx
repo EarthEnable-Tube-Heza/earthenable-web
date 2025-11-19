@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { Spinner } from "@/src/components/ui";
 import { SlideCarousel, Slide } from "@/src/components/docs/SlideCarousel";
+import { PhoneMockup } from "@/src/components/docs/PhoneMockup";
 
 export default function InstallationPage() {
   const { language, isLoading: langLoading } = useLanguage();
@@ -67,25 +68,58 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
   const slides: Slide[] = [];
   let slideId = 0;
 
-  sections.forEach((section) => {
+  sections.forEach((section, index) => {
     const trimmed = section.trim();
     if (!trimmed) return;
 
-    // Process each section as a slide
-    const html = formatMarkdownToHTML(trimmed);
     const id = `slide-${slideId++}`;
 
-    slides.push({
-      id,
-      content: (
-        <div className="prose prose-sm sm:prose-lg max-w-full overflow-hidden">
-          <div
-            className="markdown-content break-words"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-        </div>
-      ),
-    });
+    // Special handling for first slide (overview) with screenshot
+    if (index === 0 && /!\[([^\]]*)\]\(([^)]+)\)/.test(trimmed)) {
+      // Extract image data
+      const imageMatch = trimmed.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      const imageSrc = imageMatch ? imageMatch[2] : "";
+      const imageAlt = imageMatch ? imageMatch[1] : "";
+
+      // Remove image from markdown and process the rest
+      const contentWithoutImage = trimmed.replace(/!\[([^\]]*)\]\(([^)]+)\)/, "");
+      const html = formatMarkdownToHTML(contentWithoutImage);
+
+      slides.push({
+        id,
+        content: (
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start max-w-full overflow-hidden">
+            {/* Text content - left side on desktop */}
+            <div className="flex-1 prose prose-sm sm:prose-lg max-w-full overflow-hidden">
+              <div
+                className="markdown-content break-words"
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+            </div>
+
+            {/* Phone mockup - right side on desktop, below on mobile */}
+            <div className="flex-shrink-0 lg:sticky lg:top-24">
+              <PhoneMockup src={imageSrc} alt={imageAlt} />
+            </div>
+          </div>
+        ),
+      });
+    } else {
+      // Regular slides
+      const html = formatMarkdownToHTML(trimmed);
+
+      slides.push({
+        id,
+        content: (
+          <div className="prose prose-sm sm:prose-lg max-w-full overflow-hidden">
+            <div
+              className="markdown-content break-words"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>
+        ),
+      });
+    }
   });
 
   return slides;
