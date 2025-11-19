@@ -126,7 +126,7 @@ const translations = {
       description:
         "Found a bug or have feedback? Use the app's built-in issue reporting feature or contact our support team directly. We appreciate your feedback!",
       inApp: "In-App Reporting",
-      inAppPath: "Settings → Help & Support → Report Issue",
+      inAppPath: "Profile Picture (Navigation Drawer) → Issue Report",
       email: "Email Support",
     },
     copyright: `© ${new Date().getFullYear()} EarthEnable. All rights reserved.`,
@@ -238,7 +238,7 @@ const translations = {
       description:
         "Wabonye ikosa cyangwa ufite igitekerezo? Koresha porogaramu yo kumenyesha ibibazo cyangwa hamagara itsinda ryacu ry'ubufasha. Turakundira ibitekerezo byawe!",
       inApp: "Kumenyesha muri Porogaramu",
-      inAppPath: "Igenamiterere → Ubufasha & Inkunga → Menyesha Ikibazo",
+      inAppPath: "Ifoto ya Profili (Urubuga rwo Kuyobora) → Menyesha Ikibazo",
       email: "Ubufasha bwa Email",
     },
     copyright: `© ${new Date().getFullYear()} EarthEnable. Uburenganzira bwose burarinzwe.`,
