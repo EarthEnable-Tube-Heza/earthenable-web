@@ -74,6 +74,10 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
 
     const id = `slide-${slideId++}`;
 
+    // Extract title from ## header
+    const titleMatch = trimmed.match(/^## (.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : "";
+
     // Special handling for first slide (overview) with screenshot
     if (index === 0 && /!\[([^\]]*)\]\(([^)]+)\)/.test(trimmed)) {
       // Extract image data
@@ -87,6 +91,7 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
 
       slides.push({
         id,
+        title,
         content: (
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start max-w-full overflow-hidden">
             {/* Text content - left side on desktop, takes more space */}
@@ -112,6 +117,7 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
 
       slides.push({
         id,
+        title,
         content: (
           <div className="prose prose-sm sm:prose-lg max-w-full overflow-hidden">
             <div
@@ -238,11 +244,16 @@ function processMarkdownContent(markdown: string): string {
     '<strong class="font-semibold text-text-primary">$1</strong>'
   );
 
-  // Links
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
+  // Links - Convert section references to internal slide navigation
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, href) => {
+    // Check if it's an internal section reference (starts with #)
+    if (href.startsWith("#")) {
+      const slideRef = href.substring(1); // Remove the #
+      return `<a data-slide-ref="${slideRef}" class="text-primary hover:text-primary-dark underline cursor-pointer">${text}</a>`;
+    }
+    // External links or other pages
+    return `<a href="${href}" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  });
 
   // Horizontal rules
   html = html.replace(/^---$/gim, '<hr class="my-8 border-border-light" />');

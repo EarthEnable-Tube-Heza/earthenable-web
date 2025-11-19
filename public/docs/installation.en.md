@@ -151,7 +151,7 @@ Tap your **profile picture** in the top-left corner to reveal the navigation dra
 - **App Version** - View current app version number and build information
 - **Logout** - Sign out of your account and return to the sign-in screen
 
-![Navigation Drawer](/images/app-screenshots/navigation-drawer.jpeg)
+![Navigation Drawer](/images/app-screenshots/navigation-drawer.jpg)
 
 ### You're All Set!
 

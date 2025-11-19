@@ -11,22 +11,56 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 export interface Slide {
   id: string;
   content: React.ReactNode;
+  title?: string; // Optional title for navigation
 }
 
 interface SlideCarouselProps {
   slides: Slide[];
   initialSlide?: number;
+  onSlideChange?: (slideIndex: number) => void;
 }
 
-export function SlideCarousel({ slides, initialSlide = 0 }: SlideCarouselProps) {
+export function SlideCarousel({ slides, initialSlide = 0, onSlideChange }: SlideCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  const goToSlide = (index: number) => {
-    if (index === currentSlide) return;
-    setCurrentSlide(index);
-  };
+  const goToSlide = useCallback(
+    (index: number) => {
+      if (index === currentSlide) return;
+      setCurrentSlide(index);
+      onSlideChange?.(index);
+    },
+    [currentSlide, onSlideChange]
+  );
+
+  // Handle clicks on internal slide links
+  useEffect(() => {
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest("a[data-slide-ref]");
+
+      if (link instanceof HTMLAnchorElement) {
+        e.preventDefault();
+        const slideRef = link.getAttribute("data-slide-ref");
+
+        // Find slide index by title or id
+        const slideIndex = slides.findIndex(
+          (slide) =>
+            slide.title === slideRef ||
+            slide.id === slideRef ||
+            slide.title?.toLowerCase().replace(/\s+/g, "-") === slideRef
+        );
+
+        if (slideIndex !== -1) {
+          goToSlide(slideIndex);
+        }
+      }
+    };
+
+    document.addEventListener("click", handleLinkClick);
+    return () => document.removeEventListener("click", handleLinkClick);
+  }, [slides, goToSlide]);
 
   const nextSlide = useCallback(() => {
     if (currentSlide < slides.length - 1) {
