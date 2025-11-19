@@ -15,34 +15,263 @@ import {
   Zap,
   MapPin,
 } from "lucide-react";
+import { useLanguage } from "@/src/contexts/LanguageContext";
+
+// Translations
+const translations = {
+  en: {
+    title: "EarthEnable Mobile App Documentation",
+    subtitle:
+      "Welcome to the complete documentation for the EarthEnable field operations mobile app. Find installation instructions, user guides, and support resources here.",
+    currentVersion: "CURRENT VERSION",
+    releaseDate: "Released November 2025",
+    productionRelease: "Production Release",
+    aboutApp: "About the App",
+    aboutDescription:
+      "The EarthEnable mobile app is an offline-first cross-platform field operations tool designed for staff across Rwanda, Uganda, and Kenya.",
+    features: {
+      secureAuth: {
+        title: "Secure Authentication",
+        description: "Sign in safely with your earthenable.org Google account",
+      },
+      multilingual: {
+        title: "Multilingual Support",
+        description: "Switch between English and Kinyarwanda for your preferred language",
+      },
+      offlineTask: {
+        title: "Offline Task Management",
+        description: "View and update task status even without internet connection",
+      },
+      location: {
+        title: "Location & Navigation",
+        description: "View task locations and navigate with Google Maps integration",
+      },
+      stats: {
+        title: "Real-time Statistics",
+        description: "Monitor progress with task completion stats and analytics",
+      },
+      sync: {
+        title: "Automatic Sync",
+        description: "Data syncs automatically with Salesforce when online",
+      },
+    },
+    keyFeatures: "Key Features",
+    detailedTask: {
+      title: "Detailed Task Information",
+      description:
+        "Access all relevant customer details and task requirements. View complete contact information, addresses, and special instructions for each assignment.",
+    },
+    flexibleCompletion: {
+      title: "Flexible Task Completion",
+      description:
+        "Complete tasks via phone calls and/or redirect to FormYoula for quality evaluation surveys. Support for multiple completion methods ensures flexibility in the field.",
+    },
+    offlineUpdates: {
+      title: "Offline Status Updates",
+      description:
+        "Update task status immediately, even without connectivity. Changes sync automatically with Salesforce when connection is restored, ensuring no data loss.",
+    },
+    feedbackSurveys: {
+      title: "Dynamic Feedback Surveys",
+      description:
+        "Structured feedback collection to assess app usage and effectiveness. Help us improve the platform with your insights and suggestions.",
+    },
+    additionalCapabilities: "Additional Capabilities",
+    issueReporting: {
+      title: "Built-in Issue Reporting",
+      description:
+        "Report bugs and technical issues directly from the app with automatic device diagnostics. Our support team receives detailed information to resolve problems quickly.",
+      tip: "💡 Pro Tip: Include screenshots when reporting issues for faster resolution",
+    },
+    seamlessUpdates: {
+      title: "Seamless Updates",
+      description:
+        "Receive automatic updates via Google Play Store and over-the-air (OTA) for instant bug fixes and new features without requiring full app reinstallation.",
+      playStore: "PLAY STORE",
+      playStoreDesc: "Major updates & new features",
+      otaUpdates: "OTA UPDATES",
+      otaDesc: "Bug fixes & improvements",
+    },
+    documentation: "Documentation",
+    sections: {
+      installation: {
+        title: "Installation Guide",
+        description:
+          "Step-by-step instructions to download and install the EarthEnable mobile app from Managed Google Play.",
+        badge: "Start Here",
+      },
+      userGuide: {
+        title: "User Guide",
+        description:
+          "Complete guide on using the app including signing in, viewing tasks, completing surveys, and syncing data.",
+        badge: "Essential",
+      },
+      faq: {
+        title: "FAQ & Troubleshooting",
+        description:
+          "Common questions and solutions to frequently encountered issues. Find quick answers here.",
+        badge: "Help",
+      },
+    },
+    readDocs: "Read documentation →",
+    needHelp: "Need Help?",
+    technicalSupport: {
+      title: "Technical Support",
+      description:
+        "For technical issues or questions about the app, our support team is here to help:",
+      button: "Contact Support",
+    },
+    reportIssue: {
+      title: "Report an Issue",
+      description:
+        "Found a bug or have feedback? Use the app's built-in issue reporting feature or contact our support team directly. We appreciate your feedback!",
+      inApp: "In-App Reporting",
+      inAppPath: "Settings → Help & Support → Report Issue",
+      email: "Email Support",
+    },
+    copyright: `© ${new Date().getFullYear()} EarthEnable. All rights reserved.`,
+  },
+  rw: {
+    title: "Inyandiko za Porogaramu ya EarthEnable",
+    subtitle:
+      "Murakaza neza ku nyandiko zuzuye za porogaramu ya terefone ya EarthEnable. Ushobora kubona amabwiriza yo kwishyiriraho, ibikubiyemo n'ubufasha hano.",
+    currentVersion: "VERISIYO IGEZWEHO",
+    releaseDate: "Yasohotse mu Gushyingo 2025",
+    productionRelease: "Verisiyo ya Nyuma",
+    aboutApp: "Ibyerekeye Porogaramu",
+    aboutDescription:
+      "Porogaramu ya terefone ya EarthEnable ni igikoresho gikora nta murandasi gikenewe, cyakozwe kubakozi bo mu Rwanda, Uganda, na Kenya.",
+    features: {
+      secureAuth: {
+        title: "Kwinjira Bifite Umutekano",
+        description: "Injira neza ukoresheje konti yawe ya Google ya earthenable.org",
+      },
+      multilingual: {
+        title: "Indimi Nyinshi",
+        description: "Hindura hagati y'Icyongereza n'Ikinyarwanda",
+      },
+      offlineTask: {
+        title: "Gucunga Imirimo Nta Murandasi",
+        description: "Reba kandi uhindure imiterere y'imirimo nubwo nta murandasi",
+      },
+      location: {
+        title: "Aho Imirimo iri & Kuyobora",
+        description: "Reba aho imirimo iri kandi ukoreshe Google Maps kuyobora",
+      },
+      stats: {
+        title: "Imibare y'Igihe Nyacyo",
+        description: "Genzura iterambere hamwe n'imibare y'imirimo yarangiye",
+      },
+      sync: {
+        title: "Guhuza Byikora",
+        description: "Amakuru ahuza na Salesforce iyo ufite murandasi",
+      },
+    },
+    keyFeatures: "Ibintu Byingenzi",
+    detailedTask: {
+      title: "Amakuru Arambuye ku Mirimo",
+      description:
+        "Kubona amakuru yose yerekeye abakiriya n'ibisabwa. Reba amakuru yuzuye yo guhamagara, aderesi, n'amabwiriza yihariye kuri buri murimo.",
+    },
+    flexibleCompletion: {
+      title: "Gusoza Imirimo Ukoresheje Uburyo Butandukanye",
+      description:
+        "Soza imirimo ukoresheje guhamagara cyangwa FormYoula kugira ngo usuzume imikorere. Uburyo butandukanye bwo gusoza bugufasha mu murimo.",
+    },
+    offlineUpdates: {
+      title: "Kuvugurura Imiterere Nta Murandasi",
+      description:
+        "Hindura imiterere y'umurimo ako kanya, nubwo nta murandasi. Impinduka zihuza na Salesforce iyo murandasi yagarutse, bityo nta makuru atakaza.",
+    },
+    feedbackSurveys: {
+      title: "Ibibazo by'Igitekerezo",
+      description:
+        "Gukusanya ibitekerezo kugira ngo twisuzume gukoresha porogaramu. Dufashe kunoza porogaramu n'ibitekerezo byawe.",
+    },
+    additionalCapabilities: "Ubushobozi Bw'Inyongera",
+    issueReporting: {
+      title: "Kumenyesha Ibibazo",
+      description:
+        "Menyesha amakosa cyangwa ibibazo muri porogaramu hamwe n'amakuru y'ikigendanwa. Itsinda ryacu ry'ubufasha rizakemura ibibazo vuba.",
+      tip: "💡 Inama: Ongeraho amafoto iyo umenyesha ibibazo kugira ngo bikemurwe vuba",
+    },
+    seamlessUpdates: {
+      title: "Kuvugurura Byoroshye",
+      description:
+        "Kubona kuvugurura byikora binyuze kuri Google Play Store cyangwa OTA kugira ngo ukosore amakosa no kongeramo ibintu bishya nta kwishyiriraho porogaramu byose.",
+      playStore: "PLAY STORE",
+      playStoreDesc: "Kuvugurura gukomeye & ibintu bishya",
+      otaUpdates: "KUVUGURURA KWA OTA",
+      otaDesc: "Gukosora amakosa & kunoza",
+    },
+    documentation: "Inyandiko",
+    sections: {
+      installation: {
+        title: "Amabwiriza yo Kwishyiriraho",
+        description:
+          "Amabwiriza atandukanye yo gukuramo no kwishyiriraho porogaramu ya EarthEnable muri Managed Google Play.",
+        badge: "Tangira Hano",
+      },
+      userGuide: {
+        title: "Ubuyobozi bw'Ukoresha",
+        description:
+          "Ubuyobozi burambuye bwo gukoresha porogaramu harimo kwinjira, kureba imirimo, gusoza ibibazo, no guhuza amakuru.",
+        badge: "Vy'Ingenzi",
+      },
+      faq: {
+        title: "Ibibazo Bikunze Kubazwa",
+        description:
+          "Ibibazo bikunze kubazwa n'ibisubizo by'ibibazo bikunze kuboneka. Bonaho ibisubizo byihuse hano.",
+        badge: "Ubufasha",
+      },
+    },
+    readDocs: "Soma inyandiko →",
+    needHelp: "Urakeneye Ubufasha?",
+    technicalSupport: {
+      title: "Ubufasha bw'Ikoranabuhanga",
+      description:
+        "Ku bibazo by'ikoranabuhanga cyangwa ibibazo ku porogaramu, itsinda ryacu ry'ubufasha rirakubereye:",
+      button: "Hamagara Ubufasha",
+    },
+    reportIssue: {
+      title: "Menyesha Ikibazo",
+      description:
+        "Wabonye ikosa cyangwa ufite igitekerezo? Koresha porogaramu yo kumenyesha ibibazo cyangwa hamagara itsinda ryacu ry'ubufasha. Turakundira ibitekerezo byawe!",
+      inApp: "Kumenyesha muri Porogaramu",
+      inAppPath: "Igenamiterere → Ubufasha & Inkunga → Menyesha Ikibazo",
+      email: "Ubufasha bwa Email",
+    },
+    copyright: `© ${new Date().getFullYear()} EarthEnable. Uburenganzira bwose burarinzwe.`,
+  },
+};
 
 export default function AppDocsPage() {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const sections = [
     {
-      title: "Installation Guide",
-      description:
-        "Step-by-step instructions to download and install the EarthEnable mobile app from Managed Google Play.",
+      title: t.sections.installation.title,
+      description: t.sections.installation.description,
       icon: Download,
       href: "/app-docs/installation",
-      badge: "Start Here",
+      badge: t.sections.installation.badge,
       badgeColor: "bg-primary text-white",
     },
     {
-      title: "User Guide",
-      description:
-        "Complete guide on using the app including signing in, viewing tasks, completing surveys, and syncing data.",
+      title: t.sections.userGuide.title,
+      description: t.sections.userGuide.description,
       icon: BookOpen,
       href: "/app-docs/user-guide",
-      badge: "Essential",
+      badge: t.sections.userGuide.badge,
       badgeColor: "bg-green text-white",
     },
     {
-      title: "FAQ & Troubleshooting",
-      description:
-        "Common questions and solutions to frequently encountered issues. Find quick answers here.",
+      title: t.sections.faq.title,
+      description: t.sections.faq.description,
       icon: HelpCircle,
       href: "/app-docs/faq",
-      badge: "Help",
+      badge: t.sections.faq.badge,
       badgeColor: "bg-blue text-white",
     },
   ];
@@ -55,25 +284,24 @@ export default function AppDocsPage() {
           <Smartphone className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
         </div>
         <h1 className="mb-3 sm:mb-4 text-xl sm:text-3xl md:text-4xl font-bold text-text-primary px-2 break-words">
-          EarthEnable Mobile App Documentation
+          {t.title}
         </h1>
         <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-text-secondary px-2 sm:px-4 break-words">
-          Welcome to the complete documentation for the EarthEnable field operations mobile app.
-          Find installation instructions, user guides, and support resources here.
+          {t.subtitle}
         </p>
 
         <div className="mt-8 sm:mt-12 rounded-lg border border-border-light bg-white p-3 sm:p-6 md:p-8 shadow-sm w-full overflow-hidden">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="text-center sm:text-left">
               <p className="text-xs sm:text-sm font-semibold text-text-secondary">
-                CURRENT VERSION
+                {t.currentVersion}
               </p>
               <p className="mt-1 text-lg sm:text-2xl font-bold text-text-primary">1.0.0</p>
-              <p className="mt-1 text-xs sm:text-sm text-text-secondary">Released November 2025</p>
+              <p className="mt-1 text-xs sm:text-sm text-text-secondary">{t.releaseDate}</p>
             </div>
             <div className="rounded-lg bg-green/10 px-2 sm:px-4 py-1 sm:py-2">
               <p className="text-xs sm:text-sm font-semibold text-green whitespace-nowrap">
-                Production Release
+                {t.productionRelease}
               </p>
             </div>
           </div>
@@ -83,12 +311,11 @@ export default function AppDocsPage() {
       {/* About the App */}
       <div className="w-full overflow-hidden">
         <h2 className="mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl font-bold text-text-primary break-words px-1">
-          About the App
+          {t.aboutApp}
         </h2>
         <div className="rounded-lg border border-border-light bg-white p-3 sm:p-6 md:p-8 shadow-sm w-full overflow-hidden">
           <p className="mb-4 sm:mb-6 text-sm sm:text-base md:text-lg text-text-secondary break-words">
-            The EarthEnable mobile app is an offline-first cross-platform field operations tool
-            designed for staff across Rwanda, Uganda, and Kenya.
+            {t.aboutDescription}
           </p>
 
           <div className="grid gap-3 sm:gap-4 md:grid-cols-2 w-full">
@@ -96,11 +323,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Secure Authentication
+                  {t.features.secureAuth.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                Sign in safely with your earthenable.org Google account
+                {t.features.secureAuth.description}
               </p>
             </div>
 
@@ -108,11 +335,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Multilingual Support
+                  {t.features.multilingual.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                Switch between English and Kinyarwanda for your preferred language
+                {t.features.multilingual.description}
               </p>
             </div>
 
@@ -120,11 +347,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Offline Task Management
+                  {t.features.offlineTask.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                View and update task status even without internet connection
+                {t.features.offlineTask.description}
               </p>
             </div>
 
@@ -132,11 +359,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Location & Navigation
+                  {t.features.location.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                View task locations and navigate with Google Maps integration
+                {t.features.location.description}
               </p>
             </div>
 
@@ -144,11 +371,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Real-time Statistics
+                  {t.features.stats.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                Monitor progress with task completion stats and analytics
+                {t.features.stats.description}
               </p>
             </div>
 
@@ -156,11 +383,11 @@ export default function AppDocsPage() {
               <div className="mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <h3 className="font-semibold text-sm sm:text-base text-text-primary break-words">
-                  Automatic Sync
+                  {t.features.sync.title}
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary break-words">
-                Data syncs automatically with Salesforce when online
+                {t.features.sync.description}
               </p>
             </div>
           </div>
@@ -170,46 +397,42 @@ export default function AppDocsPage() {
       {/* Key Features */}
       <div className="w-full overflow-hidden">
         <h2 className="mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl font-bold text-text-primary break-words px-1">
-          Key Features
+          {t.keyFeatures}
         </h2>
         <div className="space-y-3 sm:space-y-4 w-full">
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Detailed Task Information
+              {t.detailedTask.title}
             </h3>
             <p className="text-sm sm:text-base text-text-secondary break-words">
-              Access all relevant customer details and task requirements. View complete contact
-              information, addresses, and special instructions for each assignment.
+              {t.detailedTask.description}
             </p>
           </div>
 
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Flexible Task Completion
+              {t.flexibleCompletion.title}
             </h3>
             <p className="text-sm sm:text-base text-text-secondary break-words">
-              Complete tasks via phone calls and/or redirect to FormYoula for quality evaluation
-              surveys. Support for multiple completion methods ensures flexibility in the field.
+              {t.flexibleCompletion.description}
             </p>
           </div>
 
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Offline Status Updates
+              {t.offlineUpdates.title}
             </h3>
             <p className="text-sm sm:text-base text-text-secondary break-words">
-              Update task status immediately, even without connectivity. Changes sync automatically
-              with Salesforce when connection is restored, ensuring no data loss.
+              {t.offlineUpdates.description}
             </p>
           </div>
 
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Dynamic Feedback Surveys
+              {t.feedbackSurveys.title}
             </h3>
             <p className="text-sm sm:text-base text-text-secondary break-words">
-              Structured feedback collection to assess app usage and effectiveness. Help us improve
-              the platform with your insights and suggestions.
+              {t.feedbackSurveys.description}
             </p>
           </div>
         </div>
@@ -218,44 +441,41 @@ export default function AppDocsPage() {
       {/* Additional Capabilities */}
       <div className="w-full overflow-hidden">
         <h2 className="mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl font-bold text-text-primary break-words px-1">
-          Additional Capabilities
+          {t.additionalCapabilities}
         </h2>
         <div className="space-y-3 sm:space-y-4 w-full">
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Built-in Issue Reporting
+              {t.issueReporting.title}
             </h3>
             <p className="mb-3 sm:mb-4 text-sm sm:text-base text-text-secondary break-words">
-              Report bugs and technical issues directly from the app with automatic device
-              diagnostics. Our support team receives detailed information to resolve problems
-              quickly.
+              {t.issueReporting.description}
             </p>
             <div className="rounded-lg bg-blue/10 p-2 sm:p-3 md:p-4 overflow-hidden">
               <p className="text-xs sm:text-sm font-semibold text-blue break-words">
-                💡 Pro Tip: Include screenshots when reporting issues for faster resolution
+                {t.issueReporting.tip}
               </p>
             </div>
           </div>
 
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 shadow-sm w-full overflow-hidden">
             <h3 className="mb-2 sm:mb-3 text-lg sm:text-xl font-bold text-text-primary break-words">
-              Seamless Updates
+              {t.seamlessUpdates.title}
             </h3>
             <p className="mb-3 sm:mb-4 text-sm sm:text-base text-text-secondary break-words">
-              Receive automatic updates via Google Play Store and over-the-air (OTA) for instant bug
-              fixes and new features without requiring full app reinstallation.
+              {t.seamlessUpdates.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full">
               <div className="flex-1 rounded-lg bg-green/10 p-2 sm:p-3 overflow-hidden">
-                <p className="text-xs font-semibold text-green">PLAY STORE</p>
+                <p className="text-xs font-semibold text-green">{t.seamlessUpdates.playStore}</p>
                 <p className="mt-1 text-xs sm:text-sm text-text-secondary break-words">
-                  Major updates & new features
+                  {t.seamlessUpdates.playStoreDesc}
                 </p>
               </div>
               <div className="flex-1 rounded-lg bg-primary/10 p-2 sm:p-3 overflow-hidden">
-                <p className="text-xs font-semibold text-primary">OTA UPDATES</p>
+                <p className="text-xs font-semibold text-primary">{t.seamlessUpdates.otaUpdates}</p>
                 <p className="mt-1 text-xs sm:text-sm text-text-secondary break-words">
-                  Bug fixes & improvements
+                  {t.seamlessUpdates.otaDesc}
                 </p>
               </div>
             </div>
@@ -266,7 +486,7 @@ export default function AppDocsPage() {
       {/* Documentation Sections */}
       <div className="w-full overflow-hidden">
         <h2 className="mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl font-bold text-text-primary break-words px-1">
-          Documentation
+          {t.documentation}
         </h2>
         <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {sections.map((section) => {
@@ -294,7 +514,7 @@ export default function AppDocsPage() {
                   {section.description}
                 </p>
                 <p className="mt-3 sm:mt-4 text-xs sm:text-sm font-semibold text-primary">
-                  Read documentation →
+                  {t.readDocs}
                 </p>
               </Link>
             );
@@ -305,44 +525,43 @@ export default function AppDocsPage() {
       {/* Help & Support */}
       <div className="w-full overflow-hidden">
         <h2 className="mb-4 sm:mb-6 text-xl sm:text-2xl md:text-3xl font-bold text-text-primary break-words px-1">
-          Need Help?
+          {t.needHelp}
         </h2>
         <div className="space-y-3 sm:space-y-4 md:space-y-6 w-full">
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 lg:p-8 shadow-sm w-full overflow-hidden">
             <h3 className="mb-3 sm:mb-4 text-lg sm:text-xl font-semibold text-text-primary break-words">
-              Technical Support
+              {t.technicalSupport.title}
             </h3>
             <p className="mb-3 sm:mb-4 text-sm sm:text-base text-text-secondary break-words">
-              For technical issues or questions about the app, our support team is here to help:
+              {t.technicalSupport.description}
             </p>
             <a
               href="mailto:support@earthenable.org"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-primary/90"
             >
-              Contact Support
+              {t.technicalSupport.button}
             </a>
           </div>
 
           <div className="rounded-lg border border-border-light bg-white p-3 sm:p-4 md:p-6 lg:p-8 shadow-sm w-full overflow-hidden">
             <h3 className="mb-3 sm:mb-4 text-lg sm:text-xl font-semibold text-text-primary break-words">
-              Report an Issue
+              {t.reportIssue.title}
             </h3>
             <p className="mb-3 sm:mb-4 text-sm sm:text-base text-text-secondary break-words">
-              Found a bug or have feedback? Use the app&apos;s built-in issue reporting feature or
-              contact our support team directly. We appreciate your feedback!
+              {t.reportIssue.description}
             </p>
             <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 w-full">
               <div className="rounded-lg bg-background-light p-3 sm:p-4 overflow-hidden">
                 <p className="mb-1 text-xs sm:text-sm font-semibold text-text-primary break-words">
-                  In-App Reporting
+                  {t.reportIssue.inApp}
                 </p>
                 <p className="text-[10px] sm:text-xs text-text-secondary break-words">
-                  Settings → Help & Support → Report Issue
+                  {t.reportIssue.inAppPath}
                 </p>
               </div>
               <div className="rounded-lg bg-background-light p-3 sm:p-4 overflow-hidden">
                 <p className="mb-1 text-xs sm:text-sm font-semibold text-text-primary break-words">
-                  Email Support
+                  {t.reportIssue.email}
                 </p>
                 <p className="text-[10px] sm:text-xs text-text-secondary break-words">
                   support@earthenable.org
@@ -352,9 +571,7 @@ export default function AppDocsPage() {
           </div>
 
           <div className="text-center w-full">
-            <p className="text-xs sm:text-sm text-text-secondary break-words px-2">
-              © {new Date().getFullYear()} EarthEnable. All rights reserved.
-            </p>
+            <p className="text-xs sm:text-sm text-text-secondary break-words px-2">{t.copyright}</p>
           </div>
         </div>
       </div>
