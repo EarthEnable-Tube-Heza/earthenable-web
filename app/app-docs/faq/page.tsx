@@ -188,7 +188,10 @@ function parseFAQMarkdown(markdown: string): FAQCategory[] {
       const answerHtml = processMarkdownToHTML(currentAnswer.join("\n"));
       currentCategory.questions.push({
         id: `q-${currentCategory.id}-${currentCategory.questions.length}`,
-        question: currentQuestion.replace(/^###\s*Q:\s*/i, "").trim(),
+        question: currentQuestion
+          .replace(/^###\s*Q:\s*/i, "")
+          .replace(/^###\s*Ikibazo:\s*/i, "")
+          .trim(),
         answer: answerHtml,
       });
     }
