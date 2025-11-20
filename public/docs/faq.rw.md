@@ -1,5 +1,9 @@
 # Ibibazo Bikunze Kubazwa (FAQ)
 
+> **📝 Inyandiko z'Ibyashingiweho**
+>
+> Iyi FAQ ikomeza gutunganywa no guhurizwa n'ibintu bishya bya porogaramu. Nubwo amakuru atanzwe ari ukuri kandi akeneye, turakomeza kunoza inyandiko dukurikije ibitekerezo by'abakoresha n'ivugurura rya porogaramu. Niba ubonye itandukaniro cyangwa ufite igitekerezo, nyamuneka hamagara support@earthenable.org.
+
 ## Ibibazo Bisanzwe n'Ibisubizo kuri Porogaramu ya EarthEnable
 
 Iyi FAQ ikubiyemo ibibazo bisanzwe n'ibibazo ushobora guhura nabyo mugihe ukoresha porogaramu ya EarthEnable.

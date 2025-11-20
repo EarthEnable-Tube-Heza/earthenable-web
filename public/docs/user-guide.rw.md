@@ -1,5 +1,9 @@
 # Igitabo cy'Ukoresha Porogaramu
 
+> **📝 Inyandiko z'Ibyashingiweho**
+>
+> Iki gitabo gikomeza gutunganywa no guhurizwa n'ibintu bishya bya porogaramu. Nubwo amakuru atanzwe ari ukuri kandi akeneye, turakomeza kunoza inyandiko dukurikije ibitekerezo by'abakoresha n'ivugurura rya porogaramu. Niba ubonye itandukaniro cyangwa ufite igitekerezo, nyamuneka hamagara support@earthenable.org.
+
 ## Igitabo Cyuzuye cyo Gukoresha Porogaramu ya EarthEnable
 
 Iki gitabo gikubiyemo amakuru yose ku bikoresho n'ubushobozi bwa porogaramu ya EarthEnable.

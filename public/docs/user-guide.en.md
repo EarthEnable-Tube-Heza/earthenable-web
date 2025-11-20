@@ -1,5 +1,9 @@
 # User Guide
 
+> **📝 Draft Documentation Notice**
+>
+> This guide is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Complete Guide to Using the EarthEnable Mobile App
 
 This comprehensive guide covers all features and capabilities of the EarthEnable field operations mobile app.

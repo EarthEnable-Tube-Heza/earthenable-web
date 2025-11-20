@@ -1,5 +1,9 @@
 # Frequently Asked Questions (FAQ)
 
+> **📝 Draft Documentation Notice**
+>
+> This FAQ is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Common Questions and Troubleshooting for the EarthEnable Mobile App
 
 This FAQ covers the most common questions and issues you may encounter while using the EarthEnable mobile app.

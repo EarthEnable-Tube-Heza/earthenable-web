@@ -1,5 +1,9 @@
 # Amabwiriza yo Gushyiraho Porogaramu
 
+> **📝 Inyandiko z'Ibyashingiweho**
+>
+> Iki gitabo gikomeza gutunganywa no guhurizwa n'ibintu bishya bya porogaramu. Nubwo amakuru atanzwe ari ukuri kandi akeneye, turakomeza kunoza inyandiko dukurikije ibitekerezo by'abakoresha n'ivugurura rya porogaramu. Niba ubonye itandukaniro cyangwa ufite igitekerezo, nyamuneka hamagara support@earthenable.org.
+
 ## Kuramo no Gushyiraho Porogaramu ya EarthEnable ku Mugaragaro
 
 Iyi nyandiko izagufasha mu gushyiraho porogaramu ya EarthEnable kuri telefone yawe ya Android.

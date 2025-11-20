@@ -1,5 +1,9 @@
 # Installation Guide
 
+> **📝 Draft Documentation Notice**
+>
+> This guide is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Download and Install the EarthEnable Mobile App
 
 This guide will walk you through the process of installing the EarthEnable mobile app on your Android device.
