@@ -74,13 +74,14 @@ Niba ikibazo gikomeje, hamagara support@earthenable.org
 
 **Igisubizo:** Kugira ngo usohoke:
 
-1. Fungura porogaramu
-2. Jya ku **Igenamiterere** (ikimenyetso cy'ibikoresho hasi)
-3. Sunika kugera ku gice cya **Konti**
-4. Kanda **"Gusohoka"**
-5. Emeza igihe usabwe
+1. Kanda **ifoto yawe ya profil** (hejuru ibumoso) kugira ngo ufungure navigation drawer
+2. Hasi **ibumoso** bya drawer, kanda buto ya **"Logout"**
+3. Emeza igihe usabwe
 
-**Urubanza:** Mbere yo gusohoka, menya neza ko ivugurura ryose ry'imirimo yawe ryavugururiwe kugira ngo wirinde gutakaza impinduka.
+**Ngombwa:**
+
+- Menya neza ko ivugurura ryose ry'imirimo yawe ryavugururiwe mbere yo gusohoka kugira ngo wirinde gutakaza impinduka
+- Uzakeneye **guhuza na interineti** kugira ngo winjire ukundi
 
 ---
 

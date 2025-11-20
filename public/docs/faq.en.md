@@ -80,13 +80,14 @@ If the issue persists, contact support@earthenable.org
 
 **A:** To sign out:
 
-1. Open the app
-2. Go to **Settings** (gear icon at bottom)
-3. Scroll to **Account** section
-4. Tap **"Sign Out"**
-5. Confirm when prompted
+1. Tap your **profile picture** (top left) to open the navigation drawer
+2. At the **bottom left** of the drawer, tap the **"Logout"** button
+3. Confirm when prompted
 
-**Warning:** Before signing out, make sure all your task updates have been synced to avoid losing changes.
+**Important:**
+
+- Make sure all your task updates have been synced before signing out to avoid losing changes
+- You will need **internet access** to sign back in
 
 ---
 
