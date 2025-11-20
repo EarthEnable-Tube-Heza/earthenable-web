@@ -58,6 +58,32 @@ Niba ikibazo gikomeje, hamagara support@earthenable.org
 
 ---
 
+### Ikibazo: Ndashobora gukoresha porogaramu ku bihingwa bitandukanye ukoresheje konti imwe?
+
+**Igisubizo:** Yego! Ushobora kwinjira ku bihingwa bitandukanye (urugero, telefone yawe y'akazi na tableti) ukoresheje imeri imwe ya earthenable.org. Imirimo yawe izavugururwa ku bihingwa byose.
+
+**Ngombwa:**
+
+- Menya neza ko ukora sync buri gihe kuri buri kigero
+- Impinduka zakoze kuri kimwe mu bihingwa zizagaragara ku bindi nyuma ya sync
+- Niba ubona amakuru atandukanye ku bihingwa bitandukanye, tangira sync mu buryo bw'intoki
+
+---
+
+### Ikibazo: Ndasohoka ute?
+
+**Igisubizo:** Kugira ngo usohoke:
+
+1. Fungura porogaramu
+2. Jya ku **Igenamiterere** (ikimenyetso cy'ibikoresho hasi)
+3. Sunika kugera ku gice cya **Konti**
+4. Kanda **"Gusohoka"**
+5. Emeza igihe usabwe
+
+**Urubanza:** Mbere yo gusohoka, menya neza ko ivugurura ryose ry'imirimo yawe ryavugururiwe kugira ngo wirinde gutakaza impinduka.
+
+---
+
 ## Imirimo & Gucunga Imirimo
 
 ### Ikibazo: Ntabwo mbona umurimo uwo ariwo wose. Ikibazo ni iki?
@@ -89,6 +115,94 @@ Niba ikibazo gikomeje, hamagara support@earthenable.org
 5. Kanda **dropdown ya status**
 6. Hitamo status nshya (Ntiyatangiye → Iriho → Ryarangiye → Gutegereza)
 7. Kanda buto **"Update Status"**
+
+**Icyitonderwa:** Ushobora kuvugurura status y'umurimo ndetse no mugihe uri offline. Impinduka zizavugururwa ku buryo bwikora iyo ugarutse kumurongo.
+
+---
+
+### Ikibazo: Ni irihe tandukaniro riri hagati ya "Ryarangiye" na "Gutegereza"?
+
+**Igisubizo:**
+
+**Ryarangiye** bivuze:
+
+- Umurimo wawe warangiye
+- Ukoze ibyose byasabwe
+- Ntawundi murimo usigaye kuri uwo murimo
+
+**Gutegereza** bivuze:
+
+- Warangije uruhande rwawe
+- Ugomba kubona ibisubizo/kwemeza kuva ku muterankunga cyangwa umuyobozi
+- Ntushobora gukomeza kugeza igihe byanemejwe
+
+**Urugero:**
+
+- **Ryarangiye**: Usoje ubusuzume, suzuza fomo, kandi byose byemejwe
+- **Gutegereza**: Usoje ubusuzume ariko utegereje kwemezwa n'umuyobozi mbere yo gukomeza
+
+---
+
+### Ikibazo: Natewe ikosa maze nkanda ku murimo nko "Ryarangiye". Ndashobora kuvugurura?
+
+**Igisubizo:** Yego! Ushobora guhindura status y'umurimo igihe cyose:
+
+1. Fungura **Task Detail Modal** y'umurimo
+2. Kanda dropdown ya **status**
+3. Hitamo status ishya (urugero: Gutegereza cyangwa Iriho)
+4. Kanda **"Kuvugurura Status"**
+
+**Icyitonderwa:** Niba umurimo wamenyeshejwe ko "Ryarangiye", umuyobozi wawe ashobora kuba yarabibonye. Menya neza ko umenyesha niba guhindura status bivuze cyane.
+
+---
+
+### Ikibazo: Ndashobora kuyungurura imirimo ukurikije ahantu cyangwa italiki y'inzibacyuho?
+
+**Igisubizo:** Yego! Porogaramu itanga uburyo butandukanye bwo kuyungurura:
+
+**Kuyungurura n'ahantu:**
+
+1. Jya ku rutonde rw'imirimo
+2. Kanda ikimenyetso cy'uyungurura hejuru
+3. Hitamo **"Ahantu"**
+4. Hitamo ahantu ushaka (Rwanda, Kenya, Zambia, India)
+
+**Kuyungurura n'italiki y'inzibacyuho:**
+
+1. Kanda ikimenyetso cy'uyungurura
+2. Hitamo **"Italiki y'Inzibacyuho"**
+3. Hitamo urwego rw'italiki:
+   - **Kare Uyu Munsi**: Imirimo igomba kurangizwa uyu munsi
+   - **Iki Cyumweru**: Imirimo igomba kurangizwa iki cyumweru
+   - **Ikizaza**: Imirimo bifite italiki zizaza
+
+**Kuyungurura na status:**
+
+- Ntiyatangiye
+- Iriho
+- Ryarangiye
+- Gutegereza
+
+---
+
+### Ikibazo: Ndashobora kureba imirimo ingahe icyarimwe?
+
+**Igisubizo:** Porogaramu itanga urutonde rw'imirimo yose washinzwe:
+
+**Kuri ecran ya mbere:**
+
+- **20 imirimo** iragaragara
+- Sunika hasi kugira ngo upakure imirimo myinshi
+
+**Ingengo:**
+
+- **Nta mpera** ku murimo ushobora gupakurura
+- Imirimo yose yawe iri hanze yibike ariko ipakururwa mugihe ukeneye
+
+**Urwego rwihariye:**
+
+- Ushobora **gushakisha** imirimo ukoresheje ID y'umurimo cyangwa amazina
+- Koresha **uyungurura** kugira ngo ugabanye urutonde
 
 ---
 
@@ -127,6 +241,101 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 ---
 
+### Ikibazo: Nzi nte niba impinduka zanje zavugururiwe?
+
+**Igisubizo:** Hariho uburyo butatu bwo kumenya:
+
+**1. Ikimenyetso cya Sync kuri Dashboard:**
+
+- Icyatsi kibisi (✓): Sync yatsinze
+- Umuhondo (↻): Sync iriho
+- Umutuku (✗): Sync yananiranye
+
+**2. Igihe cya Sync ya Nyuma:**
+
+- Reba igice cyo "Yakoreshejwe bwa nyuma" kuri dashboard
+- Iragaragaza igihe cya sync yanyuma
+
+**3. Inyandiko ku murimo:**
+
+- Mu Task Detail, uzabona igihe impinduka yavuguruwe
+
+**Inama:** Niba utazi neza, kanda buto ya "Sync Ubu" kugira ngo ukore sync mu buryo bw'intoki.
+
+---
+
+### Ikibazo: Habaho iki niba ngira impinduka ku murimo offline kandi umuyobozi wanjye agira impinduka kumurongo icyarimwe?
+
+**Igisubizo:** Porogaramu ikemura iby'impinduka mu buryo bwa sisitemu:
+
+**Amategeko:** Server ubuhora itwara
+
+**Kugirango bisobanure:**
+
+- Impinduka zawe offline zizabikwa
+- Iyo wakoresha sync, porogaramu izareba amakuru ya server
+- **Amakuru ya server azatsinda** impinduka zawe offline
+- Uzahamagariwa impinduka zihari
+
+**Gukumira ibi:**
+
+- Korera sync buri gihe mbere yo gukora impinduka
+- Ntugire impinduka nyinshi utari kumurongo kandi umuyobozi yawe akorera kumurongo
+
+---
+
+### Ikibazo: Nabaye offline iminsi 3. Impinduka zanje zizakorera sync?
+
+**Igisubizo:** Yego! Impinduka zawe zizakorera sync igihe cyose:
+
+**Igihe:**
+
+- Ntanakimwe cyose ku gihe ushobora kuba uri offline
+- Impinduka zizabikwa muri telefone yawe kugeza ugaruka kumurongo
+
+**Ariko:**
+
+- **Iminsi 7+**: Kuzana amakuru mashya yinshi ashobora gufata igihe
+- **Ibyumweru 2+**: Hamagara ubufasha mbere yo sync (support@earthenable.org)
+
+**Inama:**
+
+- Gerageza gukoresha sync byibuze rimwe ku cyumweru
+- Niba ugiye kubaho mu kigero kirekire offline, menyesha umuyobozi wawe
+
+---
+
+### Ikibazo: Sync ifata igihe kirekire cyane. Nkore iki?
+
+**Igisubizo:** Niba sync ifata igihe kirekire (10+ iminota):
+
+**1. Reba umuhuza wa interineti:**
+
+- Menya neza ko ufite signal ikomeye (byibuze 3G)
+- Gerageza gukoresha Wi-Fi niba ihari
+
+**2. Reba ingano y'amakuru:**
+
+- Sync ya mbere cyangwa nyuma y'igihe kirekire offline ishobora gufata igihe
+- Uyunguruke cyane amakuru (5MB - 20MB y'amakuru)
+
+**3. Funga no gufungura porogaramu:**
+
+- Rinda sync irangira niba birangiye
+- Funga porogaramu
+- Fungura ukundi hanyuma ugerageze sync ukundi
+
+**4. Siba cache:**
+
+- Settings → Apps → EarthEnable → Storage → Clear Cache
+- **NTUKOSORE Data** - uzatakaza amakuru atavuguruwe
+
+**5. Hamagara ubufasha:**
+
+- Niba ikomeje gufata igihe kirekire (30+ iminota), hamagara support@earthenable.org
+
+---
+
 ## Guhuza na FormYoula
 
 ### Ikibazo: FormYoula ni iki kandi kuki nkeneye?
@@ -151,6 +360,75 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 ---
 
+### Ikibazo: Iyo nkanze "Gufungura Ubushakashatsi", nta kintu kibaho
+
+**Igisubizo:** Ibi bishobora guturuka ku mpamvu zitandukanye:
+
+**1. FormYoula itashyizweho:**
+
+- Kanda "Gufungura Ubushakashatsi" kugira ngo ujye kuri Play Store
+- Shyiraho FormYoula
+- Garuka kandi ugerageze ukundi
+
+**2. FormYoula itemewe:**
+
+- Jya kuri Settings → Apps → FormYoula
+- Emeza ko itemewe gufungura ibindi bihingwa
+
+**3. Android 11+:**
+
+- Emeza ko FormYoula ifite uruhushya rwo gufungura ibindi porogaramu
+- Settings → Apps → FormYoula → Uruhushya
+
+**4. Niba ikomeje:**
+
+- Funga porogaramu zombi (EarthEnable na FormYoula)
+- Sohora hanyuma winjire ukundi
+- Gerageza ukundi
+
+---
+
+### Ikibazo: Ngomba kurangiza ubushakashatsi mbere yo gushyira umurimo nko "Ryarangiye"?
+
+**Igisubizo:** Biterwa n'ubwoko bw'umurimo:
+
+**Imirimo isaba ubushakashatsi:**
+
+- Yego, ugomba kurangiza ubushakashatsi
+- Umuyobozi wawe azakubwira imirimo isaba ubushakashatsi
+- Urugero: Isuzuma rya Nyuma, Gusura kwa Mbere
+
+**Imirimo idasa ubushakashatsi:**
+
+- Oya, ushobora kurangiza utajyanye kuri FormYoula
+- Urugero: Imikoranire rusange, Gukurikirana
+
+**Niba utazi neza:**
+
+- Reba ibisobanuro by'umurimo
+- Hamagara umuyobozi wawe
+
+---
+
+### Ikibazo: Ndashobora kurangiza ubushakashatsi offline?
+
+**Igisubizo:** Yego, FormYoula ikora neza offline:
+
+**Iyo uri offline:**
+
+- Fungura ubushakashatsi buri mu buryo busanzwe
+- Uzuza fomo
+- Amakuru azabikwa hanze muri telefone yawe
+
+**Iyo ugaruka kumurongo:**
+
+- FormYoula izohereza amakuru ku buryo bwikora
+- Ntakindi ugomba gukora
+
+**Icyitonderwa:** Ubushakashatsi bunyuranye bushobora gusaba interineti (urugero: amafoto atunganywa neza).
+
+---
+
 ## Ururimi & Localization
 
 ### Ikibazo: Nshobora guhindura ururimi rwa porogaramu ute?
@@ -164,6 +442,40 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 5. Hitamo:
    - **English** (Icyongereza)
    - **Kinyarwanda** (Ikinyarwanda)
+
+---
+
+### Ikibazo: Kuki ibice bimwe bikomeza kuba mu Cyongereza nyuma yo guhindura mu Kinyarwanda?
+
+**Igisubizo:** Ibi birashoboka kandi bikaba byitezwe:
+
+**Impamvu:**
+
+- **Ibisobanuro bimwe bikomeje**: Amahugurwa yacu ataruhuka
+- **Amazina y'ibihingwa**: Amazina bimwe ya tekiniki akomeza mu Cyongereza (urugero: FormYoula, Status)
+- **Amakuru kuva kuri seriveri**: Amakuru atumanywa na seriveri (urugero: amazina y'imirimo) ashobora kuba mu Cyongereza
+
+**Icyo wakora:**
+
+- Amahugurwa agenda gutunganywa guhora
+- Ibisobanuro byinshi bizahindukirwa mu Kinyarwanda mu gihe kizaza
+
+---
+
+### Ikibazo: Ndashobora gusaba porogaramu mu zindi ndimi (Igiswahili, Igifaransa)?
+
+**Igisubizo:** Ubu, porogaramu ihari gusa mu Cyongereza na Kinyarwanda.
+
+**Indi ndimi mu gihe kizaza:**
+
+- **Igiswahili**: Birateganyijwe kuri Kenya
+- **Igifaransa**: Birateganyijwe kuri DR Congo
+- **Icihindi**: Birateganyijwe mu Buhinde
+
+**Kugira ngo usabe:**
+
+- Tanga icyifuzo kuri support@earthenable.org
+- Twizigira amazindi ndimi ukurikije uko umurongo wagutse
 
 ---
 
@@ -194,6 +506,56 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 ---
 
+### Ikibazo: Ndabona "Icyifuzo cy'umurongo cyanze" amakosa
+
+**Igisubizo:** Ibi bivuze ko porogaramu idashobora kugera kuri seriveri:
+
+**Ibisubizo:**
+
+1. **Reba umuhuza wa interineti wawe:**
+   - Reba niba ufite signal (Wi-Fi cyangwa data itunganywa)
+   - Gerageza kugurura kurubuga rundi (Browser, WhatsApp)
+   - Gerageza guhindura Wi-Fi → mobile data cyangwa ibinyuranye
+
+2. **Reba server:**
+   - Seriveri ishobora kuba itakora (byibuze)
+   - Gerageza ukundi nyuma y'iminota 5-10
+
+3. **Reba firewall/VPN:**
+   - VPN ishobora guhagarika porogaramu
+   - Siba VPN kandi ugerageze ukundi
+
+4. **Hamagara ubufasha:**
+   - Niba ikomeje (imasaha 1+), hamagara support@earthenable.org
+
+---
+
+### Ikibazo: Bateri irasenyuka cyane. Mbega porogaramu ikoresha ingufu nyinshi?
+
+**Igisubizo:** Porogaramu yarakozwe kugira ngo ikoreshe ingufu nke, ariko ibishobora kuba:
+
+**Impamvu:**
+
+- **Sync ya mbere**: Gumanura amakuru menshi gushobora gukoresha bateri
+- **Background sync**: Buri munota 5, ariko cyane cyane
+- **Location services**: Niba ifite aho iherereye kuri sync
+
+**Kugabanya gukoresa bateri:**
+
+1. **Emeza ko sync yaragenze**:
+   - Ntukoreshe sync buri gihe
+   - Rinda sync irangira
+
+2. **Reba aho iherereye:**
+   - Settings → Apps → EarthEnable → Uruhushya
+   - Hindura aho iherereye kuri "Only while using the app"
+
+3. **Koresha battery optimization:**
+   - Settings → Battery → App battery usage
+   - Emeza ko "Battery optimization" yashyizweho kuri EarthEnable
+
+---
+
 ## Amakuru & Ubwite
 
 ### Ikibazo: Amakuru yanjye afite umutekano?
@@ -209,6 +571,72 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 - Google OAuth
 - JWT tokens hamwe na 30-day expiry
+
+---
+
+### Ikibazo: Porogaramu ikusanya amakuru yihe?
+
+**Igisubizo:** Porogaramu ikusanya gusa amakuru akenewe kugira ngo ikore:
+
+**Amakuru akusanywa:**
+
+- **Amakuru y'umukoresha**: Amazina, imeri, ifoto ya profil (kuva kuri Google)
+- **Amakuru y'imirimo**: Status y'imirimo, ivugurura, igihe cyakozwe
+- **Amakuru y'aho uherereye**: Aho uhereye (niba ushyize umurimo)
+- **Amakuru ya tekiniki**: Verisiyo ya porogaramu, ubwoko bwa telefone, amakosa
+
+**Amakuru tutakusanya:**
+
+- ❌ Urutonde rwawe rw'abantu bahamagara
+- ❌ Ubutumwa
+- ❌ Amafoto/Videwo
+- ❌ Ibikorwa byo hanze ya porogaramu
+
+---
+
+### Ikibazo: Ndashobora gusiba amakuru yanjye?
+
+**Igisubizo:** Yego, ariko bimeze:
+
+**Gusiba konti:**
+
+- Hamagara support@earthenable.org kugira ngo usabe gusiba konti yawe
+- Amakuru yose ajyanye na konti yawe azasibwa
+
+**Icyitonderwa:**
+
+- Gusiba konti **ntibishoboka gukuraho**
+- Amakuru menshi y'imirimo araguma kuko ari ayikigo
+- Gusiba konti kuzafata iminsi 7-14 bikorwa
+
+**Andi mahitamo:**
+
+- Ushobora **guhagarika konti yawe** badakuyikuraho burundu
+- Hamagara umuyobozi wawe mbere yo gufata icyemezo
+
+---
+
+### Ikibazo: Ni nde ubona ivugurura ry'imirimo yanjye?
+
+**Igisubizo:** Uburenganzira bwo kubona amakuru bushingiye ku ruhare:
+
+**Wowe:**
+
+- Uraba imirimo yawe yose n'ivugurura
+
+**Umuyobozi wawe:**
+
+- Uraba imirimo yose y'abakozi be
+- Uraba ivugurura ryose n'amateka
+
+**Umuyobozi Mukuru/Admin:**
+
+- Uraba amakuru yose ku rwego rw'ikigo
+
+**Ikindi:**
+
+- Imirimo itishyikirizwe abandi bakozi
+- Gusa abantu bashinzwe umurimo ushobora kuraba amakuru yawo
 
 ---
 
@@ -231,6 +659,52 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 ---
 
+### Ikibazo: Porogaramu irankunda kuvugurura. Ni ngombwa?
+
+**Igisubizo:** Biterwa n'ubwoko bw'ivugurura:
+
+**Ivugurura rya ngombwa:**
+
+- Gukosora ibibazo by'umutekano
+- Gukosora amakosa akomeye
+- Impinduka zikomeye (verisiyo ishaje ntizakora)
+- **Ntushobora kurenza** ibi - porogaramu ntizakora kugeza ivuguruwe
+
+**Ivugurura rya guhitamo:**
+
+- Ibintu bishya
+- Kunoza imikorere
+- Kunoza UI
+- **Ushobora gutegereza** ariko ugomba kuvugurura mu minsi 7
+
+**Uburyo bwo kumenya:**
+
+- Ngombwa: Umutuku banner ifite "Ivugurura Risabwa" - nta buto yo gufunga
+- Guhitamo: Orange banner ifite "Ivugurura Ririho" - ushobora gufunga
+
+---
+
+### Ikibazo: Navuguruye porogaramu ariko noneho ntikora. Nkore iki?
+
+**Igisubizo:** Niba ivugurura ritera ibibazo:
+
+1. **Ongera utangire porogaramu** (funga burundu hanyuma ufungure ukundi)
+2. **Ongera utangire telefone yawe** (zimya hanyuma uzime)
+3. **Siba cache ya porogaramu** (Settings → Apps → EarthEnable → Storage → Clear Cache)
+4. **Reba niba hari ivugurura ryandi** (rimwe na rimwe hotfix itangwa vuba)
+5. **Kumenyesha ikibazo** binyuze muri Settings → Help & Support → Report an Issue
+
+**Shyiramo mu raporo yawe:**
+
+- Ni iki kitakora
+- Wari ukora iki igihe cyatangiye gukora nabi
+- Verisiyo ya porogaramu (iboneka muri Settings → General)
+- Modeli ya telefone yawe
+
+Ubufasha buzasubiza mu minsi 2-3 y'akazi, akenshi byihuta ku bibazo bikomeye.
+
+---
+
 ## Telefone & Guhuza
 
 ### Ikibazo: Android version nkeneye ni iyihe?
@@ -238,6 +712,60 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 **Igisubizo:** **Ntoya isabwa:** Android 7.0 (Nougat) cyangwa irenga (API level 24+, Target SDK 36)
 
 **Birasabwa:** Android 10 cyangwa irenga kugira ngo bikorere neza
+
+**Kugira ngo urebe verisiyo ya Android yawe:**
+
+1. Settings → About phone → Android version
+
+**Niba verisiyo ya Android yawe ari ishaje cyane:**
+
+- Hamagara IT kugira ngo uvugurure telefone
+- Telefone ishaje ishobora kutabona ivugurura ry'umutekano
+- Porogaramu ishobora kutashyirwa kuri verisiyo z'ishaje cyane za Android (munsi ya 7.0)
+
+---
+
+### Ikibazo: Porogaramu ikora kuri iOS (iPhone)?
+
+**Igisubizo:** Ubu ntabwo. Porogaramu ubu **ni ya Android gusa**.
+
+**Inkunga ya iOS** iteganyijwe kuzasohoka mu gihe kizaza. Niba ukeneye iOS:
+
+- Hamagara umuyobozi wawe kugira ngo werekane ubishaka
+- Itsinda rizatekereza ukurikije ibyo abantu basaba
+- Ubu, telefone za Android zirakenwe ku mirimo yo mu murima
+
+---
+
+### Ikibazo: Porogaramu ikeneye umwanya ungahe wo kubika?
+
+**Igisubizo:** Ibisabwa byo kubika:
+
+- **Ingano yo kumanura**: ~50 MB
+- **Ingano yashyizweho**: ~120 MB (harimo amakuru ya mbere)
+- **Umwanya usabwa w'ubuntu**: Byibuze **500 MB** kugira ngo byemere:
+  - Ivugurura rizaza
+  - Kuzamura amakuru ya offline (niba ufite imirimo myinshi)
+  - Cache ya porogaramu
+
+**Kugira ngo usibure umwanya:**
+
+- Kuraho porogaramu utakoresheje
+- Kwimura amafoto/videwo kuri Google Photos cyangwa PC
+- Siba cache ku zindi porogaramu
+
+---
+
+### Ikibazo: Ndashobora gukoresha porogaramu kuri tableti?
+
+**Igisubizo:** Yego! Porogaramu ikora kuri tableti za Android (Android 8.0+).
+
+**Ibyitonderwa:**
+
+- Ingano z'ecran ya tableti ziremerewe
+- UI ikunura neza
+- Ibintu byose bikora nk'uko bikora kuri telefone
+- Koresha konti imwe ya earthenable.org kugira ngo winjire
 
 ---
 
@@ -272,6 +800,96 @@ Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
 - Hamagara **umuyobozi wawe**
 
+**Ibibazo bya telefone** (ntishobora kwishyiraho, telefone ni ishaje cyane):
+
+- Hamagara **umuyobozi wa IT**
+- Imeri: **it@earthenable.org** (niba ihari)
+
+**Ibibazo by'amahugurwa no gukora** (nkora ute X?):
+
+- Soma **FAQ** iyi mbere
+- Soma **Umuyobozi w'Ukoresha**: https://hub.earthenable.org/app-docs/user-guide
+- Baza **umuyobozi wawe** cyangwa abakozi babizi
+
+---
+
+### Ikibazo: Nshobora kubona igitabo cy'ukoresha he?
+
+**Igisubizo:** Inyandiko zuzuye ziboneka kuri:
+
+🌐 **https://hub.earthenable.org/app-docs**
+
+**Amabwiriza aboneka:**
+
+- **Umuyobozi w'Ushyirwaho**: Amabwiriza y'uko washyiraho
+- **Umuyobozi w'Ukoresha**: Inyandiko zuzuye z'ibintu bifite amashusho
+- **FAQ**: Iyi nyandiko (ibibazo bikunze kubazwa)
+
+**Indimi:** Amabwiriza yose aboneka mu Cyongereza na Kinyarwanda.
+
+**Nta kwinjira bisabwa** - Inyandiko zihari kuri bose kugira ngo bikoreshwe byoroshye.
+
+---
+
+### Ikibazo: Mfite icyifuzo cy'ibintu bishya. Nkiboherereza ute?
+
+**Igisubizo:** Twakiriza ibitekerezo ku bintu bishya!
+
+**Uburyo bwo gukoherereza:**
+
+1. Kohereza **support@earthenable.org** hamwe na:
+   - Umutwe w'ibintu bishya (ibisobanuro bigufi)
+   - Kuki ubyifuza (urugero rw'ikoreshwa)
+   - Inshuro zingahe wabikoresha
+   - Ingero zose zituruka ku zindi porogaramu
+2. Cyangwa koresha Settings → Help & Support → Report an Issue (hanyuma uvuge ko ari icyifuzo cy'ibintu bishya)
+
+**Iki kizaba:**
+
+- Itsinda rireba ibisabwa byose
+- Ibintu bikunze gushakwa/bifite ingaruka nini bihabwa icyiciro cyo hejuru
+- Ushobora kuhamagariwa kugira ngo usobanure
+- Ibintu bishya bishobora kugaragara mu gihe kizaza (nta kwemeza)
+
+**Gahunda y'ubu** (ibintu biri mu gutekerezwa):
+
+- Gushakisha no kuyungurura imirimo
+- Ubutumwa bwo kumenyesha imirimo mishya
+- Ubutumwa muri porogaramu
+- Gushyiraho amafoto
+- Kwemeza biometric (intoki/mu maso)
+
+---
+
+### Ikibazo: Hari gahunda yo guhugura abakoresha bashya?
+
+**Igisubizo:** Yego! Abakozi bashya ba EarthEnable bahabwa:
+
+**1. Ikiganiro cyo gutangira** (icyumweru cya mbere):
+
+- Umuyobozi ayobora ibanze bya porogaramu
+- Kwitorera imirimo yo kugerageza
+- Ikiganiro cy'ibibazo n'ibisubizo
+
+**2. Kwiga ku giti cyawe**:
+
+- Soma Umuyobozi w'Ukoresha: https://hub.earthenable.org/app-docs/user-guide
+- Reba videwo z'amahugurwa (niba zihari - baza umuyobozi wawe)
+- Subiramo FAQ (iyi nyandiko)
+
+**3. Inkunga ikomeza**:
+
+- Baza abakozi babizi
+- Hamagara umuyobozi wawe
+- Koresha gushyiraho raporo y'ibibazo muri porogaramu
+
+**Inama ku bakoresha bashya:**
+
+- Mara iminota 30 ukora isuzuma rya porogaramu mbere y'akazi ko mu murima
+- Kwitorera kuvugurura status y'umirimo ukoresheje imirimo yo kugerageza
+- Menya neza uburyo bwo gukoresha offline
+- Shyiraho FormYoula mbere yo gusura umurima bwa mbere
+
 ---
 
 ## Ufite Ibindi Bibazo?
@@ -287,15 +905,3 @@ Niba ikibazo cyawe kitasubijweho hano:
 
 **Igihe Cyavuguruwe:** Ugushyingo 2025
 **Verisiyo ya Porogaramu:** 1.0.0
-
----
-
-## Icyitonderwa
-
-**Ibisobanuro byuzuye mu Kinyarwanda bizakurikira vuba.**
-
-Kugeza ubwo, nyamuneka soma ibisobanuro byuzuye mu Cyongereza (English) hejuru. Uhitamo ururimi "English" hejuru y'urupapuro kugira ngo usome ibisobanuro byuzuye.
-
-Urakoze cyane kubwo kwihangana kwawe.
-
-**EarthEnable Team**
