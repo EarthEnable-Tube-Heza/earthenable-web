@@ -68,7 +68,7 @@ The EarthEnable app is available through **Google Play Store** for internal use 
 With your work account active in Play Store:
 
 1. Use the **search bar** at the top
-2. Type **"EarthEnable"** or **"EarthEnable Apps"**
+2. Type **"EarthEnable"** or **"EarthEnable App"**
 3. The app should appear in your search results with the EarthEnable logo
 
 ![Search for EarthEnable App](/images/app-screenshots/google-play-store-search-earthenable.jpg)
@@ -124,7 +124,7 @@ After successful sign-in, you'll land on the **Dashboard** - this confirms your 
 **Top Section:**
 
 - **Profile picture** - Your Google account photo
-- **Personalized greeting** - "Welcome back, [Your Name]!"
+- **Personalized greeting** - Time-based greeting like "Good Morning, [Your Name]" or "Good Afternoon, [Your Name]"
 - **Language toggle** - Switch between English and Kinyarwanda
 - **Values icon** - Tap the heart icon to view "Welcome to EarthEnable" values
 
@@ -180,7 +180,7 @@ Installation is complete. You can now explore the app features. For detailed ins
 - Verify you're signed in with your **@earthenable.org** account in Play Store
   - Tap your profile icon in Play Store and check which account is active
   - Switch to your earthenable.org account if needed
-- Search for "EarthEnable" or "EarthEnable Apps" (exact spelling matters)
+- Search for "EarthEnable" or "EarthEnable App" (exact spelling matters)
 - If still not visible, contact your manager or IT administrator
 - Email: support@earthenable.org
 

@@ -68,7 +68,7 @@ Porogaramu ya EarthEnable iraboneka muri **Google Play Store** kugira ngo ikores
 Ukoresheje konti yawe y'akazi muri Play Store:
 
 1. Koresha **agasanduku k'ubushakashatsi** hejuru
-2. Andika **"EarthEnable"** cyangwa **"EarthEnable Apps"**
+2. Andika **"EarthEnable"** cyangwa **"EarthEnable App"**
 3. Porogaramu igomba kugaragara mu bisubizo by'ubushakashatsi hamwe n'ikimenyetso cya EarthEnable
 
 ![Shakisha Porogaramu ya EarthEnable](/images/app-screenshots/google-play-store-search-earthenable.jpg)
@@ -124,7 +124,7 @@ Nyuma yo kwinjira neza, uzagera kuri **Dashboard** - ibi biremeza ko kwishyiraho
 **Igice cy'Hejuru:**
 
 - **Ifoto ya profil yawe** - Ifoto ya konti yawe ya Google
-- **Ikuzo ryihariye** - "Murakaza neza, [Izina Ryawe]!"
+- **Ikuzo ryihariye** - Ikuzo rishingiye ku gihe nko "Mwaramutse, [Izina Ryawe]" cyangwa "Mwiriwe, [Izina Ryawe]"
 - **Guhindura ururimi** - Hindura hagati y'Icyongereza na Kinyarwanda
 - **Ikimenyetso cy'indangagaciro** - Kanda ikimenyetso cy'umutima kugira ngo urebe "Murakaza neza kuri EarthEnable" n'indangagaciro
 
@@ -180,7 +180,7 @@ Kwishyiraho byarangiye. Ubu ushobora gukora ibiranga bya porogaramu. Kugira ngo 
 - Menya neza ko winjiye ukoresheje konti yawe ya **@earthenable.org** muri Play Store
   - Kanda icon ya profil yawe muri Play Store urebe konti ikora
   - Hindura kuri konti yawe ya earthenable.org niba bikenewe
-- Shakisha "EarthEnable" cyangwa "EarthEnable Apps" (ijambo ryuzuye rikenewe)
+- Shakisha "EarthEnable" cyangwa "EarthEnable App" (ijambo ryuzuye rikenewe)
 - Niba igikomeza kutaboneka, hamagara umuyobozi wawe cyangwa IT administrator
 - Imeri: support@earthenable.org
 
