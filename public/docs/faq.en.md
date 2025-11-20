@@ -97,8 +97,10 @@ If the issue persists, contact support@earthenable.org
 
 **A:** Several possible reasons:
 
-1. **No tasks assigned yet**: Your manager may not have assigned tasks to you
-   - Contact your manager to check task assignments
+1. **Tasks not retrieved from Salesforce**: Tasks are automatically assigned in Salesforce and synced to the app
+   - The API/app may not have properly synced your tasks
+   - **First action**: Contact your manager or IT support to confirm if you actually have tasks assigned in Salesforce
+   - If tasks exist in Salesforce but not in the app, there may be a sync issue
 
 2. **Sync hasn't completed**:
    - Go to Dashboard
@@ -113,7 +115,7 @@ If the issue persists, contact support@earthenable.org
 
 4. **Account not fully activated**:
    - Your account may be authenticated but not fully set up in the system
-   - Contact your manager
+   - Contact your manager or IT support
 
 ---
 
@@ -845,10 +847,11 @@ Support will respond within 2-3 business days, often faster for critical issues.
 - Use in-app: Settings → Help & Support → Report an Issue
 - Or email: **support@earthenable.org**
 
-**Task assignment questions** (no tasks, wrong tasks):
+**Task visibility questions** (no tasks showing, tasks not syncing):
 
-- Contact **your manager**
-- They control task assignments in the system
+- Contact **your manager or IT support**
+- They can verify if tasks exist in Salesforce and troubleshoot sync issues
+- Tasks are automatically assigned in Salesforce and synced to the app
 
 **Account activation** (can't sign in, not authorized):
 

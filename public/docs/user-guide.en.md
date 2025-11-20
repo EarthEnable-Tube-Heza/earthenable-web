@@ -531,7 +531,7 @@ In **Settings → Account**, you can view:
 ## Need Help?
 
 **Technical Support:** support@earthenable.org
-**Your Manager:** For task assignment questions
+**Your Manager or IT Support:** To verify if tasks exist in Salesforce or for sync issues
 **This Guide:** Bookmark for quick reference
 
 ---

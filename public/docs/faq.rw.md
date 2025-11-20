@@ -91,17 +91,25 @@ Niba ikibazo gikomeje, hamagara support@earthenable.org
 
 **Igisubizo:** Impamvu zishoboka:
 
-1. **Nta murimo wahawe uyu munsi**: Umuyobozi wawe ashobora kutaba yarakugenereye imirimo
-   - Hamagara umuyobozi wawe kugira ngo arebe gutanga imirimo
+1. **Imirimo ntiyakuwe muri Salesforce**: Imirimo itangwa mu buryo bwikora muri Salesforce hanyuma ikavugururwa muri porogaramu
+   - API/porogaramu ishobora kuba itavuguruye imirimo yawe neza
+   - **Ikintu cya mbere cyo gukora**: Hamagara umuyobozi wawe cyangwa IT support kugira ngo ubone niba ufite imirimo yaguwe muri Salesforce
+   - Niba imirimo ibaho muri Salesforce ariko itaboneka muri porogaramu, hashobora kugira ikibazo cya sync
 
 2. **Sync ntiyarangiye**:
    - Jya kuri Dashboard
    - Reba igihe "Cya sync ya nyuma"
    - Kanda "Sync Ubu" kugira ngo utangire sync
+   - Tegereza sync irangira (ikimenyetso kibisi)
 
 3. **Ibibazo byo guhuza mugihe wa sync ya mbere**:
    - Menya neza ko ufite umuhuza wa interineti uhamye
    - Gerageza sync ukundi
+   - Reba niba ushobora kugera ku zindi porogaramu (browser, WhatsApp)
+
+4. **Konti ntiyakora burundu**:
+   - Konti yawe ishobora kuba yaremewe ariko itarakozwe neza muri sisitemu
+   - Hamagara umuyobozi wawe cyangwa IT support
 
 ---
 
@@ -793,9 +801,11 @@ Ubufasha buzasubiza mu minsi 2-3 y'akazi, akenshi byihuta ku bibazo bikomeye.
 - Koresha muri porogaramu: Igenamiterere → Ubufasha & Inkunga
 - Cyangwa imeri: **support@earthenable.org**
 
-**Ibibazo byo gutanga imirimo**:
+**Ibibazo ku kugaragara kw'imirimo** (imirimo ntabwo igaragara, imirimo ntivugururwa):
 
-- Hamagara **umuyobozi wawe**
+- Hamagara **umuyobozi wawe cyangwa IT support**
+- Bashobora kumenya niba imirimo ibaho muri Salesforce no gukemura ibibazo bya sync
+- Imirimo itangwa mu buryo bwikora muri Salesforce hanyuma ikavugururwa muri porogaramu
 
 **Ikoreshwa rya konti**:
 

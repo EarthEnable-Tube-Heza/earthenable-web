@@ -205,7 +205,7 @@ Soma ibisobanuro byuzuye mu Cyongereza (English):
 ## Ufite Ikibazo?
 
 **Ubufasha bwa tekinike:** support@earthenable.org
-**Umuyobozi wawe:** Kubaza ibibazo ku bijyanye no gutanga imirimo
+**Umuyobozi wawe cyangwa IT Support:** Kugira ngo ubone niba imirimo ibaho muri Salesforce cyangwa ibibazo bya sync
 **Iki Gitabo:** Shyira akamenyetso kugira ngo wishakishe
 
 ---
