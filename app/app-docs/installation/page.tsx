@@ -16,6 +16,7 @@ export default function InstallationPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialSlide, setInitialSlide] = useState(0);
 
   useEffect(() => {
     const fileName = language === "rw" ? "installation.rw.md" : "installation.en.md";
@@ -28,6 +29,21 @@ export default function InstallationPage() {
       .then((text) => {
         const parsedSlides = parseMarkdownToSlides(text);
         setSlides(parsedSlides);
+
+        // Check if there's a hash in the URL to navigate to specific slide
+        if (typeof window !== "undefined" && window.location.hash) {
+          const hash = window.location.hash.substring(1); // Remove the #
+          const slideIndex = parsedSlides.findIndex(
+            (slide) =>
+              slide.title?.toLowerCase().replace(/\s+/g, "-") === hash ||
+              slide.id === hash ||
+              slide.title === hash
+          );
+          if (slideIndex !== -1) {
+            setInitialSlide(slideIndex);
+          }
+        }
+
         setIsLoading(false);
       })
       .catch((err) => {
@@ -36,6 +52,14 @@ export default function InstallationPage() {
         setIsLoading(false);
       });
   }, [language]);
+
+  // Update URL hash when slide changes
+  const handleSlideChange = (slideIndex: number) => {
+    if (slides[slideIndex]?.title) {
+      const hash = slides[slideIndex].title.toLowerCase().replace(/\s+/g, "-");
+      window.history.replaceState(null, "", `#${hash}`);
+    }
+  };
 
   if (langLoading || isLoading) {
     return (
@@ -54,7 +78,9 @@ export default function InstallationPage() {
     );
   }
 
-  return <SlideCarousel slides={slides} />;
+  return (
+    <SlideCarousel slides={slides} initialSlide={initialSlide} onSlideChange={handleSlideChange} />
+  );
 }
 
 /**
@@ -148,7 +174,10 @@ function formatMarkdownToHTML(markdown: string): string {
     // Check if section has an image (screenshot)
     const hasImage = /!\[([^\]]*)\]\(([^)]+)\)/.test(section);
 
-    if (hasImage && section.startsWith("## Step")) {
+    // Check for both English "## Step" and Kinyarwanda "## Intambwe ya"
+    const isStepSection = section.startsWith("## Step") || section.startsWith("## Intambwe ya");
+
+    if (hasImage && isStepSection) {
       // Extract header, content before image, and image
       const lines = section.split("\n");
       let header = "";
