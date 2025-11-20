@@ -963,5 +963,5 @@ If your question isn't answered here:
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **App Version:** 1.0.0

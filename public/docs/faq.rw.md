@@ -285,7 +285,7 @@ Niba ikibazo cyawe kitasubijweho hano:
 
 ---
 
-**Igihe Cyavuguruwe:** Mutarama 2025
+**Igihe Cyavuguruwe:** Ugushyingo 2025
 **Verisiyo ya Porogaramu:** 1.0.0
 
 ---

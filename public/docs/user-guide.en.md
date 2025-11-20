@@ -536,5 +536,5 @@ In **Settings → Account**, you can view:
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **App Version:** 1.0.0
