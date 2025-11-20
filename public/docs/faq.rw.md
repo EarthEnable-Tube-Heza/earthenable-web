@@ -238,38 +238,41 @@ Niba ikibazo gikomeje, hamagara support@earthenable.org
 
 **Igisubizo:** Porogaramu ikorera sync mu buryo bwikora muri izi nzego:
 
-- **Buri munota 5** iyo uhujwe na interineti
-- **Kuri porogaramu itangiye** (sync ya mbere iyo ufungura porogaramu)
+- **Buri munota 5** iyo uhujwe na interineti (sync yo mu rwego rw'inyuma)
+- **Iyo ufungura porogaramu** (sync ya mbere)
+- **Iyo ufunga hanyuma ukongera ufungura porogaramu** (sync yuzuye iyo wongera gutangira)
 - **Ako kanya nyuma yo kuvugurura status y'umurimo** (niba uri online)
 - **Iyo umuhuza wasubijwe** nyuma yo kuba offline
 
 Ushobora kandi **gutangiza sync n'intoki** igihe cyose:
 
-1. Jya kuri Dashboard
-2. Kanda buto **"Sync Ubu"**
+1. Jya ku rupapuro rwa **Imirimo**
+2. **Kurura hasi** ku rutonde rw'imirimo (imigirire yo kurura-ugakosore)
+3. Kureka kugira ngo utangire sync
 
 ---
 
 ### Ikibazo: Nzi nte niba impinduka zanje zavugururiwe?
 
-**Igisubizo:** Hariho uburyo butatu bwo kumenya:
+**Igisubizo:** Reba **igihe cya sync ya nyuma** mu mutwe w'urupapuro rwa Imirimo:
 
-**1. Ikimenyetso cya Sync kuri Dashboard:**
+- Shakisha **ikimenyetso cy'isaha (⏱️)** kuruhande rw'umubare w'imirimo (urugero: "imirimo 38 uyu munsi ⏱️ 2m")
+- Irekanye igihe kinini impinduka ya nyuma yabaye:
+  - **"now"** = Vyashyikirijwe ubu
+  - **"2m"** = Vyashyikirijwe iminota 2 ishize
+  - **"1h"** = Vyashyikirijwe isaha 1 ishize
+  - **"--"** = Nta sync yarabaye
 
-- Icyatsi kibisi (✓): Sync yatsinze
-- Umuhondo (↻): Sync iriho
-- Umutuku (✗): Sync yananiranye
+**Ikimenyetso cya Sync:**
 
-**2. Igihe cya Sync ya Nyuma:**
+- **Umuhindu w'ubururu hamwe na spinner** = Sync iriho
+- **Umuhindu umutuku** = Sync yananiranye (reba umuhuza wa interineti)
 
-- Reba igice cyo "Yakoreshejwe bwa nyuma" kuri dashboard
-- Iragaragaza igihe cya sync yanyuma
+**Inama:**
 
-**3. Inyandiko ku murimo:**
-
-- Mu Task Detail, uzabona igihe impinduka yavuguruwe
-
-**Inama:** Niba utazi neza, kanda buto ya "Sync Ubu" kugira ngo ukore sync mu buryo bw'intoki.
+- Buri gihe reba igihe cya sync ya nyuma mbere yo gufunga porogaramu nyuma yo guhindura
+- Niba igihe cya sync gishaje cyangwa kigaragaza "--", kurura hasi kugira ngo wongere
+- Iyo ugaruka kumurongo, emeza ko igihe cya sync kivuguruye kuri "now"
 
 ---
 

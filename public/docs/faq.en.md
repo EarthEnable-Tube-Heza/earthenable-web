@@ -221,30 +221,40 @@ Use **Completed** when:
 **A:** The app syncs automatically in these situations:
 
 - **Every 5 minutes** when connected to internet (background sync)
-- **On app launch** (initial sync when you open the app)
+- **When you open the app** (initial sync on app launch)
+- **When you close and reopen the app** (full sync on restart)
 - **Immediately after task status update** (if online)
 - **When connection is restored** after being offline
 
 You can also **manually trigger sync** anytime by:
 
-1. Going to Dashboard
-2. Tapping the **"Sync Now"** button
+1. Go to the **Tasks** page
+2. **Pull down** on the task list (pull-to-refresh gesture)
+3. Release to start syncing
 
 ---
 
 ### Q: How do I know if my changes have synced?
 
-**A:** Check the **sync indicator** on the Dashboard:
+**A:** Check the **last sync timestamp** in the Tasks page header:
 
-- 🟢 **Green + "Synced X minutes ago"** = All changes uploaded successfully
-- 🟠 **Orange + "Syncing..."** = Currently uploading changes
-- 🔴 **Red + "Offline"** = No internet, changes waiting to upload
+- Look for the **clock icon (⏱️)** next to the task count (e.g., "38 tasks for today ⏱️ 2m")
+- Shows how long ago the last sync occurred:
+  - **"now"** = Just synced
+  - **"2m"** = Synced 2 minutes ago
+  - **"1h"** = Synced 1 hour ago
+  - **"--"** = No sync yet
+
+**Sync Status Banner:**
+
+- **Blue banner with spinner** = Currently syncing
+- **Red banner** = Sync failed (check internet connection)
 
 **Best Practice:**
 
-- Always check sync status before closing the app after making changes
-- If you see "Offline", your changes are saved locally but not yet on the server
-- When back online, wait for green "Synced" indicator
+- Always check the last sync time before closing the app after making changes
+- If sync time is old or shows "--", pull down to refresh
+- When back online, verify the sync timestamp updates to "now"
 
 ---
 
