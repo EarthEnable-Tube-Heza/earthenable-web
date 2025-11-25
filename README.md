@@ -15,7 +15,7 @@ The EarthEnable Hub is a Next.js application that provides administrative and ma
 - **Form Configuration**: Manage TaskSubject-to-FormYoula form mappings
 - **Statistics & Analytics**: Department and jurisdiction performance dashboards
 - **Task Management**: Assign and track field tasks (future)
-- **Data Review**: Review and analyze field data (future)
+- **Data Review**: Review and analyze all kind of data (future)
 
 ## Tech Stack
 
