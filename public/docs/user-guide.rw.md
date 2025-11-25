@@ -1,5 +1,9 @@
 # Igitabo cy'Ukoresha Porogaramu
 
+> **📝 Inyandiko z'Ibyashingiweho**
+>
+> Iki gitabo gikomeza gutunganywa no guhurizwa n'ibintu bishya bya porogaramu. Nubwo amakuru atanzwe ari ukuri kandi akeneye, turakomeza kunoza inyandiko dukurikije ibitekerezo by'abakoresha n'ivugurura rya porogaramu. Niba ubonye itandukaniro cyangwa ufite igitekerezo, nyamuneka hamagara support@earthenable.org.
+
 ## Igitabo Cyuzuye cyo Gukoresha Porogaramu ya EarthEnable
 
 Iki gitabo gikubiyemo amakuru yose ku bikoresho n'ubushobozi bwa porogaramu ya EarthEnable.
@@ -205,12 +209,12 @@ Soma ibisobanuro byuzuye mu Cyongereza (English):
 ## Ufite Ikibazo?
 
 **Ubufasha bwa tekinike:** support@earthenable.org
-**Umuyobozi wawe:** Kubaza ibibazo ku bijyanye no gutanga imirimo
+**Umuyobozi wawe cyangwa IT Support:** Kugira ngo ubone niba imirimo ibaho muri Salesforce cyangwa ibibazo bya sync
 **Iki Gitabo:** Shyira akamenyetso kugira ngo wishakishe
 
 ---
 
-**Igihe Cyavuguruwe:** Mutarama 2025
+**Igihe Cyavuguruwe:** Ugushyingo 2025
 **Verisiyo ya Porogaramu:** 1.0.0
 
 ---

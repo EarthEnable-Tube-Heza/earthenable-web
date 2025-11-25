@@ -1,17 +1,31 @@
-/**
- * FAQ Page
- * Frequently asked questions and troubleshooting
- */
-
 "use client";
+
+/**
+ * FAQ Page - Redesigned with Categories and Accordions
+ *
+ * Organizes FAQs into categories using Cards and Accordions for better UX.
+ * Supports both English and Kinyarwanda.
+ */
 
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/src/contexts/LanguageContext";
-import { Spinner } from "@/src/components/ui";
+import { Spinner, Card, Accordion } from "@/src/components/ui";
+import type { AccordionItemProps } from "@/src/components/ui";
+
+interface FAQCategory {
+  id: string;
+  title: string;
+  icon?: string;
+  questions: Array<{
+    id: string;
+    question: string;
+    answer: string;
+  }>;
+}
 
 export default function FAQPage() {
   const { language, isLoading: langLoading } = useLanguage();
-  const [content, setContent] = useState<string>("");
+  const [categories, setCategories] = useState<FAQCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +38,8 @@ export default function FAQPage() {
         return res.text();
       })
       .then((text) => {
-        setContent(text);
+        const parsed = parseFAQMarkdown(text);
+        setCategories(parsed);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -38,7 +53,9 @@ export default function FAQPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Spinner size="lg" variant="primary" />
-        <p className="mt-4 text-text-secondary">Loading FAQ...</p>
+        <p className="mt-4 text-text-secondary">
+          {language === "rw" ? "Gupakurura Ibibazo Bikunze Kubazwa..." : "Loading FAQ..."}
+        </p>
       </div>
     );
   }
@@ -52,163 +69,241 @@ export default function FAQPage() {
   }
 
   return (
-    <div className="prose prose-sm sm:prose-lg max-w-full overflow-hidden">
-      <div
-        className="markdown-content break-words"
-        dangerouslySetInnerHTML={{ __html: formatMarkdownToHTML(content) }}
-      />
+    <div className="max-w-5xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-text-primary mb-3">
+          {language === "rw" ? "Ibibazo Bikunze Kubazwa (FAQ)" : "Frequently Asked Questions (FAQ)"}
+        </h1>
+        <p className="text-sm sm:text-base text-text-secondary">
+          {language === "rw"
+            ? "Kubona ibisubizo ku bibazo bisanzwe bijyanye no gukoresha porogaramu ya EarthEnable"
+            : "Find answers to common questions about using the EarthEnable mobile app"}
+        </p>
+      </div>
+
+      {/* Categories */}
+      <div className="space-y-6">
+        {categories.map((category) => (
+          <FAQCategoryCard key={category.id} category={category} />
+        ))}
+      </div>
+
+      {/* Footer Help Section */}
+      <Card variant="bordered" padding="lg" className="mt-12 bg-background-light">
+        <div className="text-center">
+          <h3 className="font-heading font-semibold text-lg text-text-primary mb-2">
+            {language === "rw" ? "Ntugasubira Ibibazo Byawe?" : "Still have questions?"}
+          </h3>
+          <p className="text-sm text-text-secondary mb-4">
+            {language === "rw"
+              ? "Hamagara itsinda ryacu ryo gufasha. Tuzagusubiza mu gihe cyo gukora."
+              : "Contact our support team. We'll get back to you during business hours."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <a
+              href="mailto:support@earthenable.org"
+              className="text-primary hover:text-primary-dark underline font-medium"
+            >
+              support@earthenable.org
+            </a>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
 
 /**
- * Enhanced markdown to HTML converter with 2-column layout for steps with screenshots
+ * FAQ Category Card Component
  */
-function formatMarkdownToHTML(markdown: string): string {
-  // First, split content into sections by ## headers
-  const sections = markdown.split(/(?=^## )/gm);
+function FAQCategoryCard({ category }: { category: FAQCategory }) {
+  // Convert questions to accordion items
+  const accordionItems: AccordionItemProps[] = category.questions.map((q) => ({
+    id: q.id,
+    title: q.question,
+    content: (
+      <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: q.answer }} />
+    ),
+  }));
 
-  let html = "";
+  return (
+    <Card variant="elevated" padding="none" className="overflow-hidden">
+      {/* Category Header */}
+      <div className="px-4 sm:px-6 py-4 sm:py-5 bg-background-light border-b border-border-light">
+        <div className="flex items-center gap-3">
+          {category.icon && <span className="text-2xl">{category.icon}</span>}
+          <h2 className="font-heading font-semibold text-lg sm:text-xl text-text-primary">
+            {category.title}
+          </h2>
+        </div>
+      </div>
 
-  sections.forEach((section) => {
-    if (!section.trim()) return;
-
-    // Check if section has an image (screenshot)
-    const hasImage = /!\[([^\]]*)\]\(([^)]+)\)/.test(section);
-
-    if (hasImage && section.startsWith("## Step")) {
-      // Extract header, content before image, and image
-      const lines = section.split("\n");
-      let header = "";
-      const contentLines: string[] = [];
-      let imageMatch: RegExpMatchArray | null = null;
-      let captionText = "";
-      let foundImage = false;
-
-      for (const line of lines) {
-        if (line.startsWith("## ")) {
-          header = line;
-        } else if (!foundImage) {
-          const imgMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-          if (imgMatch) {
-            imageMatch = imgMatch;
-            captionText = imgMatch[1];
-            foundImage = true;
-          } else if (line.trim()) {
-            contentLines.push(line);
-          }
-        } else {
-          // Content after image - add to contentLines to process normally
-          contentLines.push(line);
-        }
-      }
-
-      // Process header
-      const headerHtml = header.replace(
-        /^## (.*)$/,
-        '<h2 class="text-2xl font-bold mt-8 mb-4 text-text-primary">$1</h2>'
-      );
-
-      // Process content with markdown
-      const contentHtml = processMarkdownContent(contentLines.join("\n"));
-
-      // Build 2-column layout
-      html += headerHtml;
-      html +=
-        '<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 my-4 sm:my-6 items-start max-w-full overflow-hidden">';
-      html += `<div class="prose prose-sm max-w-full break-words overflow-hidden">${contentHtml}</div>`;
-
-      if (imageMatch) {
-        html += `<figure class="mx-auto max-w-full sm:max-w-[375px] lg:sticky lg:top-24"><img src="${imageMatch[2]}" alt="${captionText}" class="w-full rounded-lg border border-border-light shadow-md cursor-zoom-in hover:opacity-90 transition-opacity" /><figcaption class="mt-2 text-center text-xs sm:text-sm text-text-secondary break-words">${captionText}</figcaption></figure>`;
-      }
-
-      html += "</div>";
-    } else {
-      // Regular section without special layout
-      html += processMarkdownContent(section);
-    }
-  });
-
-  return html;
+      {/* Questions Accordion */}
+      <div className="py-2">
+        <Accordion items={accordionItems} allowMultiple variant="default" />
+      </div>
+    </Card>
+  );
 }
 
 /**
- * Process markdown content with standard formatting
+ * Parse FAQ Markdown into structured categories
  */
-function processMarkdownContent(markdown: string): string {
+function parseFAQMarkdown(markdown: string): FAQCategory[] {
+  const categories: FAQCategory[] = [];
+  const lines = markdown.split("\n");
+
+  let currentCategory: FAQCategory | null = null;
+  let currentQuestion = "";
+  let currentAnswer: string[] = [];
+  let inAnswer = false;
+
+  // Icon mapping for categories (can be customized)
+  const categoryIcons: Record<string, string> = {
+    "Account & Sign-In": "👤",
+    "Konti & Kwinjira": "👤",
+    "Tasks & Task Management": "📋",
+    "Imirimo & Gukurikirana Imirimo": "📋",
+    "Offline Mode & Syncing": "🔄",
+    "Offline & Kuvugurura": "🔄",
+    "FormYoula Integration": "📝",
+    "Guhuza na FormYoula": "📝",
+    "Language & Localization": "🌐",
+    "Ururimi & Localization": "🌐",
+    "Performance & Technical Issues": "⚙️",
+    "Imikorere & Ibibazo bya Tekiniki": "⚙️",
+    "Data & Privacy": "🔒",
+    "Amakuru & Ibanga": "🔒",
+    "App Updates": "🔄",
+    "Ivugurura rya Porogaramu": "🔄",
+    "Device & Compatibility": "📱",
+    "Telefone & Ihuye": "📱",
+    "Getting Help": "💬",
+    "Kubona Ubufasha": "💬",
+  };
+
+  const saveCurrentQuestion = () => {
+    if (currentCategory && currentQuestion && currentAnswer.length > 0) {
+      const answerHtml = processMarkdownToHTML(currentAnswer.join("\n"));
+      currentCategory.questions.push({
+        id: `q-${currentCategory.id}-${currentCategory.questions.length}`,
+        question: currentQuestion
+          .replace(/^###\s*Q:\s*/i, "")
+          .replace(/^###\s*Ikibazo:\s*/i, "")
+          .trim(),
+        answer: answerHtml,
+      });
+    }
+    currentQuestion = "";
+    currentAnswer = [];
+    inAnswer = false;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Category header (## Title)
+    if (line.match(/^##\s+(?!#)/)) {
+      saveCurrentQuestion();
+
+      const title = line.replace(/^##\s+/, "").trim();
+
+      // Skip certain headers
+      if (
+        title.includes("Table of Contents") ||
+        title.includes("Frequently Asked Questions") ||
+        title.includes("Common Questions") ||
+        title.includes("Ibibazo Bikunze Kubazwa") ||
+        title.includes("Ibibazo Bisanzwe")
+      ) {
+        continue;
+      }
+
+      currentCategory = {
+        id: `cat-${categories.length}`,
+        title,
+        icon: categoryIcons[title] || "❓",
+        questions: [],
+      };
+      categories.push(currentCategory);
+    }
+    // Question header (### Q:)
+    else if (line.match(/^###\s*Q:/i) || line.match(/^###\s*Ikibazo:/i)) {
+      saveCurrentQuestion();
+      currentQuestion = line;
+      inAnswer = false;
+    }
+    // Answer marker (**A:** or **Igisubizo:**)
+    else if (line.match(/^\*\*A:\*\*/i) || line.match(/^\*\*Igisubizo:\*\*/i)) {
+      inAnswer = true;
+      currentAnswer.push(line);
+    }
+    // Content lines
+    else if (inAnswer && line !== "---") {
+      currentAnswer.push(line);
+    }
+    // Separator (---)
+    else if (line === "---") {
+      saveCurrentQuestion();
+    }
+  }
+
+  // Save last question
+  saveCurrentQuestion();
+
+  return categories.filter((cat) => cat.questions.length > 0);
+}
+
+/**
+ * Convert markdown to HTML with proper formatting
+ */
+function processMarkdownToHTML(markdown: string): string {
   let html = markdown;
 
-  // Headers (from smallest to largest to avoid conflicts)
-  html = html.replace(
-    /^##### (.*$)/gim,
-    '<h5 class="text-sm sm:text-base font-bold mt-3 sm:mt-4 mb-2 text-text-primary break-words">$1</h5>'
-  );
-  html = html.replace(
-    /^#### (.*$)/gim,
-    '<h4 class="text-base sm:text-lg font-bold mt-4 sm:mt-5 mb-2 text-text-primary break-words">$1</h4>'
-  );
-  html = html.replace(
-    /^### (.*$)/gim,
-    '<h3 class="text-lg sm:text-xl font-bold mt-4 sm:mt-6 mb-3 text-text-primary break-words">$1</h3>'
-  );
-  html = html.replace(
-    /^## (.*$)/gim,
-    '<h2 class="text-xl sm:text-2xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4 text-text-primary break-words">$1</h2>'
-  );
-  html = html.replace(
-    /^# (.*$)/gim,
-    '<h1 class="text-2xl sm:text-3xl font-bold mt-4 mb-4 sm:mb-6 text-text-primary break-words">$1</h1>'
-  );
-
-  // Images - mobile device size
-  html = html.replace(
-    /!\[([^\]]*)\]\(([^)]+)\)/g,
-    '<figure class="my-4 sm:my-6 mx-auto max-w-full sm:max-w-[375px]"><img src="$2" alt="$1" class="w-full rounded-lg border border-border-light shadow-md cursor-zoom-in hover:opacity-90 transition-opacity" /><figcaption class="mt-2 text-center text-xs sm:text-sm text-text-secondary break-words">$1</figcaption></figure>'
-  );
-
-  // Bold
+  // Bold (**text**)
   html = html.replace(
     /\*\*(.*?)\*\*/g,
     '<strong class="font-semibold text-text-primary">$1</strong>'
   );
 
-  // Links
+  // Italic (*text*)
+  html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
+
+  // Code (`code`)
+  html = html.replace(
+    /`([^`]+)`/g,
+    '<code class="bg-background-light px-2 py-0.5 rounded text-sm font-mono text-primary">$1</code>'
+  );
+
+  // Links [text](url)
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
     '<a href="$2" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">$1</a>'
   );
 
-  // Horizontal rules
-  html = html.replace(/^---$/gim, '<hr class="my-8 border-border-light" />');
+  // Numbered lists (1. item)
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li class="ml-4 mb-2">$1</li>');
 
-  // Numbered lists
-  html = html.replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-6 mb-2 text-text-secondary">$1</li>');
+  // Unordered lists (- item or * item)
+  html = html.replace(/^[\-\*]\s+(.+)$/gm, '<li class="ml-4 mb-2">$1</li>');
 
-  // Unordered lists
-  html = html.replace(/^[\-\*]\s+(.*$)/gim, '<li class="ml-6 mb-2 text-text-secondary">$1</li>');
-
-  // Wrap consecutive list items in ul
+  // Wrap consecutive list items
   html = html.replace(
     /(<li.*?<\/li>(?:\n<li.*?<\/li>)*)/gm,
-    '<ul class="list-disc my-4 space-y-2">$1</ul>'
+    '<ul class="list-disc my-3 space-y-1">$1</ul>'
   );
 
-  // Blockquotes
+  // Blockquotes (> text)
   html = html.replace(
-    /^&gt; (.*)$/gim,
-    '<blockquote class="border-l-4 border-primary pl-4 italic text-text-secondary my-4">$1</blockquote>'
+    /^&gt;\s*(.*)$/gm,
+    '<blockquote class="border-l-4 border-primary pl-4 italic text-text-secondary my-3">$1</blockquote>'
   );
 
-  // Code blocks
+  // Paragraphs (wrap lines that don't start with HTML tags)
   html = html.replace(
-    /`([^`]+)`/g,
-    '<code class="bg-background-light px-2 py-1 rounded text-sm font-mono text-text-primary">$1</code>'
-  );
-
-  // Paragraphs (avoid wrapping existing HTML elements)
-  html = html.replace(
-    /^(?!<[hulfb]|<li|<hr|<figure|<div|<blockquote)(.+)$/gim,
-    '<p class="mb-3 sm:mb-4 text-sm sm:text-base text-text-secondary leading-relaxed break-words">$1</p>'
+    /^(?!<[hulfb]|<li|<blockquote)(.+)$/gm,
+    '<p class="mb-2 text-text-secondary leading-relaxed">$1</p>'
   );
 
   return html;

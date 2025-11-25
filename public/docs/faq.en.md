@@ -1,5 +1,9 @@
 # Frequently Asked Questions (FAQ)
 
+> **📝 Draft Documentation Notice**
+>
+> This FAQ is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Common Questions and Troubleshooting for the EarthEnable Mobile App
 
 This FAQ covers the most common questions and issues you may encounter while using the EarthEnable mobile app.
@@ -80,13 +84,14 @@ If the issue persists, contact support@earthenable.org
 
 **A:** To sign out:
 
-1. Open the app
-2. Go to **Settings** (gear icon at bottom)
-3. Scroll to **Account** section
-4. Tap **"Sign Out"**
-5. Confirm when prompted
+1. Tap your **profile picture** (top left) to open the navigation drawer
+2. At the **bottom left** of the drawer, tap the **"Logout"** button
+3. Confirm when prompted
 
-**Warning:** Before signing out, make sure all your task updates have been synced to avoid losing changes.
+**Important:**
+
+- Make sure all your task updates have been synced before signing out to avoid losing changes
+- You will need **internet access** to sign back in
 
 ---
 
@@ -96,8 +101,10 @@ If the issue persists, contact support@earthenable.org
 
 **A:** Several possible reasons:
 
-1. **No tasks assigned yet**: Your manager may not have assigned tasks to you
-   - Contact your manager to check task assignments
+1. **Tasks not retrieved from Salesforce**: Tasks are automatically assigned in Salesforce and synced to the app
+   - The API/app may not have properly synced your tasks
+   - **First action**: Contact your manager or IT support to confirm if you actually have tasks assigned in Salesforce
+   - If tasks exist in Salesforce but not in the app, there may be a sync issue
 
 2. **Sync hasn't completed**:
    - Go to Dashboard
@@ -112,7 +119,7 @@ If the issue persists, contact support@earthenable.org
 
 4. **Account not fully activated**:
    - Your account may be authenticated but not fully set up in the system
-   - Contact your manager
+   - Contact your manager or IT support
 
 ---
 
@@ -218,30 +225,40 @@ Use **Completed** when:
 **A:** The app syncs automatically in these situations:
 
 - **Every 5 minutes** when connected to internet (background sync)
-- **On app launch** (initial sync when you open the app)
+- **When you open the app** (initial sync on app launch)
+- **When you close and reopen the app** (full sync on restart)
 - **Immediately after task status update** (if online)
 - **When connection is restored** after being offline
 
 You can also **manually trigger sync** anytime by:
 
-1. Going to Dashboard
-2. Tapping the **"Sync Now"** button
+1. Go to the **Tasks** page
+2. **Pull down** on the task list (pull-to-refresh gesture)
+3. Release to start syncing
 
 ---
 
 ### Q: How do I know if my changes have synced?
 
-**A:** Check the **sync indicator** on the Dashboard:
+**A:** Check the **last sync timestamp** in the Tasks page header:
 
-- 🟢 **Green + "Synced X minutes ago"** = All changes uploaded successfully
-- 🟠 **Orange + "Syncing..."** = Currently uploading changes
-- 🔴 **Red + "Offline"** = No internet, changes waiting to upload
+- Look for the **clock icon (⏱️)** next to the task count (e.g., "38 tasks for today ⏱️ 2m")
+- Shows how long ago the last sync occurred:
+  - **"now"** = Just synced
+  - **"2m"** = Synced 2 minutes ago
+  - **"1h"** = Synced 1 hour ago
+  - **"--"** = No sync yet
+
+**Sync Status Banner:**
+
+- **Blue banner with spinner** = Currently syncing
+- **Red banner** = Sync failed (check internet connection)
 
 **Best Practice:**
 
-- Always check sync status before closing the app after making changes
-- If you see "Offline", your changes are saved locally but not yet on the server
-- When back online, wait for green "Synced" indicator
+- Always check the last sync time before closing the app after making changes
+- If sync time is old or shows "--", pull down to refresh
+- When back online, verify the sync timestamp updates to "now"
 
 ---
 
@@ -844,10 +861,11 @@ Support will respond within 2-3 business days, often faster for critical issues.
 - Use in-app: Settings → Help & Support → Report an Issue
 - Or email: **support@earthenable.org**
 
-**Task assignment questions** (no tasks, wrong tasks):
+**Task visibility questions** (no tasks showing, tasks not syncing):
 
-- Contact **your manager**
-- They control task assignments in the system
+- Contact **your manager or IT support**
+- They can verify if tasks exist in Salesforce and troubleshoot sync issues
+- Tasks are automatically assigned in Salesforce and synced to the app
 
 **Account activation** (can't sign in, not authorized):
 
@@ -963,5 +981,5 @@ If your question isn't answered here:
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **App Version:** 1.0.0

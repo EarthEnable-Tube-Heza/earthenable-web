@@ -15,6 +15,7 @@ export default function UserGuidePage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialSlide, setInitialSlide] = useState(0);
 
   useEffect(() => {
     const fileName = language === "rw" ? "user-guide.rw.md" : "user-guide.en.md";
@@ -27,6 +28,21 @@ export default function UserGuidePage() {
       .then((text) => {
         const parsedSlides = parseMarkdownToSlides(text);
         setSlides(parsedSlides);
+
+        // Check if there's a hash in the URL to navigate to specific slide
+        if (typeof window !== "undefined" && window.location.hash) {
+          const hash = window.location.hash.substring(1); // Remove the #
+          const slideIndex = parsedSlides.findIndex(
+            (slide) =>
+              slide.title?.toLowerCase().replace(/\s+/g, "-") === hash ||
+              slide.id === hash ||
+              slide.title === hash
+          );
+          if (slideIndex !== -1) {
+            setInitialSlide(slideIndex);
+          }
+        }
+
         setIsLoading(false);
       })
       .catch((err) => {
@@ -35,6 +51,14 @@ export default function UserGuidePage() {
         setIsLoading(false);
       });
   }, [language]);
+
+  // Update URL hash when slide changes
+  const handleSlideChange = (slideIndex: number) => {
+    if (slides[slideIndex]?.title) {
+      const hash = slides[slideIndex].title.toLowerCase().replace(/\s+/g, "-");
+      window.history.replaceState(null, "", `#${hash}`);
+    }
+  };
 
   if (langLoading || isLoading) {
     return (
@@ -53,7 +77,9 @@ export default function UserGuidePage() {
     );
   }
 
-  return <SlideCarousel slides={slides} />;
+  return (
+    <SlideCarousel slides={slides} initialSlide={initialSlide} onSlideChange={handleSlideChange} />
+  );
 }
 
 /**
@@ -71,12 +97,18 @@ function parseMarkdownToSlides(markdown: string): Slide[] {
     const trimmed = section.trim();
     if (!trimmed) return;
 
+    const id = `slide-${slideId++}`;
+
+    // Extract title from ## header
+    const titleMatch = trimmed.match(/^## (.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : "";
+
     // Process each section as a slide
     const html = formatMarkdownToHTML(trimmed);
-    const id = `slide-${slideId++}`;
 
     slides.push({
       id,
+      title,
       content: (
         <div className="prose prose-sm sm:prose-lg max-w-full overflow-hidden">
           <div
@@ -202,11 +234,16 @@ function processMarkdownContent(markdown: string): string {
     '<strong class="font-semibold text-text-primary">$1</strong>'
   );
 
-  // Links
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
+  // Links - Convert section references to internal slide navigation
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, href) => {
+    // Check if it's an internal section reference (starts with #)
+    if (href.startsWith("#")) {
+      const slideRef = href.substring(1); // Remove the #
+      return `<a data-slide-ref="${slideRef}" class="text-primary hover:text-primary-dark underline cursor-pointer">${text}</a>`;
+    }
+    // External links or other pages
+    return `<a href="${href}" class="text-primary hover:text-primary-dark underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  });
 
   // Horizontal rules
   html = html.replace(/^---$/gim, '<hr class="my-8 border-border-light" />');

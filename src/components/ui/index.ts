@@ -25,6 +25,9 @@ export type { LabeledSelectProps } from "./LabeledSelect";
 export { Card } from "./Card";
 export type { CardProps } from "./Card";
 
+export { Accordion } from "./Accordion";
+export type { AccordionProps, AccordionItemProps } from "./Accordion";
+
 // Feedback components
 export { Badge } from "./Badge";
 export type { BadgeProps } from "./Badge";

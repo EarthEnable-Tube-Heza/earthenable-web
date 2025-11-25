@@ -1,5 +1,9 @@
 # User Guide
 
+> **📝 Draft Documentation Notice**
+>
+> This guide is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Complete Guide to Using the EarthEnable Mobile App
 
 This comprehensive guide covers all features and capabilities of the EarthEnable field operations mobile app.
@@ -531,10 +535,10 @@ In **Settings → Account**, you can view:
 ## Need Help?
 
 **Technical Support:** support@earthenable.org
-**Your Manager:** For task assignment questions
+**Your Manager or IT Support:** To verify if tasks exist in Salesforce or for sync issues
 **This Guide:** Bookmark for quick reference
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **App Version:** 1.0.0

@@ -1,8 +1,27 @@
 # Installation Guide
 
+> **📝 Draft Documentation Notice**
+>
+> This guide is currently being refined and aligned with the latest app features. While the information provided is accurate and useful, we are continuously improving the documentation based on user feedback and app updates. If you notice any discrepancies or have suggestions, please contact support@earthenable.org.
+
 ## Download and Install the EarthEnable Mobile App
 
 This guide will walk you through the process of installing the EarthEnable mobile app on your Android device.
+
+![Install EarthEnable App](/images/app-screenshots/install-screen.jpg)
+
+### Quick Installation Steps:
+
+1. **Prerequisites** - Ensure you have Android 7.0+, 150MB free space, and earthenable.org email
+2. **Sign In with Your EarthEnable Email** - Add your @earthenable.org account to your device
+3. **Access Google Play Store** - Switch to your work account in Play Store
+4. **Find the EarthEnable App** - Search for "EarthEnable" in Play Store
+5. **Install the App** - Tap Install and wait for download to complete
+6. **First Launch & Sign In** - Open the app and sign in with Google
+7. **Welcome to EarthEnable!** - Explore the dashboard and app features
+8. **Navigation Drawer** - Access settings and additional options
+
+> **Tip:** If you need detailed instructions, continue to the next slides. Otherwise, follow the steps above!
 
 ---
 
@@ -53,7 +72,7 @@ The EarthEnable app is available through **Google Play Store** for internal use 
 With your work account active in Play Store:
 
 1. Use the **search bar** at the top
-2. Type **"EarthEnable"** or **"EarthEnable Apps"**
+2. Type **"EarthEnable"** or **"EarthEnable App"**
 3. The app should appear in your search results with the EarthEnable logo
 
 ![Search for EarthEnable App](/images/app-screenshots/google-play-store-search-earthenable.jpg)
@@ -109,7 +128,7 @@ After successful sign-in, you'll land on the **Dashboard** - this confirms your 
 **Top Section:**
 
 - **Profile picture** - Your Google account photo
-- **Personalized greeting** - "Welcome back, [Your Name]!"
+- **Personalized greeting** - Time-based greeting like "Good Morning, [Your Name]" or "Good Afternoon, [Your Name]"
 - **Language toggle** - Switch between English and Kinyarwanda
 - **Values icon** - Tap the heart icon to view "Welcome to EarthEnable" values
 
@@ -136,7 +155,7 @@ Tap your **profile picture** in the top-left corner to reveal the navigation dra
 - **App Version** - View current app version number and build information
 - **Logout** - Sign out of your account and return to the sign-in screen
 
-![Navigation Drawer](/images/app-screenshots/navigation-drawer.jpeg)
+![Navigation Drawer](/images/app-screenshots/navigation-drawer.jpg)
 
 ### You're All Set!
 
@@ -165,7 +184,7 @@ Installation is complete. You can now explore the app features. For detailed ins
 - Verify you're signed in with your **@earthenable.org** account in Play Store
   - Tap your profile icon in Play Store and check which account is active
   - Switch to your earthenable.org account if needed
-- Search for "EarthEnable" or "EarthEnable Apps" (exact spelling matters)
+- Search for "EarthEnable" or "EarthEnable App" (exact spelling matters)
 - If still not visible, contact your manager or IT administrator
 - Email: support@earthenable.org
 
@@ -250,5 +269,5 @@ If you encounter any issues during installation:
 
 ---
 
-**Last Updated:** January 2025
+**Last Updated:** November 2025
 **App Version:** 1.0.0
