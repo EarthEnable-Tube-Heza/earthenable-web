@@ -96,7 +96,7 @@ function AppDocsLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="mt-8 rounded-lg bg-background-light p-4">
             <p className="text-xs font-semibold text-text-secondary">CURRENT VERSION</p>
             <p className="mt-1 text-sm font-bold text-text-primary">v1.0.0</p>
-            <p className="mt-1 text-xs text-text-secondary">Released January 2025</p>
+            <p className="mt-1 text-xs text-text-secondary">Released November 2025</p>
           </div>
         </aside>
 
