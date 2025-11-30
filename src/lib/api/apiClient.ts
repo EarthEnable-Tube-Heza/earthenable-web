@@ -29,6 +29,11 @@ import {
   CreateFormMapping,
   PaginatedFormMappingsResponse,
   UpdateFormMapping,
+  EntityListResponse,
+  UserWithEntityAccess,
+  GrantEntityAccessRequest,
+  BulkGrantEntityAccessRequest,
+  EntityAccessResponse,
 } from "../../types";
 
 /**
@@ -381,6 +386,64 @@ class APIClient {
    */
   async updateFormMapping(mappingId: string, data: UpdateFormMapping): Promise<TaskSubjectForm> {
     return this.patch<TaskSubjectForm>(`/admin/forms/mappings/${mappingId}`, data);
+  }
+
+  // ============================================================================
+  // ENTITY ACCESS MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * List all users with their entity access information
+   */
+  async getUsersWithEntityAccess(params?: {
+    search?: string;
+    entity_id?: string;
+    is_active?: boolean;
+  }): Promise<UserWithEntityAccess[]> {
+    return this.get<UserWithEntityAccess[]>("/admin/users/entity-access", { params });
+  }
+
+  /**
+   * Get user's entity access details
+   */
+  async getUserEntityAccess(userId: string): Promise<UserWithEntityAccess> {
+    return this.get<UserWithEntityAccess>(`/admin/users/${userId}/entity-access`);
+  }
+
+  /**
+   * Grant entity access to a user
+   */
+  async grantEntityAccess(
+    userId: string,
+    request: GrantEntityAccessRequest
+  ): Promise<EntityAccessResponse> {
+    return this.post<EntityAccessResponse>(`/admin/users/${userId}/entity-access`, request);
+  }
+
+  /**
+   * Grant multiple entities to a user (bulk operation)
+   */
+  async bulkGrantEntityAccess(
+    userId: string,
+    request: BulkGrantEntityAccessRequest
+  ): Promise<EntityAccessResponse[]> {
+    return this.post<EntityAccessResponse[]>(`/admin/users/${userId}/entity-access/bulk`, request);
+  }
+
+  /**
+   * Revoke entity access from a user
+   */
+  async revokeEntityAccess(userId: string, entityId: string): Promise<void> {
+    return this.delete<void>(`/admin/users/${userId}/entity-access/${entityId}`);
+  }
+
+  /**
+   * List all entities with user counts
+   */
+  async getEntitiesForAdmin(includeInactive = false): Promise<EntityListResponse[]> {
+    return this.get<EntityListResponse[]>("/admin/entities/list", {
+      params: { include_inactive: includeInactive },
+    });
   }
 }
 
