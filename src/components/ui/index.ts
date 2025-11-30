@@ -40,3 +40,6 @@ export type { AlertProps } from "./Alert";
 
 export { Toast } from "./Toast";
 export type { ToastProps, ToastType, ToastPosition } from "./Toast";
+
+export { ConfirmDialog } from "./ConfirmDialog";
+export type { ConfirmDialogProps } from "./ConfirmDialog";

@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { apiClient } from "@/src/lib/api/apiClient";
 import { UserWithEntityAccess, EntityListResponse } from "@/src/types";
-import { Card, Input, Button, Badge, Spinner, Alert } from "@/src/components/ui";
+import { Card, Input, Button, Badge, Spinner, Alert, ConfirmDialog } from "@/src/components/ui";
 import { GrantEntityAccessModal } from "./GrantEntityAccessModal";
 
 export function UserEntityAccessManager() {
@@ -23,6 +23,9 @@ export function UserEntityAccessManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserWithEntityAccess | null>(null);
   const [showGrantModal, setShowGrantModal] = useState(false);
+  const [revokeConfirm, setRevokeConfirm] = useState<{ userId: string; entityId: string } | null>(
+    null
+  );
 
   // Fetch users with entity access
   const fetchUsers = useCallback(async () => {
@@ -67,20 +70,30 @@ export function UserEntityAccessManager() {
     setShowGrantModal(true);
   };
 
-  // Handle revoke access
-  const handleRevokeAccess = async (userId: string, entityId: string) => {
-    if (!confirm("Are you sure you want to revoke this entity access?")) {
-      return;
-    }
+  // Handle revoke access - Show confirmation dialog
+  const handleRevokeAccess = (userId: string, entityId: string) => {
+    setRevokeConfirm({ userId, entityId });
+  };
+
+  // Confirm revoke access
+  const confirmRevokeAccess = async () => {
+    if (!revokeConfirm) return;
 
     try {
-      await apiClient.revokeEntityAccess(userId, entityId);
+      await apiClient.revokeEntityAccess(revokeConfirm.userId, revokeConfirm.entityId);
       // Refresh the user list
       await fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to revoke access");
       console.error("Error revoking access:", err);
+    } finally {
+      setRevokeConfirm(null);
     }
+  };
+
+  // Cancel revoke access
+  const cancelRevokeAccess = () => {
+    setRevokeConfirm(null);
   };
 
   // Handle modal close and refresh
@@ -253,6 +266,18 @@ export function UserEntityAccessManager() {
           onClose={handleModalClose}
         />
       )}
+
+      {/* Revoke Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!revokeConfirm}
+        title="Revoke Entity Access"
+        message="Are you sure you want to revoke this entity access? This action cannot be undone."
+        confirmLabel="Revoke Access"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmRevokeAccess}
+        onCancel={cancelRevokeAccess}
+      />
     </div>
   );
 }
