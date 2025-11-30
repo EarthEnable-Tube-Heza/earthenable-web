@@ -3,8 +3,9 @@
 /**
  * Entity Selector Component
  *
- * Displays current entity and allows switching between accessible entities.
- * Only shown for multi-entity users.
+ * Displays current entity for all users.
+ * - Single-entity users: Shows entity name (static display)
+ * - Multi-entity users: Shows entity name with dropdown to switch
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -28,12 +29,13 @@ export function EntitySelector() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Don't show if no entity info or not multi-entity user
-  if (!entityInfo || !entityInfo.is_multi_entity_user) {
+  // Don't show if no entity info
+  if (!entityInfo) {
     return null;
   }
 
   const currentEntity = entityInfo.accessible_entities.find((e) => e.id === selectedEntityId);
+  const isMultiEntity = entityInfo.is_multi_entity_user;
 
   const handleSelectEntity = async (entityId: string) => {
     setIsOpen(false);
@@ -47,40 +49,56 @@ export function EntitySelector() {
   return (
     <div className="p-4 border-t border-border-light bg-white" ref={dropdownRef}>
       {/* Current Entity Display */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "w-full flex items-center justify-between gap-2 px-4 py-3 rounded-lg",
-          "bg-background-light hover:bg-border-light transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-primary"
-        )}
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0 text-sm">
-            {currentEntity?.code.slice(0, 2).toUpperCase() || "??"}
+      {isMultiEntity ? (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            "w-full flex items-center justify-between gap-2 px-4 py-3 rounded-lg",
+            "bg-background-light hover:bg-border-light transition-colors",
+            "focus:outline-none focus:ring-2 focus:ring-primary"
+          )}
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0 text-sm">
+              {currentEntity?.code.slice(0, 2).toUpperCase() || "??"}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs text-text-secondary font-medium">Current Entity</p>
+              <p className="text-sm font-semibold text-text-primary truncate">
+                {currentEntity?.name || "Select Entity"}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs text-text-secondary font-medium">Current Entity</p>
-            <p className="text-sm font-semibold text-text-primary truncate">
-              {currentEntity?.name || "Select Entity"}
-            </p>
+          <svg
+            className={cn(
+              "w-5 h-5 text-text-secondary transition-transform flex-shrink-0",
+              isOpen && "rotate-180"
+            )}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      ) : (
+        <div className="w-full flex items-center gap-2 px-4 py-3 rounded-lg bg-background-light">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0 text-sm">
+              {currentEntity?.code.slice(0, 2).toUpperCase() || "??"}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs text-text-secondary font-medium">Entity</p>
+              <p className="text-sm font-semibold text-text-primary truncate">
+                {currentEntity?.name || "No Entity"}
+              </p>
+            </div>
           </div>
         </div>
-        <svg
-          className={cn(
-            "w-5 h-5 text-text-secondary transition-transform flex-shrink-0",
-            isOpen && "rotate-180"
-          )}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+      )}
 
-      {/* Dropdown */}
-      {isOpen && (
+      {/* Dropdown - Only show for multi-entity users */}
+      {isMultiEntity && isOpen && (
         <div className="mt-2 py-2 bg-white border border-border-light rounded-lg shadow-lg max-h-64 overflow-y-auto">
           {entityInfo.accessible_entities.map((entity) => (
             <button
