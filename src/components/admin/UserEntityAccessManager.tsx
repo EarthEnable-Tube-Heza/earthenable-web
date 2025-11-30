@@ -12,7 +12,16 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { apiClient } from "@/src/lib/api/apiClient";
 import { UserWithEntityAccess, EntityListResponse } from "@/src/types";
-import { Card, Input, Button, Badge, Spinner, Alert, ConfirmDialog } from "@/src/components/ui";
+import {
+  Card,
+  Input,
+  Button,
+  Badge,
+  Spinner,
+  Alert,
+  ConfirmDialog,
+  Toast,
+} from "@/src/components/ui";
 import { GrantEntityAccessModal } from "./GrantEntityAccessModal";
 
 export function UserEntityAccessManager() {
@@ -26,6 +35,15 @@ export function UserEntityAccessManager() {
   const [revokeConfirm, setRevokeConfirm] = useState<{ userId: string; entityId: string } | null>(
     null
   );
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({
+    visible: false,
+    type: "success",
+    message: "",
+  });
 
   // Fetch users with entity access
   const fetchUsers = useCallback(async () => {
@@ -83,8 +101,19 @@ export function UserEntityAccessManager() {
       await apiClient.revokeEntityAccess(revokeConfirm.userId, revokeConfirm.entityId);
       // Refresh the user list
       await fetchUsers();
+      // Show success toast
+      setToast({
+        visible: true,
+        type: "success",
+        message: "Entity access revoked successfully",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to revoke access");
+      // Show error toast
+      setToast({
+        visible: true,
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to revoke access",
+      });
       console.error("Error revoking access:", err);
     } finally {
       setRevokeConfirm(null);
@@ -277,6 +306,14 @@ export function UserEntityAccessManager() {
         confirmVariant="danger"
         onConfirm={confirmRevokeAccess}
         onCancel={cancelRevokeAccess}
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast({ ...toast, visible: false })}
       />
     </div>
   );
