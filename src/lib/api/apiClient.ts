@@ -14,6 +14,7 @@ import axios, {
 import { config, getAPIUrl } from "../config";
 import {
   TokenResponse,
+  ExtendedTokenResponse,
   GoogleAuthRequest,
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
@@ -265,9 +266,9 @@ class APIClient {
   /**
    * Authenticate with Google token
    */
-  async authenticateWithGoogle(googleToken: string): Promise<TokenResponse> {
+  async authenticateWithGoogle(googleToken: string): Promise<ExtendedTokenResponse> {
     const payload: GoogleAuthRequest = { token: googleToken };
-    return this.post<TokenResponse>("auth/google", payload);
+    return this.post<ExtendedTokenResponse>("auth/google", payload);
   }
 
   /**
@@ -286,6 +287,13 @@ class APIClient {
     } finally {
       this.clearAuth();
     }
+  }
+
+  /**
+   * Select entity (switch entity context)
+   */
+  async selectEntity(entityId: string): Promise<void> {
+    await this.post("auth/select-entity", { entity_id: entityId });
   }
 
   // ============================================================================
