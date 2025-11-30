@@ -199,16 +199,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         JSON.stringify(tokenResponse.entity_info)
       );
 
-      // Determine selected entity: use default_entity_id or first accessible entity
-      const selectedEntityId =
-        tokenResponse.entity_info.default_entity_id ||
-        (tokenResponse.entity_info.accessible_entities.length > 0
-          ? tokenResponse.entity_info.accessible_entities[0].id
-          : null);
-
-      if (selectedEntityId) {
-        localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, selectedEntityId);
-      }
+      // Don't auto-select entity - user must choose explicitly via modal
+      // This prevents accidental actions on wrong entity
+      const selectedEntityId = null;
 
       // Also store access token in cookies (for middleware)
       // Calculate expiry date for cookie (convert expires_in seconds to Date)

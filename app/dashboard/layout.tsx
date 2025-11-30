@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Dashboard Layout
@@ -7,16 +7,13 @@
  * Includes SidebarProvider for managing sidebar state.
  */
 
-import { useRequireAuth } from '@/src/lib/auth';
-import { SidebarProvider } from '@/src/contexts/SidebarContext';
-import { Sidebar } from '@/src/components/dashboard/Sidebar';
-import { Header } from '@/src/components/dashboard/Header';
+import { useRequireAuth } from "@/src/lib/auth";
+import { SidebarProvider } from "@/src/contexts/SidebarContext";
+import { Sidebar } from "@/src/components/dashboard/Sidebar";
+import { Header } from "@/src/components/dashboard/Header";
+import { EntitySelectionModal } from "@/src/components/dashboard/EntitySelectionModal";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Protect dashboard routes - redirect to sign-in if not authenticated
   const { isAuthenticated, isLoading } = useRequireAuth();
 
@@ -49,10 +46,11 @@ export default function DashboardLayout({
           <Header />
 
           {/* Page Content */}
-          <main className="flex-1 p-4 md:p-6 overflow-x-auto">
-            {children}
-          </main>
+          <main className="flex-1 p-4 md:p-6 overflow-x-auto">{children}</main>
         </div>
+
+        {/* Entity Selection Modal - Shows when user hasn't selected an entity */}
+        <EntitySelectionModal />
       </div>
     </SidebarProvider>
   );
