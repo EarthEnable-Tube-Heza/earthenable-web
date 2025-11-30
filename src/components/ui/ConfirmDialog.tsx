@@ -34,26 +34,26 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div className="bg-background-primary rounded-xl shadow-2xl max-w-md w-full border-l-[6px] border-l-primary">
         {/* Header */}
-        <div className="p-6 border-b border-border-light">
+        <div className="p-6 border-b border-secondary/20">
           <h3 className="text-xl font-heading font-bold text-text-primary">{title}</h3>
         </div>
 
         {/* Message */}
         <div className="p-6">
-          <p className="text-text-secondary">{message}</p>
+          <p className="text-text-secondary text-base leading-relaxed">{message}</p>
         </div>
 
         {/* Actions */}
-        <div className="p-6 border-t border-border-light flex gap-3 justify-end">
+        <div className="p-6 border-t border-secondary/20 flex gap-3 justify-end">
           <button
             onClick={onCancel}
             className={cn(
-              "px-4 py-2 rounded-lg font-medium transition-colors",
-              "bg-background-light text-text-primary",
-              "hover:bg-border-light",
-              "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              "px-6 py-2.5 rounded-lg font-medium transition-colors",
+              "border-2 border-secondary text-secondary bg-transparent",
+              "hover:bg-secondary hover:text-white",
+              "focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
             )}
           >
             {cancelLabel}
@@ -61,10 +61,10 @@ export function ConfirmDialog({
           <button
             onClick={onConfirm}
             className={cn(
-              "px-4 py-2 rounded-lg font-medium transition-colors text-white",
+              "px-6 py-2.5 rounded-lg font-medium transition-colors text-white",
               "focus:outline-none focus:ring-2 focus:ring-offset-2",
               confirmVariant === "danger"
-                ? "bg-error hover:bg-error/90 focus:ring-error"
+                ? "bg-status-error hover:bg-status-error/90 focus:ring-status-error"
                 : "bg-primary hover:bg-primary/90 focus:ring-primary"
             )}
           >
