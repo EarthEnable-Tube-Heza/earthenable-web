@@ -4,15 +4,20 @@
  * Entity Selector Component
  *
  * Displays current entity for all users.
- * - Single-entity users: Shows entity name (static display)
- * - Multi-entity users: Shows entity name with dropdown to switch
+ * - Collapsed sidebar: Shows just entity badge (2-letter code)
+ * - Expanded sidebar (single-entity): Shows entity name (static display)
+ * - Expanded sidebar (multi-entity): Shows entity name with dropdown to switch
  */
 
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/src/lib/auth";
 import { cn } from "@/src/lib/theme";
 
-export function EntitySelector() {
+interface EntitySelectorProps {
+  isCollapsed: boolean;
+}
+
+export function EntitySelector({ isCollapsed }: EntitySelectorProps) {
   const { entityInfo, selectedEntityId, selectEntity } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,6 +51,21 @@ export function EntitySelector() {
     }
   };
 
+  // When collapsed, show just the entity badge
+  if (isCollapsed) {
+    return (
+      <div className="p-4 border-t border-border-light bg-white flex justify-center">
+        <div
+          className="w-12 h-12 rounded-lg bg-primary text-white flex items-center justify-center font-heading font-bold text-base shadow-md"
+          title={currentEntity?.name || "Entity"}
+        >
+          {currentEntity?.code.slice(0, 2).toUpperCase() || "??"}
+        </div>
+      </div>
+    );
+  }
+
+  // When expanded, show full entity info
   return (
     <div className="p-4 border-t border-border-light bg-white" ref={dropdownRef}>
       {/* Current Entity Display */}

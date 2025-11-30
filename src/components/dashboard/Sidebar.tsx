@@ -181,8 +181,8 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        {/* Entity Selector - Only shown when expanded and user has multiple entities */}
-        {!isCollapsed && <EntitySelector />}
+        {/* Entity Selector - Shows entity badge when collapsed, full info when expanded */}
+        <EntitySelector isCollapsed={isCollapsed} />
       </aside>
     </>
   );
