@@ -101,7 +101,7 @@ export function UserEntityAccessManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Search and Filters */}
       <Card variant="bordered" padding="md">
         <div className="flex gap-4">
