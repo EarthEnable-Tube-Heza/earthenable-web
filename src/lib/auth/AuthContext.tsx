@@ -15,6 +15,8 @@ import {
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
   shouldRefreshToken,
+  ExtendedTokenResponse,
+  EntityInfo,
 } from "../../types";
 import { apiClient } from "../api";
 import { config } from "../config";
@@ -30,6 +32,8 @@ const initialAuthState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  entityInfo: null,
+  selectedEntityId: null,
 };
 
 /**
@@ -84,10 +88,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const refreshToken = localStorage.getItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
       const tokenExpiry = localStorage.getItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
       const userStr = localStorage.getItem(TOKEN_STORAGE_KEYS.USER);
+      const entityInfoStr = localStorage.getItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+      const selectedEntityId = localStorage.getItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
 
       if (accessToken && refreshToken && userStr) {
         const user: User = JSON.parse(userStr);
         const expiry = tokenExpiry ? parseInt(tokenExpiry, 10) : null;
+
+        // Parse entityInfo with error handling
+        let entityInfo: EntityInfo | null = null;
+        if (entityInfoStr && entityInfoStr.trim()) {
+          try {
+            entityInfo = JSON.parse(entityInfoStr);
+          } catch (error) {
+            console.error("Failed to parse entity info:", error);
+            // Clear invalid entity info from storage
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
+          }
+        }
 
         // Check if token is expired
         const isExpired = expiry ? expiry <= Date.now() : false;
@@ -99,6 +118,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
           document.cookie =
             "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
           setState((prev) => ({ ...prev, isLoading: false }));
@@ -119,6 +140,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isAuthenticated: true,
           isLoading: false,
           error: null,
+          entityInfo,
+          selectedEntityId,
         });
 
         // Verify token is still valid by fetching current user
@@ -136,6 +159,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+          localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
           document.cookie =
             "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
           setState(initialAuthState);
@@ -156,8 +181,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // Exchange Google token for JWT
-      const tokenResponse = await apiClient.authenticateWithGoogle(googleToken);
+      // Exchange Google token for JWT (now returns ExtendedTokenResponse with entity_info)
+      const tokenResponse: ExtendedTokenResponse =
+        await apiClient.authenticateWithGoogle(googleToken);
 
       // Calculate token expiry
       const tokenExpiry = calculateTokenExpiry(tokenResponse.expires_in);
@@ -166,6 +192,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.access_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refresh_token);
       localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, tokenExpiry.toString());
+
+      // Store entity information
+      localStorage.setItem(
+        TOKEN_STORAGE_KEYS.ENTITY_INFO,
+        JSON.stringify(tokenResponse.entity_info)
+      );
+
+      // Auto-select for single-entity users, null for multi-entity users (they use modal)
+      let selectedEntityId = null;
+      if (
+        !tokenResponse.entity_info.is_multi_entity_user &&
+        tokenResponse.entity_info.accessible_entities.length === 1
+      ) {
+        // Single-entity user - auto-select their only entity
+        selectedEntityId = tokenResponse.entity_info.accessible_entities[0].id;
+        localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, selectedEntityId);
+      }
+      // Multi-entity users must explicitly select via modal
 
       // Also store access token in cookies (for middleware)
       // Calculate expiry date for cookie (convert expires_in seconds to Date)
@@ -186,6 +230,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated: true,
         isLoading: false,
         error: null,
+        entityInfo: tokenResponse.entity_info,
+        selectedEntityId,
       });
     } catch (err) {
       const error = err as { response?: { data?: { detail?: string } } };
@@ -213,6 +259,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
       localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+      localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+      localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
 
       // Clear cookie (set expired date)
       document.cookie =
@@ -254,11 +302,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
+  /**
+   * Select entity (switch entity context)
+   */
+  const selectEntity = useCallback(async (entityId: string) => {
+    try {
+      // Call API to switch entity context (backend will return new token with updated context)
+      await apiClient.selectEntity(entityId);
+
+      // Update local state
+      localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, entityId);
+      setState((prev) => ({ ...prev, selectedEntityId: entityId }));
+    } catch (error) {
+      console.error("Failed to switch entity:", error);
+      throw error;
+    }
+  }, []);
+
   const value: AuthContextValue = {
     ...state,
     signIn,
     signOut,
     refreshAccessToken,
+    selectEntity,
     clearError,
   };
 

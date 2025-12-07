@@ -57,12 +57,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">User Management</h1>
-        <p className="text-text-secondary mt-2">Manage users, roles, and permissions</p>
-      </div>
-
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-medium p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
