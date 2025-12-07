@@ -10,11 +10,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth, useIsAdmin } from "@/src/lib/auth";
+import { useIsAdmin } from "@/src/lib/auth";
 import { useSidebar } from "@/src/contexts/SidebarContext";
 import { cn } from "@/src/lib/theme";
-import { UserRoleLabels } from "@/src/types/user";
 import { useEffect } from "react";
+import { EntitySelector } from "./EntitySelector";
 
 interface NavItem {
   href: string;
@@ -62,7 +62,6 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuth();
   const isAdmin = useIsAdmin();
   const { isCollapsed, isMobileOpen, toggleCollapsed, closeMobileMenu } = useSidebar();
 
@@ -182,55 +181,8 @@ export function Sidebar() {
           </ul>
         </nav>
 
-        {/* User Info */}
-        {user && !isCollapsed && (
-          <div className="p-4 border-t border-border-light bg-background-light">
-            <div className="flex items-center gap-3">
-              {user.picture ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.picture}
-                  alt={user.name || user.email}
-                  className="w-10 h-10 rounded-full flex-shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold flex-shrink-0">
-                  {user.name?.[0] || user.email[0].toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">
-                  {user.name || user.email}
-                </p>
-                <p className="text-xs text-text-secondary truncate">
-                  {user.role ? UserRoleLabels[user.role] : "Loading..."}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Collapsed User Avatar */}
-        {user && isCollapsed && (
-          <div className="p-4 border-t border-border-light flex justify-center">
-            {user.picture ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.picture}
-                alt={user.name || user.email}
-                className="w-10 h-10 rounded-full"
-                title={user.name || user.email}
-              />
-            ) : (
-              <div
-                className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-heading font-bold"
-                title={user.name || user.email}
-              >
-                {user.name?.[0] || user.email[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Entity Selector - Shows entity badge when collapsed, full info when expanded */}
+        <EntitySelector isCollapsed={isCollapsed} />
       </aside>
     </>
   );

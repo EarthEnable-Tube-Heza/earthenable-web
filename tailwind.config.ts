@@ -28,8 +28,9 @@ const config: Config = {
           overdue: "#d32f2f",
         },
         text: {
-          primary: "#1F2937",
-          secondary: "#6B7280",
+          primary: "#000000", // Black (matching mobile app)
+          secondary: "#78373B", // Brand secondary (matching mobile app)
+          tertiary: "#6B7280", // Medium gray for less important text
           disabled: "#9CA3AF",
         },
       },

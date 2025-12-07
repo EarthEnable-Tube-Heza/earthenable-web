@@ -108,7 +108,7 @@ Nyuma yo kwishyiraho kurangira:
 2. Porogaramu izafungura igaragaze **splash screen**
 3. Uzasubirwa n'**ecran yo kwinjira**
 
-![Ecran yo Kwinjira](/images/app-screenshots/sign-in-screen.jpg)
+![Ecran yo Kwinjira](/images/app-screenshots/sign-in-screen-rw.jpg)
 
 4. Kanda buto ya **"Sign in with Google"**
 5. Hitamo **konti yawe ya imeri ya earthenable.org**
@@ -139,7 +139,7 @@ Nyuma yo kwinjira neza, uzagera kuri **Dashboard** - ibi biremeza ko kwishyiraho
   - **Imirimo** (Irakora) - Reba kandi ukurikire imirimo washinzwe
   - **Ibindi biranga** (Bizaza vuba) - Ubundi bushobozi
 
-![Dashboard ya Porogaramu](/images/app-screenshots/dashboard.jpeg)
+![Dashboard ya Porogaramu](/images/app-screenshots/dashboard-rw.jpeg)
 
 > **Icyitonderwa:** Amakuru y'imirimo arahinduka mu buryo bwikora inyuma. Igihe ukanda **Akarita y'Imirimo** bwa mbere, akenshi kuvugurura byaba byarangiye.
 
@@ -155,7 +155,7 @@ Kanda **ifoto ya profil yawe** kuri icyerekezo cy'ibumoso hejuru kugira ngo ugar
 - **Verisiyo ya Porogaramu** - Reba numero ya verisiyo y'ubu n'amakuru y'ubwubatsi
 - **Gusohoka** - Sohoka kuri konti yawe usubire ku ecran yo kwinjira
 
-![Urubuga rwo Kuyobora](/images/app-screenshots/navigation-drawer.jpg)
+![Urubuga rwo Kuyobora](/images/app-screenshots/navigation-drawer-rw.jpg)
 
 ### Byose Byarangiye!
 

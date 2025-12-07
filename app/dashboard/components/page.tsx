@@ -661,12 +661,12 @@ function MyComponent() {
               </p>
 
               <div>
-                <h3 className="text-lg font-semibold mb-3">Colors</h3>
+                <h3 className="text-lg font-semibold mb-3">Brand Colors</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <div className="h-16 rounded bg-primary mb-2"></div>
                     <p className="text-sm font-mono">#EA6A00</p>
-                    <p className="text-xs text-text-secondary">Primary</p>
+                    <p className="text-xs text-text-secondary">Primary Orange</p>
                   </div>
                   <div>
                     <div className="h-16 rounded bg-secondary mb-2"></div>
@@ -674,14 +674,67 @@ function MyComponent() {
                     <p className="text-xs text-text-secondary">Secondary</p>
                   </div>
                   <div>
+                    <div className="h-16 rounded bg-accent mb-2"></div>
+                    <p className="text-sm font-mono">#D5A34C</p>
+                    <p className="text-xs text-text-secondary">Accent Gold</p>
+                  </div>
+                  <div>
+                    <div className="h-16 rounded bg-background-primary mb-2 border border-border-light"></div>
+                    <p className="text-sm font-mono">#F7EDDB</p>
+                    <p className="text-xs text-text-secondary">Background Cream</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Status Colors</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
                     <div className="h-16 rounded bg-status-success mb-2"></div>
                     <p className="text-sm font-mono">#124D37</p>
-                    <p className="text-xs text-text-secondary">Success</p>
+                    <p className="text-xs text-text-secondary">Success Green</p>
                   </div>
                   <div>
                     <div className="h-16 rounded bg-status-error mb-2"></div>
                     <p className="text-sm font-mono">#E04562</p>
-                    <p className="text-xs text-text-secondary">Error</p>
+                    <p className="text-xs text-text-secondary">Error Red</p>
+                  </div>
+                  <div>
+                    <div className="h-16 rounded bg-status-warning mb-2"></div>
+                    <p className="text-sm font-mono">#D5A34C</p>
+                    <p className="text-xs text-text-secondary">Warning Yellow</p>
+                  </div>
+                  <div>
+                    <div className="h-16 rounded bg-status-info mb-2"></div>
+                    <p className="text-sm font-mono">#3E57AB</p>
+                    <p className="text-xs text-text-secondary">Info Blue</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Text Colors</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <div className="h-16 rounded bg-text-primary mb-2 flex items-center justify-center">
+                      <span className="text-white font-bold">Aa</span>
+                    </div>
+                    <p className="text-sm font-mono">#000000</p>
+                    <p className="text-xs text-text-secondary">Primary (Black)</p>
+                  </div>
+                  <div>
+                    <div className="h-16 rounded bg-text-secondary mb-2 flex items-center justify-center">
+                      <span className="text-white font-bold">Aa</span>
+                    </div>
+                    <p className="text-sm font-mono">#78373B</p>
+                    <p className="text-xs text-text-secondary">Secondary (Brand)</p>
+                  </div>
+                  <div>
+                    <div className="h-16 rounded bg-text-tertiary mb-2 flex items-center justify-center">
+                      <span className="text-white font-bold">Aa</span>
+                    </div>
+                    <p className="text-sm font-mono">#6B7280</p>
+                    <p className="text-xs text-text-secondary">Tertiary (Gray)</p>
                   </div>
                 </div>
               </div>
