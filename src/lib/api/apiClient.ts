@@ -19,8 +19,7 @@ import {
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
   User,
-  UserDetail,
-  UserRole,
+  UserWithEmployeeDetail,
   PaginatedUsersResponse,
   UserStatsResponse,
   TaskSubject,
@@ -35,6 +34,16 @@ import {
   GrantEntityAccessRequest,
   BulkGrantEntityAccessRequest,
   EntityAccessResponse,
+  TaskDetail,
+  TaskCompleteResponse,
+  PaginatedTasksResponse,
+  TaskStatsResponse,
+  UpdateTaskRequest,
+  ReassignTaskRequest,
+  BulkReassignTasksRequest,
+  BulkReassignResponse,
+  TaskAssignee,
+  LocationValuesResponse,
 } from "../../types";
 
 /**
@@ -129,9 +138,14 @@ class APIClient {
             this.processQueue(refreshError, null);
             this.clearAuth();
 
-            // Redirect to sign in page
+            // Redirect to sign in page with session expired indicator
             if (typeof window !== "undefined") {
-              window.location.href = "/auth/signin";
+              const currentPath = window.location.pathname;
+              const redirectParam =
+                currentPath !== "/auth/signin"
+                  ? `&redirect=${encodeURIComponent(currentPath)}`
+                  : "";
+              window.location.href = `/auth/signin?session_expired=true${redirectParam}`;
             }
 
             return Promise.reject(refreshError);
@@ -316,14 +330,14 @@ class APIClient {
   /**
    * Get user by ID
    */
-  async getUserById(userId: string): Promise<UserDetail> {
-    return this.get<UserDetail>(`/admin/users/${userId}`);
+  async getUserById(userId: string): Promise<UserWithEmployeeDetail> {
+    return this.get<UserWithEmployeeDetail>(`/admin/users/${userId}`);
   }
 
   /**
    * Update user role
    */
-  async updateUserRole(userId: string, role: UserRole): Promise<User> {
+  async updateUserRole(userId: string, role: string): Promise<User> {
     return this.patch<User>(`/admin/users/${userId}/role`, { role });
   }
 
@@ -452,6 +466,108 @@ class APIClient {
     return this.get<EntityListResponse[]>("/admin/entities/list", {
       params: { include_inactive: includeInactive },
     });
+  }
+
+  // ============================================================================
+  // TASK MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get paginated list of tasks with optional filters
+   */
+  async getTasks(params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    subject_id?: string;
+    assignee_id?: string;
+    priority?: string;
+    due_time?: string;
+    type?: string;
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+    village?: string;
+    has_open_cases?: boolean;
+  }): Promise<PaginatedTasksResponse> {
+    return this.get<PaginatedTasksResponse>("/admin/tasks", { params });
+  }
+
+  /**
+   * Get task statistics with optional filters
+   */
+  async getTaskStats(params?: {
+    search?: string;
+    status?: string;
+    subject_id?: string;
+    assignee_id?: string;
+    priority?: string;
+    type?: string;
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+    village?: string;
+    has_open_cases?: boolean;
+  }): Promise<TaskStatsResponse> {
+    return this.get<TaskStatsResponse>("/admin/tasks/stats", { params });
+  }
+
+  /**
+   * Get unique location values for filter dropdowns
+   */
+  async getLocationValues(params?: {
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+  }): Promise<LocationValuesResponse> {
+    return this.get<LocationValuesResponse>("/admin/tasks/locations", { params });
+  }
+
+  /**
+   * Get list of users that can be assigned tasks
+   */
+  async getAssignableUsers(): Promise<TaskAssignee[]> {
+    return this.get<TaskAssignee[]>("/admin/tasks/assignable-users");
+  }
+
+  /**
+   * Get task by ID
+   */
+  async getTaskById(taskId: string): Promise<TaskDetail> {
+    return this.get<TaskDetail>(`/admin/tasks/${taskId}`);
+  }
+
+  /**
+   * Get complete task details with all related entities
+   * Used for task detail modal/page
+   */
+  async getTaskComplete(taskId: string): Promise<TaskCompleteResponse> {
+    return this.get<TaskCompleteResponse>(`/admin/tasks/${taskId}/complete`);
+  }
+
+  /**
+   * Update task
+   */
+  async updateTask(taskId: string, data: UpdateTaskRequest): Promise<TaskDetail> {
+    return this.patch<TaskDetail>(`/admin/tasks/${taskId}`, data);
+  }
+
+  /**
+   * Reassign task to a different user
+   */
+  async reassignTask(taskId: string, data: ReassignTaskRequest): Promise<TaskDetail> {
+    return this.post<TaskDetail>(`/admin/tasks/${taskId}/reassign`, data);
+  }
+
+  /**
+   * Bulk reassign multiple tasks
+   */
+  async bulkReassignTasks(data: BulkReassignTasksRequest): Promise<BulkReassignResponse> {
+    return this.post<BulkReassignResponse>("/admin/tasks/bulk-reassign", data);
   }
 }
 

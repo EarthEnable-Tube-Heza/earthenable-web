@@ -8,7 +8,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
-import { UserRole, UserRoleLabels } from "@/src/types/user";
+import { formatRoleLabel } from "@/src/types/user";
 import {
   PieChart,
   Pie,
@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
     });
 
     return Object.entries(aggregatedRoles).map(([role, count]) => ({
-      name: UserRoleLabels[role as UserRole] || role,
+      name: formatRoleLabel(role),
       value: count,
       color: ROLE_COLORS[role] || COLORS.accent,
     }));

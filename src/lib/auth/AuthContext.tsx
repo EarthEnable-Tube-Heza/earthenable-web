@@ -163,7 +163,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
           document.cookie =
             "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-          setState(initialAuthState);
+          // Reset to unauthenticated state with isLoading: false to show sign-in form
+          setState({
+            ...initialAuthState,
+            isLoading: false,
+          });
         }
       } else {
         setState((prev) => ({ ...prev, isLoading: false }));

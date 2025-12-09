@@ -14,7 +14,7 @@ import { useSidebar } from "@/src/contexts/SidebarContext";
 import { useScrollbarCompensation } from "@/src/hooks/useScrollbarCompensation";
 import { Menu } from "@headlessui/react";
 import { cn } from "@/src/lib/theme";
-import { UserRoleLabels } from "@/src/types/user";
+import { formatRoleLabel } from "@/src/types/user";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { Toast } from "@/src/components/ui/Toast";
 
@@ -129,7 +129,7 @@ export function Header() {
                 <div className="text-left hidden md:block">
                   <p className="text-sm font-medium text-text-primary">{user.name || user.email}</p>
                   <p className="text-xs text-text-secondary">
-                    {user.role ? UserRoleLabels[user.role] : "Loading..."}
+                    {user.role ? formatRoleLabel(user.role) : "Loading..."}
                   </p>
                 </div>
                 <svg

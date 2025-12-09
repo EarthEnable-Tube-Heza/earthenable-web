@@ -41,8 +41,8 @@ const navItems: NavItem[] = [
     adminOnly: true,
   },
   {
-    href: "/dashboard/task-subjects",
-    label: "Task Subjects",
+    href: "/dashboard/tasks",
+    label: "Tasks",
     icon: "📋",
     adminOnly: true,
   },

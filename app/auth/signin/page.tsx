@@ -25,6 +25,9 @@ function SignInContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
+  // Check if session expired
+  const sessionExpired = searchParams.get("session_expired") === "true";
+
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -136,6 +139,16 @@ function SignInContent() {
             <p className="text-text-secondary mb-6 text-center">
               Sign in with your Google account to access the EarthEnable admin dashboard.
             </p>
+
+            {/* Session Expired Message */}
+            {sessionExpired && (
+              <div className="mb-6 p-4 bg-status-warning/10 border border-status-warning rounded-md">
+                <p className="text-status-warning text-sm font-medium">Your session has expired</p>
+                <p className="text-text-secondary text-sm mt-1">
+                  Please sign in again to continue where you left off.
+                </p>
+              </div>
+            )}
 
             {/* Error Message */}
             {(error || authError) && (

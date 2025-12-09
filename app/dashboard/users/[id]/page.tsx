@@ -13,7 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
-import { UserRoleLabels } from "@/src/types/user";
+import { formatRoleLabel } from "@/src/types/user";
 import { Button, Card, Badge } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
 
@@ -228,7 +228,7 @@ export default function UserDetailPage() {
 
               {/* Role Badge */}
               <Badge variant={getRoleBadgeVariant(user.role)} size="lg" className="mb-4">
-                {UserRoleLabels[user.role]}
+                {formatRoleLabel(user.role)}
               </Badge>
 
               {/* Status Badge */}
@@ -380,6 +380,261 @@ export default function UserDetailPage() {
               </p>
             </div>
           </Card>
+
+          {/* Employee Details - Only shown if employee record exists */}
+          {user.employee && (
+            <>
+              {/* Organization Card */}
+              <Card padding="lg" header="Organization" divided>
+                <dl className="space-y-4">
+                  {/* Entity */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Entity
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.entity_name
+                        ? `${user.employee.entity_name}${user.employee.entity_code ? ` (${user.employee.entity_code})` : ""}`
+                        : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Department */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Department
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.department_name || "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Sub-Department (only if exists) */}
+                  {user.employee.sub_department_name && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Sub-Dept
+                      </dt>
+                      <dd className="text-sm text-text-primary">
+                        {user.employee.sub_department_name}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Branch */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Branch
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.branch_name
+                        ? `${user.employee.branch_name}${user.employee.branch_location ? ` - ${user.employee.branch_location}` : ""}`
+                        : "N/A"}
+                    </dd>
+                  </div>
+                </dl>
+              </Card>
+
+              {/* Position Details Card */}
+              <Card padding="lg" header="Position Details" divided>
+                <dl className="space-y-4">
+                  {/* Job Title/Role */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Job Title
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.job_title || user.employee.job_role_name || "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Role */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Role
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.role ? formatRoleLabel(user.employee.role) : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Level */}
+                  {user.employee.level && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Level
+                      </dt>
+                      <dd className="text-sm text-text-primary capitalize">
+                        {user.employee.level.replace(/_/g, " ")}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Employee Number */}
+                  {user.employee.employee_number && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Employee #
+                      </dt>
+                      <dd className="text-sm text-text-primary font-mono bg-background-secondary px-3 py-1.5 rounded">
+                        {user.employee.employee_number}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Start Date */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Start Date
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.start_date
+                        ? new Date(user.employee.start_date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* End Date (only if exists) */}
+                  {user.employee.end_date && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        End Date
+                      </dt>
+                      <dd className="text-sm text-text-primary">
+                        {new Date(user.employee.end_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </Card>
+
+              {/* Reporting Structure Card - Only if supervisor or approver exists */}
+              {(user.employee.supervisor_id || user.employee.approver_id) && (
+                <Card padding="lg" header="Reporting Structure" divided>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Supervisor */}
+                    {user.employee.supervisor_id && (
+                      <div className="bg-background-secondary rounded-lg p-4">
+                        <div className="text-xs text-text-tertiary uppercase tracking-wide mb-2">
+                          Reports To (Supervisor)
+                        </div>
+                        <div className="font-medium text-text-primary mb-1">
+                          {user.employee.supervisor_name || "Unknown"}
+                        </div>
+                        {user.employee.supervisor_email && (
+                          <a
+                            href={`mailto:${user.employee.supervisor_email}`}
+                            className="text-sm text-primary hover:underline block mb-2"
+                          >
+                            {user.employee.supervisor_email}
+                          </a>
+                        )}
+                        <Link
+                          href={`/dashboard/users/${user.employee.supervisor_id}`}
+                          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          View Profile
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                            />
+                          </svg>
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Approver (only if different from supervisor) */}
+                    {user.employee.approver_id &&
+                      user.employee.approver_id !== user.employee.supervisor_id && (
+                        <div className="bg-background-secondary rounded-lg p-4">
+                          <div className="text-xs text-text-tertiary uppercase tracking-wide mb-2">
+                            Approver
+                          </div>
+                          <div className="font-medium text-text-primary mb-1">
+                            {user.employee.approver_name || "Unknown"}
+                          </div>
+                          {user.employee.approver_email && (
+                            <a
+                              href={`mailto:${user.employee.approver_email}`}
+                              className="text-sm text-primary hover:underline block mb-2"
+                            >
+                              {user.employee.approver_email}
+                            </a>
+                          )}
+                          <Link
+                            href={`/dashboard/users/${user.employee.approver_id}`}
+                            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                          >
+                            View Profile
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                          </Link>
+                        </div>
+                      )}
+                  </div>
+                </Card>
+              )}
+
+              {/* Notes Card - Only if notes exist */}
+              {user.employee.notes && (
+                <Card padding="lg" header="Notes" divided>
+                  <p className="text-sm text-text-primary whitespace-pre-wrap">
+                    {user.employee.notes}
+                  </p>
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* No Employee Record Notice */}
+          {!user.employee && (
+            <Card padding="lg" className="text-center">
+              <svg
+                className="w-12 h-12 mx-auto text-text-tertiary mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-text-secondary">No employee record found for this user.</p>
+              <p className="text-xs text-text-tertiary mt-1">
+                This user may not have been assigned to an entity yet.
+              </p>
+            </Card>
+          )}
         </div>
       </div>
 

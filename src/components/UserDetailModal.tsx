@@ -4,15 +4,17 @@
  * User Detail Modal
  *
  * Modal for viewing and editing user details (admin only).
+ * Supports dynamic string roles from Salesforce.
  */
 
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/api";
-import { UserRole, UserRoleLabels } from "../types/user";
+import { formatRoleLabel, KnownRoles } from "../types/user";
 import { cn } from "../lib/theme";
 import { Select } from "./ui/Select";
+import { Input } from "./ui/Input";
 
 interface UserDetailModalProps {
   userId: string | null;
@@ -23,7 +25,7 @@ interface UserDetailModalProps {
 export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProps) {
   const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<boolean | null>(null);
 
   // Fetch user details
@@ -39,8 +41,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
   // Update role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: ({ id, role }: { id: string; role: UserRole }) =>
-      apiClient.updateUserRole(id, role),
+    mutationFn: ({ id, role }: { id: string; role: string }) => apiClient.updateUserRole(id, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
@@ -100,6 +101,24 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     setSelectedRole(null);
     setSelectedStatus(null);
     setEditMode(false);
+  };
+
+  /**
+   * Get role badge color based on role
+   */
+  const getRoleBadgeColor = (role: string) => {
+    if (role === KnownRoles.ADMIN) {
+      return "bg-status-error/10 text-status-error";
+    } else if (role === KnownRoles.MANAGER || role.includes("manager")) {
+      return "bg-primary/10 text-primary";
+    } else if (role === KnownRoles.QA_AGENT || role.includes("qa") || role.includes("quality")) {
+      return "bg-status-info/10 text-status-info";
+    } else if (role === KnownRoles.SYSTEM_USER) {
+      return "bg-accent/10 text-accent";
+    } else if (role === KnownRoles.PENDING_ASSIGNMENT) {
+      return "bg-status-warning/10 text-status-warning";
+    }
+    return "bg-green/10 text-green"; // Default for Salesforce roles like surveyor
   };
 
   return (
@@ -173,26 +192,20 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       Role
                     </label>
                     {editMode ? (
-                      <Select
+                      <Input
+                        type="text"
                         value={selectedRole || user.role}
-                        onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                      >
-                        <option value={UserRole.QA_AGENT}>QA Agent</option>
-                        <option value={UserRole.MANAGER}>Manager</option>
-                        <option value={UserRole.ADMIN}>Admin</option>
-                      </Select>
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        placeholder="Enter role (e.g., admin, manager, surveyor)"
+                      />
                     ) : (
                       <span
                         className={cn(
                           "inline-block px-2 py-1 text-sm font-medium rounded-full",
-                          user.role === UserRole.ADMIN
-                            ? "bg-status-error/10 text-status-error"
-                            : user.role === UserRole.MANAGER
-                              ? "bg-primary/10 text-primary"
-                              : "bg-status-info/10 text-status-info"
+                          getRoleBadgeColor(user.role)
                         )}
                       >
-                        {UserRoleLabels[user.role]}
+                        {formatRoleLabel(user.role)}
                       </span>
                     )}
                   </div>
