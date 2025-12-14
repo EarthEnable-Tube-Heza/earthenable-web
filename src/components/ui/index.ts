@@ -43,3 +43,7 @@ export type { ToastProps, ToastType, ToastPosition } from "./Toast";
 
 export { ConfirmDialog } from "./ConfirmDialog";
 export type { ConfirmDialogProps } from "./ConfirmDialog";
+
+// Display components
+export { PersonCard } from "./PersonCard";
+export type { PersonCardProps } from "./PersonCard";

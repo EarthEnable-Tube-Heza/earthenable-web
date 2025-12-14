@@ -23,6 +23,16 @@ const tabs = [
     href: "/dashboard/users/entity-access",
     exact: false,
   },
+  {
+    name: "Permissions",
+    href: "/dashboard/users/permissions",
+    exact: false,
+  },
+  {
+    name: "Role Mappings",
+    href: "/dashboard/users/role-permissions",
+    exact: false,
+  },
 ];
 
 export default function UsersLayout({ children }: { children: React.ReactNode }) {

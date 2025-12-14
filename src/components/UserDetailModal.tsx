@@ -15,6 +15,7 @@ import { formatRoleLabel, KnownRoles } from "../types/user";
 import { cn } from "../lib/theme";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
+import { PersonCard } from "./ui/PersonCard";
 
 interface UserDetailModalProps {
   userId: string | null;
@@ -279,6 +280,56 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     </p>
                   </div>
                 </div>
+
+                {/* Reporting Structure */}
+                {user.employee && (
+                  <div className="border-t border-border-light pt-4">
+                    <h4 className="text-sm font-medium text-text-secondary mb-3">
+                      Reporting Structure
+                    </h4>
+
+                    {/* Reports To (Supervisor) */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-medium text-text-disabled mb-2">
+                        Reports To
+                      </label>
+                      {user.employee.supervisor_id ? (
+                        <PersonCard
+                          id={user.employee.supervisor_id}
+                          name={user.employee.supervisor_name}
+                          email={user.employee.supervisor_email}
+                          subtitle={`${formatRoleLabel(user.employee.supervisor_role)}${user.employee.supervisor_department_name ? ` · ${user.employee.supervisor_department_name}` : ""}`}
+                          variant="info"
+                        />
+                      ) : (
+                        <p className="text-sm text-text-disabled italic">No supervisor assigned</p>
+                      )}
+                    </div>
+
+                    {/* Direct Reports */}
+                    <div>
+                      <label className="block text-xs font-medium text-text-disabled mb-2">
+                        Direct Reports ({user.employee.direct_reports?.length || 0})
+                      </label>
+                      {user.employee.direct_reports && user.employee.direct_reports.length > 0 ? (
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {user.employee.direct_reports.map((report) => (
+                            <PersonCard
+                              key={report.id}
+                              id={report.id}
+                              name={report.name}
+                              email={report.email}
+                              subtitle={`${formatRoleLabel(report.role)}${report.department_name ? ` · ${report.department_name}` : ""}`}
+                              variant="success"
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-text-disabled italic">No direct reports</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Statistics */}
                 <div className="border-t border-border-light pt-4">

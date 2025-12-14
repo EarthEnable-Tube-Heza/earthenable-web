@@ -61,6 +61,17 @@ export interface UserDetail extends UserListItem {
 }
 
 /**
+ * Direct report (someone who reports to a user)
+ */
+export interface DirectReport {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+  department_name?: string;
+}
+
+/**
  * Employee detail information
  */
 export interface EmployeeDetail {
@@ -107,9 +118,14 @@ export interface EmployeeDetail {
   supervisor_id?: string;
   supervisor_name?: string;
   supervisor_email?: string;
+  supervisor_role?: string;
+  supervisor_department_name?: string;
 
   // Notes
   notes?: string;
+
+  // Direct Reports
+  direct_reports?: DirectReport[];
 
   // Metadata
   created_at: string;

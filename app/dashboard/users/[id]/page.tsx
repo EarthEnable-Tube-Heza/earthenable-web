@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { formatRoleLabel } from "@/src/types/user";
-import { Button, Card, Badge } from "@/src/components/ui";
+import { Button, Card, Badge, PersonCard } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
 
 /**
@@ -516,88 +516,69 @@ export default function UserDetailPage() {
                 </dl>
               </Card>
 
-              {/* Reporting Structure Card - Only if supervisor or approver exists */}
-              {(user.employee.supervisor_id || user.employee.approver_id) && (
+              {/* Reporting Structure Card - Show if supervisor, approver, or direct reports exist */}
+              {(user.employee.supervisor_id ||
+                user.employee.approver_id ||
+                (user.employee.direct_reports && user.employee.direct_reports.length > 0)) && (
                 <Card padding="lg" header="Reporting Structure" divided>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Supervisor */}
-                    {user.employee.supervisor_id && (
-                      <div className="bg-background-secondary rounded-lg p-4">
-                        <div className="text-xs text-text-tertiary uppercase tracking-wide mb-2">
-                          Reports To (Supervisor)
-                        </div>
-                        <div className="font-medium text-text-primary mb-1">
-                          {user.employee.supervisor_name || "Unknown"}
-                        </div>
-                        {user.employee.supervisor_email && (
-                          <a
-                            href={`mailto:${user.employee.supervisor_email}`}
-                            className="text-sm text-primary hover:underline block mb-2"
-                          >
-                            {user.employee.supervisor_email}
-                          </a>
-                        )}
-                        <Link
-                          href={`/dashboard/users/${user.employee.supervisor_id}`}
-                          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          View Profile
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </Link>
-                      </div>
-                    )}
+                  {/* Reports To Section */}
+                  <div className="mb-6">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wide mb-3">
+                      Reports To
+                    </div>
+                    {user.employee.supervisor_id ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Supervisor */}
+                        <PersonCard
+                          id={user.employee.supervisor_id}
+                          name={user.employee.supervisor_name}
+                          email={user.employee.supervisor_email}
+                          subtitle={`${formatRoleLabel(user.employee.supervisor_role)}${user.employee.supervisor_department_name ? ` · ${user.employee.supervisor_department_name}` : ""}`}
+                          variant="info"
+                        />
 
-                    {/* Approver (only if different from supervisor) */}
-                    {user.employee.approver_id &&
-                      user.employee.approver_id !== user.employee.supervisor_id && (
-                        <div className="bg-background-secondary rounded-lg p-4">
-                          <div className="text-xs text-text-tertiary uppercase tracking-wide mb-2">
-                            Approver
-                          </div>
-                          <div className="font-medium text-text-primary mb-1">
-                            {user.employee.approver_name || "Unknown"}
-                          </div>
-                          {user.employee.approver_email && (
-                            <a
-                              href={`mailto:${user.employee.approver_email}`}
-                              className="text-sm text-primary hover:underline block mb-2"
-                            >
-                              {user.employee.approver_email}
-                            </a>
+                        {/* Approver (only if different from supervisor) */}
+                        {user.employee.approver_id &&
+                          user.employee.approver_id !== user.employee.supervisor_id && (
+                            <PersonCard
+                              id={user.employee.approver_id}
+                              name={user.employee.approver_name}
+                              email={user.employee.approver_email}
+                              subtitle={`Approver${user.employee.approver_email ? ` · ${user.employee.approver_email}` : ""}`}
+                              variant="accent"
+                            />
                           )}
-                          <Link
-                            href={`/dashboard/users/${user.employee.approver_id}`}
-                            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                          >
-                            View Profile
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                              />
-                            </svg>
-                          </Link>
-                        </div>
-                      )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-tertiary italic">
+                        No supervisor assigned to this user.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Direct Reports Section */}
+                  <div>
+                    <div className="text-xs text-text-tertiary uppercase tracking-wide mb-3">
+                      Direct Reports ({user.employee.direct_reports?.length || 0})
+                    </div>
+                    {user.employee.direct_reports && user.employee.direct_reports.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {user.employee.direct_reports.map((report) => (
+                          <PersonCard
+                            key={report.id}
+                            id={report.id}
+                            name={report.name}
+                            email={report.email}
+                            subtitle={`${formatRoleLabel(report.role)}${report.department_name ? ` · ${report.department_name}` : ""}`}
+                            variant="success"
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-tertiary italic">
+                        No direct reports assigned to this user.
+                      </p>
+                    )}
                   </div>
                 </Card>
               )}

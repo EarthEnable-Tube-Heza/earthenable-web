@@ -408,9 +408,8 @@ export default function UsersPage() {
                         ? "bg-background-light text-text-disabled cursor-not-allowed"
                         : "bg-white border border-border-light text-text-primary hover:bg-background-light"
                     )}
-                    title="First page"
                   >
-                    ««
+                    First
                   </button>
                   <button
                     onClick={() => setPage(Math.max(0, page - 1))}
@@ -448,9 +447,8 @@ export default function UsersPage() {
                         ? "bg-background-light text-text-disabled cursor-not-allowed"
                         : "bg-white border border-border-light text-text-primary hover:bg-background-light"
                     )}
-                    title="Last page"
                   >
-                    »»
+                    Last
                   </button>
                 </div>
               </div>
