@@ -23,6 +23,7 @@ import {
   Toast,
 } from "@/src/components/ui";
 import { GrantEntityAccessModal } from "./GrantEntityAccessModal";
+import { formatRoleLabel } from "@/src/types/user";
 
 export function UserEntityAccessManager() {
   const [users, setUsers] = useState<UserWithEntityAccess[]>([]);
@@ -225,7 +226,7 @@ export function UserEntityAccessManager() {
                     {/* Role */}
                     <td className="px-6 py-4">
                       <Badge variant="primary" size="sm">
-                        {user.role.replace("_", " ").toUpperCase()}
+                        {formatRoleLabel(user.role)}
                       </Badge>
                     </td>
 

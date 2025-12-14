@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
-    "@next/swc-linux-x64-gnu": "^15.5.7",
     "@react-oauth/google": "^0.12.1",
     "@tanstack/react-query": "^5.62.15",
     "@tanstack/react-table": "^8.20.7",

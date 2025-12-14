@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * Users Section Layout
+ * Tasks Section Layout
  *
- * Provides tab-based navigation for user management functionality:
- * - All Users: User list with search and filters
- * - Entity Access: Manage user entity access permissions
+ * Provides tab-based navigation for task management functionality:
+ * - All Tasks: Task list with search, filters, and CRUD operations
+ * - Task Subjects: Manage task subjects and FormYoula form mappings
  */
 
 import { usePathname } from "next/navigation";
@@ -14,41 +14,33 @@ import { cn } from "@/src/lib/theme";
 
 const tabs = [
   {
-    name: "All Users",
-    href: "/dashboard/users",
+    name: "All Tasks",
+    href: "/dashboard/tasks",
     exact: true,
   },
   {
-    name: "Entity Access",
-    href: "/dashboard/users/entity-access",
-    exact: false,
-  },
-  {
-    name: "Permissions",
-    href: "/dashboard/users/permissions",
-    exact: false,
-  },
-  {
-    name: "Role Mappings",
-    href: "/dashboard/users/role-permissions",
+    name: "Task Subjects",
+    href: "/dashboard/tasks/subjects",
     exact: false,
   },
 ];
 
-export default function UsersLayout({ children }: { children: React.ReactNode }) {
+export default function TasksLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">User Management</h1>
-        <p className="text-text-secondary mt-2">Manage users, roles, and permissions</p>
+        <h1 className="text-3xl font-heading font-bold text-text-primary">Task Management</h1>
+        <p className="text-text-secondary mt-2">
+          Manage tasks, assignments, and task subject configurations
+        </p>
       </div>
 
       {/* Tab Navigation */}
       <div className="border-b border-border-light">
-        <nav className="flex space-x-8" aria-label="User management tabs">
+        <nav className="flex space-x-8" aria-label="Task management tabs">
           {tabs.map((tab) => {
             const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
 

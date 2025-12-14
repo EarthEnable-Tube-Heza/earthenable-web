@@ -19,8 +19,7 @@ import {
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
   User,
-  UserDetail,
-  UserRole,
+  UserWithEmployeeDetail,
   PaginatedUsersResponse,
   UserStatsResponse,
   TaskSubject,
@@ -35,6 +34,26 @@ import {
   GrantEntityAccessRequest,
   BulkGrantEntityAccessRequest,
   EntityAccessResponse,
+  TaskDetail,
+  TaskCompleteResponse,
+  PaginatedTasksResponse,
+  TaskStatsResponse,
+  UpdateTaskRequest,
+  ReassignTaskRequest,
+  BulkReassignTasksRequest,
+  BulkReassignResponse,
+  TaskAssignee,
+  LocationValuesResponse,
+  OrgHierarchyEntry,
+  PaginatedOrgHierarchyResponse,
+  CreateOrgHierarchyRequest,
+  UpdateOrgHierarchyRequest,
+  OrgRoleOption,
+  RolePermissionMapping,
+  RolePermissionMappingListResponse,
+  CreateRolePermissionMappingRequest,
+  UpdateRolePermissionMappingRequest,
+  PermissionTiersResponse,
 } from "../../types";
 
 /**
@@ -129,9 +148,14 @@ class APIClient {
             this.processQueue(refreshError, null);
             this.clearAuth();
 
-            // Redirect to sign in page
+            // Redirect to sign in page with session expired indicator
             if (typeof window !== "undefined") {
-              window.location.href = "/auth/signin";
+              const currentPath = window.location.pathname;
+              const redirectParam =
+                currentPath !== "/auth/signin"
+                  ? `&redirect=${encodeURIComponent(currentPath)}`
+                  : "";
+              window.location.href = `/auth/signin?session_expired=true${redirectParam}`;
             }
 
             return Promise.reject(refreshError);
@@ -316,14 +340,14 @@ class APIClient {
   /**
    * Get user by ID
    */
-  async getUserById(userId: string): Promise<UserDetail> {
-    return this.get<UserDetail>(`/admin/users/${userId}`);
+  async getUserById(userId: string): Promise<UserWithEmployeeDetail> {
+    return this.get<UserWithEmployeeDetail>(`/admin/users/${userId}`);
   }
 
   /**
    * Update user role
    */
-  async updateUserRole(userId: string, role: UserRole): Promise<User> {
+  async updateUserRole(userId: string, role: string): Promise<User> {
     return this.patch<User>(`/admin/users/${userId}/role`, { role });
   }
 
@@ -452,6 +476,226 @@ class APIClient {
     return this.get<EntityListResponse[]>("/admin/entities/list", {
       params: { include_inactive: includeInactive },
     });
+  }
+
+  // ============================================================================
+  // TASK MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get paginated list of tasks with optional filters
+   */
+  async getTasks(params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    subject_id?: string;
+    assignee_id?: string;
+    priority?: string;
+    due_time?: string;
+    type?: string;
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+    village?: string;
+    has_open_cases?: boolean;
+  }): Promise<PaginatedTasksResponse> {
+    return this.get<PaginatedTasksResponse>("/admin/tasks", { params });
+  }
+
+  /**
+   * Get task statistics with optional filters
+   */
+  async getTaskStats(params?: {
+    search?: string;
+    status?: string;
+    subject_id?: string;
+    assignee_id?: string;
+    priority?: string;
+    type?: string;
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+    village?: string;
+    has_open_cases?: boolean;
+  }): Promise<TaskStatsResponse> {
+    return this.get<TaskStatsResponse>("/admin/tasks/stats", { params });
+  }
+
+  /**
+   * Get unique location values for filter dropdowns
+   */
+  async getLocationValues(params?: {
+    country?: string;
+    district?: string;
+    sector?: string;
+    cell?: string;
+  }): Promise<LocationValuesResponse> {
+    return this.get<LocationValuesResponse>("/admin/tasks/locations", { params });
+  }
+
+  /**
+   * Get list of users that can be assigned tasks
+   */
+  async getAssignableUsers(): Promise<TaskAssignee[]> {
+    return this.get<TaskAssignee[]>("/admin/tasks/assignable-users");
+  }
+
+  /**
+   * Get task by ID
+   */
+  async getTaskById(taskId: string): Promise<TaskDetail> {
+    return this.get<TaskDetail>(`/admin/tasks/${taskId}`);
+  }
+
+  /**
+   * Get complete task details with all related entities
+   * Used for task detail modal/page
+   */
+  async getTaskComplete(taskId: string): Promise<TaskCompleteResponse> {
+    return this.get<TaskCompleteResponse>(`/admin/tasks/${taskId}/complete`);
+  }
+
+  /**
+   * Update task
+   */
+  async updateTask(taskId: string, data: UpdateTaskRequest): Promise<TaskDetail> {
+    return this.patch<TaskDetail>(`/admin/tasks/${taskId}`, data);
+  }
+
+  /**
+   * Reassign task to a different user
+   */
+  async reassignTask(taskId: string, data: ReassignTaskRequest): Promise<TaskDetail> {
+    return this.post<TaskDetail>(`/admin/tasks/${taskId}/reassign`, data);
+  }
+
+  /**
+   * Bulk reassign multiple tasks
+   */
+  async bulkReassignTasks(data: BulkReassignTasksRequest): Promise<BulkReassignResponse> {
+    return this.post<BulkReassignResponse>("/admin/tasks/bulk-reassign", data);
+  }
+
+  // ============================================================================
+  // ORG HIERARCHY / PERMISSION MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get available org roles with their permissions
+   */
+  async getOrgRoles(): Promise<OrgRoleOption[]> {
+    return this.get<OrgRoleOption[]>("/admin/org-hierarchy/roles");
+  }
+
+  /**
+   * Get paginated list of org hierarchy entries
+   */
+  async getOrgHierarchyEntries(params?: {
+    skip?: number;
+    limit?: number;
+    user_id?: string;
+    department_id?: string;
+    role?: string;
+    is_active?: boolean;
+  }): Promise<PaginatedOrgHierarchyResponse> {
+    return this.get<PaginatedOrgHierarchyResponse>("/admin/org-hierarchy", { params });
+  }
+
+  /**
+   * Get a specific org hierarchy entry
+   */
+  async getOrgHierarchyEntry(entryId: string): Promise<OrgHierarchyEntry> {
+    return this.get<OrgHierarchyEntry>(`/admin/org-hierarchy/${entryId}`);
+  }
+
+  /**
+   * Get a user's org hierarchy entries
+   */
+  async getUserOrgHierarchy(userId: string): Promise<OrgHierarchyEntry[]> {
+    return this.get<OrgHierarchyEntry[]>(`/admin/users/${userId}/org-hierarchy`);
+  }
+
+  /**
+   * Create a new org hierarchy entry
+   */
+  async createOrgHierarchyEntry(data: CreateOrgHierarchyRequest): Promise<OrgHierarchyEntry> {
+    return this.post<OrgHierarchyEntry>("/admin/org-hierarchy", data);
+  }
+
+  /**
+   * Update an org hierarchy entry
+   */
+  async updateOrgHierarchyEntry(
+    entryId: string,
+    data: UpdateOrgHierarchyRequest
+  ): Promise<OrgHierarchyEntry> {
+    return this.patch<OrgHierarchyEntry>(`/admin/org-hierarchy/${entryId}`, data);
+  }
+
+  /**
+   * Delete an org hierarchy entry
+   */
+  async deleteOrgHierarchyEntry(entryId: string): Promise<void> {
+    return this.delete<void>(`/admin/org-hierarchy/${entryId}`);
+  }
+
+  // ============================================================================
+  // ROLE PERMISSION MAPPINGS (Admin only)
+  // ============================================================================
+
+  /**
+   * Get available permission tiers
+   */
+  async getPermissionTiers(): Promise<PermissionTiersResponse> {
+    return this.get<PermissionTiersResponse>("/admin/role-permissions/tiers");
+  }
+
+  /**
+   * Get all role permission mappings
+   */
+  async getRolePermissionMappings(params?: {
+    permission_tier?: string;
+    is_active?: boolean;
+    search?: string;
+  }): Promise<RolePermissionMappingListResponse> {
+    return this.get<RolePermissionMappingListResponse>("/admin/role-permissions", { params });
+  }
+
+  /**
+   * Get a specific role permission mapping
+   */
+  async getRolePermissionMapping(mappingId: string): Promise<RolePermissionMapping> {
+    return this.get<RolePermissionMapping>(`/admin/role-permissions/${mappingId}`);
+  }
+
+  /**
+   * Create a new role permission mapping
+   */
+  async createRolePermissionMapping(
+    data: CreateRolePermissionMappingRequest
+  ): Promise<RolePermissionMapping> {
+    return this.post<RolePermissionMapping>("/admin/role-permissions", data);
+  }
+
+  /**
+   * Update a role permission mapping
+   */
+  async updateRolePermissionMapping(
+    mappingId: string,
+    data: UpdateRolePermissionMappingRequest
+  ): Promise<RolePermissionMapping> {
+    return this.patch<RolePermissionMapping>(`/admin/role-permissions/${mappingId}`, data);
+  }
+
+  /**
+   * Delete a role permission mapping
+   */
+  async deleteRolePermissionMapping(mappingId: string): Promise<void> {
+    return this.delete<void>(`/admin/role-permissions/${mappingId}`);
   }
 }
 

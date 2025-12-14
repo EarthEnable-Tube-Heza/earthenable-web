@@ -9,3 +9,5 @@ export * from "./auth";
 export * from "./api";
 export * from "./form";
 export * from "./entity";
+export * from "./task";
+export * from "./permission";

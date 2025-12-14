@@ -13,8 +13,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
-import { UserRoleLabels } from "@/src/types/user";
-import { Button, Card, Badge } from "@/src/components/ui";
+import { formatRoleLabel } from "@/src/types/user";
+import { Button, Card, Badge, PersonCard } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
 
 /**
@@ -228,7 +228,7 @@ export default function UserDetailPage() {
 
               {/* Role Badge */}
               <Badge variant={getRoleBadgeVariant(user.role)} size="lg" className="mb-4">
-                {UserRoleLabels[user.role]}
+                {formatRoleLabel(user.role)}
               </Badge>
 
               {/* Status Badge */}
@@ -380,6 +380,242 @@ export default function UserDetailPage() {
               </p>
             </div>
           </Card>
+
+          {/* Employee Details - Only shown if employee record exists */}
+          {user.employee && (
+            <>
+              {/* Organization Card */}
+              <Card padding="lg" header="Organization" divided>
+                <dl className="space-y-4">
+                  {/* Entity */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Entity
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.entity_name
+                        ? `${user.employee.entity_name}${user.employee.entity_code ? ` (${user.employee.entity_code})` : ""}`
+                        : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Department */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Department
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.department_name || "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Sub-Department (only if exists) */}
+                  {user.employee.sub_department_name && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Sub-Dept
+                      </dt>
+                      <dd className="text-sm text-text-primary">
+                        {user.employee.sub_department_name}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Branch */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Branch
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.branch_name
+                        ? `${user.employee.branch_name}${user.employee.branch_location ? ` - ${user.employee.branch_location}` : ""}`
+                        : "N/A"}
+                    </dd>
+                  </div>
+                </dl>
+              </Card>
+
+              {/* Position Details Card */}
+              <Card padding="lg" header="Position Details" divided>
+                <dl className="space-y-4">
+                  {/* Job Title/Role */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Job Title
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.job_title || user.employee.job_role_name || "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Role */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Role
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.role ? formatRoleLabel(user.employee.role) : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* Level */}
+                  {user.employee.level && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Level
+                      </dt>
+                      <dd className="text-sm text-text-primary capitalize">
+                        {user.employee.level.replace(/_/g, " ")}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Employee Number */}
+                  {user.employee.employee_number && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        Employee #
+                      </dt>
+                      <dd className="text-sm text-text-primary font-mono bg-background-secondary px-3 py-1.5 rounded">
+                        {user.employee.employee_number}
+                      </dd>
+                    </div>
+                  )}
+
+                  {/* Start Date */}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                    <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                      Start Date
+                    </dt>
+                    <dd className="text-sm text-text-primary">
+                      {user.employee.start_date
+                        ? new Date(user.employee.start_date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "N/A"}
+                    </dd>
+                  </div>
+
+                  {/* End Date (only if exists) */}
+                  {user.employee.end_date && (
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                      <dt className="text-sm font-medium text-text-secondary w-full sm:w-32 flex-shrink-0">
+                        End Date
+                      </dt>
+                      <dd className="text-sm text-text-primary">
+                        {new Date(user.employee.end_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </Card>
+
+              {/* Reporting Structure Card - Show if supervisor, approver, or direct reports exist */}
+              {(user.employee.supervisor_id ||
+                user.employee.approver_id ||
+                (user.employee.direct_reports && user.employee.direct_reports.length > 0)) && (
+                <Card padding="lg" header="Reporting Structure" divided>
+                  {/* Reports To Section */}
+                  <div className="mb-6">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wide mb-3">
+                      Reports To
+                    </div>
+                    {user.employee.supervisor_id ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Supervisor */}
+                        <PersonCard
+                          id={user.employee.supervisor_id}
+                          name={user.employee.supervisor_name}
+                          email={user.employee.supervisor_email}
+                          subtitle={`${formatRoleLabel(user.employee.supervisor_role)}${user.employee.supervisor_department_name ? ` · ${user.employee.supervisor_department_name}` : ""}`}
+                          variant="info"
+                        />
+
+                        {/* Approver (only if different from supervisor) */}
+                        {user.employee.approver_id &&
+                          user.employee.approver_id !== user.employee.supervisor_id && (
+                            <PersonCard
+                              id={user.employee.approver_id}
+                              name={user.employee.approver_name}
+                              email={user.employee.approver_email}
+                              subtitle={`Approver${user.employee.approver_email ? ` · ${user.employee.approver_email}` : ""}`}
+                              variant="accent"
+                            />
+                          )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-tertiary italic">
+                        No supervisor assigned to this user.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Direct Reports Section */}
+                  <div>
+                    <div className="text-xs text-text-tertiary uppercase tracking-wide mb-3">
+                      Direct Reports ({user.employee.direct_reports?.length || 0})
+                    </div>
+                    {user.employee.direct_reports && user.employee.direct_reports.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {user.employee.direct_reports.map((report) => (
+                          <PersonCard
+                            key={report.id}
+                            id={report.id}
+                            name={report.name}
+                            email={report.email}
+                            subtitle={`${formatRoleLabel(report.role)}${report.department_name ? ` · ${report.department_name}` : ""}`}
+                            variant="success"
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-tertiary italic">
+                        No direct reports assigned to this user.
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {/* Notes Card - Only if notes exist */}
+              {user.employee.notes && (
+                <Card padding="lg" header="Notes" divided>
+                  <p className="text-sm text-text-primary whitespace-pre-wrap">
+                    {user.employee.notes}
+                  </p>
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* No Employee Record Notice */}
+          {!user.employee && (
+            <Card padding="lg" className="text-center">
+              <svg
+                className="w-12 h-12 mx-auto text-text-tertiary mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-text-secondary">No employee record found for this user.</p>
+              <p className="text-xs text-text-tertiary mt-1">
+                This user may not have been assigned to an entity yet.
+              </p>
+            </Card>
+          )}
         </div>
       </div>
 

@@ -7,7 +7,7 @@
  */
 
 import { useAuth } from "@/src/lib/auth";
-import { UserRoleLabels } from "@/src/types/user";
+import { formatRoleLabel } from "@/src/types/user";
 import { Card } from "@/src/components/ui/Card";
 import { Badge } from "@/src/components/ui/Badge";
 
@@ -88,7 +88,7 @@ export default function ProfilePage() {
                   }
                   size="lg"
                 >
-                  {UserRoleLabels[user.role]}
+                  {formatRoleLabel(user.role)}
                 </Badge>
                 {user.is_verified && (
                   <Badge variant="success" size="lg">
@@ -142,7 +142,7 @@ export default function ProfilePage() {
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">Role</label>
               <div className="px-4 py-3 bg-background-light rounded-lg text-text-primary">
-                {UserRoleLabels[user.role]}
+                {formatRoleLabel(user.role)}
               </div>
             </div>
 
