@@ -248,10 +248,17 @@ class APIClient {
   private clearAuth(): void {
     if (typeof window === "undefined") return;
 
+    // Clear all localStorage auth keys
     localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
+
+    // Clear the auth cookie (set expired date)
+    document.cookie =
+      "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
   }
 
   /**
