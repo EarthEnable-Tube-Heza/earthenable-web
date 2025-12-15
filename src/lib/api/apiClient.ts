@@ -54,6 +54,13 @@ import {
   CreateRolePermissionMappingRequest,
   UpdateRolePermissionMappingRequest,
   PermissionTiersResponse,
+  EmployeeDetail,
+  CreateEmployeeRequest,
+  UpdateEmployeeRequest,
+  EndEmployeeRequest,
+  DepartmentResponse,
+  BranchResponse,
+  JobRoleResponse,
 } from "../../types";
 
 /**
@@ -241,10 +248,17 @@ class APIClient {
   private clearAuth(): void {
     if (typeof window === "undefined") return;
 
+    // Clear all localStorage auth keys
     localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
     localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
+
+    // Clear the auth cookie (set expired date)
+    document.cookie =
+      "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
   }
 
   /**
@@ -365,6 +379,68 @@ class APIClient {
    */
   async getUserStats(): Promise<UserStatsResponse> {
     return this.get<UserStatsResponse>("/admin/users/stats");
+  }
+
+  // ============================================================================
+  // EMPLOYEE MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Create an employee record for an existing user
+   */
+  async createEmployee(userId: string, data: CreateEmployeeRequest): Promise<EmployeeDetail> {
+    return this.post<EmployeeDetail>(`/admin/users/${userId}/employee`, data);
+  }
+
+  /**
+   * Update current employee record
+   */
+  async updateEmployee(userId: string, data: UpdateEmployeeRequest): Promise<EmployeeDetail> {
+    return this.patch<EmployeeDetail>(`/admin/users/${userId}/employee`, data);
+  }
+
+  /**
+   * Get employment history for a user (all records, current and past)
+   */
+  async getEmployeeHistory(userId: string): Promise<EmployeeDetail[]> {
+    return this.get<EmployeeDetail[]>(`/admin/users/${userId}/employee-history`);
+  }
+
+  /**
+   * End current employee assignment (without creating a new one)
+   */
+  async endEmployee(userId: string, data: EndEmployeeRequest): Promise<EmployeeDetail> {
+    return this.patch<EmployeeDetail>(`/admin/users/${userId}/employee/end`, data);
+  }
+
+  /**
+   * Get departments for an entity (for cascading dropdown)
+   */
+  async getEntityDepartments(entityId: string): Promise<DepartmentResponse[]> {
+    const response = await this.get<{ items: DepartmentResponse[] }>(
+      `/admin/entities/${entityId}/departments`
+    );
+    return response.items;
+  }
+
+  /**
+   * Get branches for an entity (for cascading dropdown)
+   */
+  async getEntityBranches(entityId: string): Promise<BranchResponse[]> {
+    const response = await this.get<{ items: BranchResponse[] }>(
+      `/admin/entities/${entityId}/branches`
+    );
+    return response.items;
+  }
+
+  /**
+   * Get job roles for an entity (for cascading dropdown)
+   */
+  async getEntityJobRoles(entityId: string): Promise<JobRoleResponse[]> {
+    const response = await this.get<{ items: JobRoleResponse[] }>(
+      `/admin/entities/${entityId}/job-roles`
+    );
+    return response.items;
   }
 
   // ============================================================================
