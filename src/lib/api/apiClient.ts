@@ -417,30 +417,30 @@ class APIClient {
    * Get departments for an entity (for cascading dropdown)
    */
   async getEntityDepartments(entityId: string): Promise<DepartmentResponse[]> {
-    const response = await this.get<{ items: DepartmentResponse[] }>(
+    const response = await this.get<{ departments: DepartmentResponse[] }>(
       `/admin/entities/${entityId}/departments`
     );
-    return response.items;
+    return response.departments;
   }
 
   /**
    * Get branches for an entity (for cascading dropdown)
    */
   async getEntityBranches(entityId: string): Promise<BranchResponse[]> {
-    const response = await this.get<{ items: BranchResponse[] }>(
+    const response = await this.get<{ branches: BranchResponse[] }>(
       `/admin/entities/${entityId}/branches`
     );
-    return response.items;
+    return response.branches;
   }
 
   /**
    * Get job roles for an entity (for cascading dropdown)
    */
   async getEntityJobRoles(entityId: string): Promise<JobRoleResponse[]> {
-    const response = await this.get<{ items: JobRoleResponse[] }>(
+    const response = await this.get<{ job_roles: JobRoleResponse[] }>(
       `/admin/entities/${entityId}/job-roles`
     );
-    return response.items;
+    return response.job_roles;
   }
 
   // ============================================================================
