@@ -114,7 +114,7 @@ class APIClient {
   }
 
   /**
-   * Response interceptor: Handle 401 with auto-refresh
+   * Response interceptor: Handle errors with appropriate user feedback
    */
   private setupResponseInterceptor(): void {
     this.client.interceptors.response.use(
@@ -123,6 +123,34 @@ class APIClient {
         const originalRequest = error.config as InternalAxiosRequestConfig & {
           _retry?: boolean;
         };
+
+        // Handle network errors (no response from server)
+        if (!error.response) {
+          // Network error or server unreachable
+          if (typeof window !== "undefined" && !originalRequest._retry) {
+            const currentPath = window.location.pathname;
+            if (currentPath !== "/auth/signin") {
+              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
+              window.location.href = `/auth/signin?error=network${redirectParam}`;
+            }
+          }
+          return Promise.reject(error);
+        }
+
+        // Handle 5xx server errors
+        if (error.response?.status >= 500) {
+          if (typeof window !== "undefined" && !originalRequest._retry) {
+            const currentPath = window.location.pathname;
+            if (currentPath !== "/auth/signin") {
+              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
+              const errorDetail = encodeURIComponent(
+                error.response?.data?.detail || "Server error"
+              );
+              window.location.href = `/auth/signin?error=server&detail=${errorDetail}${redirectParam}`;
+            }
+          }
+          return Promise.reject(error);
+        }
 
         // If error is 401 and we haven't already retried
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -162,7 +190,7 @@ class APIClient {
                 currentPath !== "/auth/signin"
                   ? `&redirect=${encodeURIComponent(currentPath)}`
                   : "";
-              window.location.href = `/auth/signin?session_expired=true${redirectParam}`;
+              window.location.href = `/auth/signin?error=session_expired${redirectParam}`;
             }
 
             return Promise.reject(refreshError);
