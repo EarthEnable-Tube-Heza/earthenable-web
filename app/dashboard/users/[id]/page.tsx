@@ -7,15 +7,21 @@
  * Accessible at /dashboard/users/[id]
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { formatRoleLabel } from "@/src/types/user";
+import { EntityListResponse } from "@/src/types";
 import { Button, Card, Badge, PersonCard } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
+import { CreateEmployeeModal } from "@/src/components/admin/CreateEmployeeModal";
+import { EditEmployeeModal } from "@/src/components/admin/EditEmployeeModal";
+import { NewAssignmentModal } from "@/src/components/admin/NewAssignmentModal";
+import { EndEmploymentModal } from "@/src/components/admin/EndEmploymentModal";
+import { EmploymentHistoryCard } from "@/src/components/admin/EmploymentHistoryCard";
 
 /**
  * User Detail Page Component
@@ -23,8 +29,48 @@ import { UserDetailModal } from "@/src/components/UserDetailModal";
 export default function UserDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const userId = params?.id as string;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Employee management modal states
+  const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
+  const [isEditEmployeeOpen, setIsEditEmployeeOpen] = useState(false);
+  const [isNewAssignmentOpen, setIsNewAssignmentOpen] = useState(false);
+  const [isEndEmploymentOpen, setIsEndEmploymentOpen] = useState(false);
+  const [entities, setEntities] = useState<EntityListResponse[]>([]);
+  const [loadingEntities, setLoadingEntities] = useState(false);
+
+  // Fetch entities when any employee modal opens
+  useEffect(() => {
+    const shouldFetch = isCreateEmployeeOpen || isEditEmployeeOpen || isNewAssignmentOpen;
+    if (shouldFetch && entities.length === 0 && !loadingEntities) {
+      setLoadingEntities(true);
+      apiClient
+        .getEntitiesForAdmin(false)
+        .then(setEntities)
+        .catch(console.error)
+        .finally(() => setLoadingEntities(false));
+    }
+  }, [
+    isCreateEmployeeOpen,
+    isEditEmployeeOpen,
+    isNewAssignmentOpen,
+    entities.length,
+    loadingEntities,
+  ]);
+
+  // Handle employee modal close
+  const handleEmployeeModalClose = (success: boolean) => {
+    setIsCreateEmployeeOpen(false);
+    setIsEditEmployeeOpen(false);
+    setIsNewAssignmentOpen(false);
+    setIsEndEmploymentOpen(false);
+    if (success) {
+      // Refetch user data
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
+    }
+  };
 
   // Fetch user details
   const {
@@ -385,7 +431,29 @@ export default function UserDetailPage() {
           {user.employee && (
             <>
               {/* Organization Card */}
-              <Card padding="lg" header="Organization" divided>
+              <Card padding="lg" divided>
+                {/* Card Header with Actions */}
+                <div className="flex items-center justify-between mb-4 -mt-2">
+                  <h3 className="text-lg font-heading font-semibold text-text-primary">
+                    Organization
+                  </h3>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setIsEditEmployeeOpen(true)}>
+                      Edit
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setIsNewAssignmentOpen(true)}>
+                      New Assignment
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEndEmploymentOpen(true)}
+                      className="text-status-error hover:text-status-error"
+                    >
+                      End Employment
+                    </Button>
+                  </div>
+                </div>
                 <dl className="space-y-4">
                   {/* Entity */}
                   <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
@@ -591,6 +659,9 @@ export default function UserDetailPage() {
                   </p>
                 </Card>
               )}
+
+              {/* Employment History */}
+              <EmploymentHistoryCard userId={userId} />
             </>
           )}
 
@@ -607,13 +678,17 @@ export default function UserDetailPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
                 />
               </svg>
-              <p className="text-text-secondary">No employee record found for this user.</p>
-              <p className="text-xs text-text-tertiary mt-1">
-                This user may not have been assigned to an entity yet.
+              <p className="text-text-secondary mb-1">No employee record found for this user.</p>
+              <p className="text-xs text-text-tertiary mb-4">
+                Create an employee record to assign this user to an entity with organizational
+                details.
               </p>
+              <Button variant="primary" onClick={() => setIsCreateEmployeeOpen(true)}>
+                Create Employee Record
+              </Button>
             </Card>
           )}
         </div>
@@ -625,6 +700,45 @@ export default function UserDetailPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
       />
+
+      {/* Employee Management Modals */}
+      {isCreateEmployeeOpen && (
+        <CreateEmployeeModal
+          userId={userId}
+          userName={user.name || user.email}
+          entities={entities}
+          onClose={handleEmployeeModalClose}
+        />
+      )}
+
+      {isEditEmployeeOpen && user.employee && (
+        <EditEmployeeModal
+          userId={userId}
+          userName={user.name || user.email}
+          employee={user.employee}
+          entities={entities}
+          onClose={handleEmployeeModalClose}
+        />
+      )}
+
+      {isNewAssignmentOpen && user.employee && (
+        <NewAssignmentModal
+          userId={userId}
+          userName={user.name || user.email}
+          currentEmployee={user.employee}
+          entities={entities}
+          onClose={handleEmployeeModalClose}
+        />
+      )}
+
+      {isEndEmploymentOpen && user.employee && (
+        <EndEmploymentModal
+          userId={userId}
+          userName={user.name || user.email}
+          employee={user.employee}
+          onClose={handleEmployeeModalClose}
+        />
+      )}
     </div>
   );
 }

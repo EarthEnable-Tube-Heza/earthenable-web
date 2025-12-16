@@ -92,3 +92,52 @@ export interface BulkGrantEntityAccessRequest {
 export interface RevokeEntityAccessRequest {
   entity_id: string;
 }
+
+// ============ Entity Sub-Resources ============
+
+/**
+ * Department response from API
+ */
+export interface DepartmentResponse {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
+  budget_limit?: number;
+  is_active: boolean;
+  gl_code?: string;
+  gl_class_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Branch response from API
+ */
+export interface BranchResponse {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
+  location?: string;
+  is_active: boolean;
+  gl_code?: string;
+  gl_class_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Job role response from API
+ */
+export interface JobRoleResponse {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
+  level: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

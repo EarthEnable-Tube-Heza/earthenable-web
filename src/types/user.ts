@@ -211,6 +211,78 @@ export function isQAAgent(user: User | null | undefined): boolean {
   );
 }
 
+// ============ Employee Management Types ============
+
+/**
+ * Employee level enum (organizational hierarchy level)
+ */
+export type Level =
+  | "intern"
+  | "officer"
+  | "junior_manager"
+  | "manager"
+  | "senior_manager"
+  | "director"
+  | "c_suite";
+
+/**
+ * Level options for dropdown selection
+ */
+export const LEVEL_OPTIONS: { value: Level; label: string }[] = [
+  { value: "intern", label: "Intern" },
+  { value: "officer", label: "Officer" },
+  { value: "junior_manager", label: "Junior Manager" },
+  { value: "manager", label: "Manager" },
+  { value: "senior_manager", label: "Senior Manager" },
+  { value: "director", label: "Director" },
+  { value: "c_suite", label: "C-Suite" },
+];
+
+/**
+ * Request to create a new employee record
+ */
+export interface CreateEmployeeRequest {
+  entity_id: string;
+  role: string;
+  start_date: string; // ISO date string
+  department_id?: string;
+  sub_department_id?: string;
+  branch_id?: string;
+  job_role_id?: string;
+  approver_id?: string;
+  level?: Level;
+  employee_number?: string;
+  job_title?: string;
+  notes?: string;
+}
+
+/**
+ * Request to update an existing employee record
+ */
+export interface UpdateEmployeeRequest {
+  entity_id?: string;
+  department_id?: string;
+  sub_department_id?: string;
+  branch_id?: string;
+  job_role_id?: string;
+  approver_id?: string;
+  role?: string;
+  level?: Level;
+  employee_number?: string;
+  job_title?: string;
+  start_date?: string;
+  end_date?: string;
+  notes?: string;
+}
+
+/**
+ * Request to end an employee's current assignment
+ */
+export interface EndEmployeeRequest {
+  end_date: string; // ISO date string
+  notes?: string;
+}
+
 // ============ Backward compatibility exports ============
 // Keep UserRole enum for any existing code that imports it
 export enum UserRole {
