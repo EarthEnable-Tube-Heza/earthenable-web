@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     adminOnly: true,
   },
   {
+    href: "/dashboard/monitoring",
+    label: "Monitoring",
+    icon: "📡",
+    adminOnly: true,
+  },
+  {
     href: "/dashboard/components",
     label: "Components",
     icon: "🎨",

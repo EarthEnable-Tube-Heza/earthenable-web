@@ -61,6 +61,16 @@ import {
   DepartmentResponse,
   BranchResponse,
   JobRoleResponse,
+  // Monitoring types
+  ServerHealthResponse,
+  SalesforceSyncStatusResponse,
+  UserActivityStatsResponse,
+  FeatureUsageResponse,
+  SystemResourcesResponse,
+  EndpointUsageResponse,
+  HierarchicalFeatureUsageResponse,
+  PaginatedActivityResponse,
+  FeatureUsersResponse,
 } from "../../types";
 
 /**
@@ -800,6 +810,100 @@ class APIClient {
    */
   async deleteRolePermissionMapping(mappingId: string): Promise<void> {
     return this.delete<void>(`/admin/role-permissions/${mappingId}`);
+  }
+
+  // ============================================================================
+  // SERVER MONITORING (Admin only)
+  // ============================================================================
+
+  /**
+   * Get server health status including database, Redis, and Salesforce connections
+   */
+  async getMonitoringHealth(): Promise<ServerHealthResponse> {
+    return this.get<ServerHealthResponse>("/admin/monitoring/health");
+  }
+
+  /**
+   * Get Salesforce sync status and history
+   */
+  async getMonitoringSyncStatus(limit = 10): Promise<SalesforceSyncStatusResponse> {
+    return this.get<SalesforceSyncStatusResponse>("/admin/monitoring/salesforce-sync", {
+      params: { limit },
+    });
+  }
+
+  /**
+   * Get user activity statistics
+   */
+  async getMonitoringUserActivity(): Promise<UserActivityStatsResponse> {
+    return this.get<UserActivityStatsResponse>("/admin/monitoring/user-activity");
+  }
+
+  /**
+   * Get feature usage statistics
+   */
+  async getMonitoringFeatureUsage(days = 7): Promise<FeatureUsageResponse> {
+    return this.get<FeatureUsageResponse>("/admin/monitoring/feature-usage", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get system resource utilization (CPU, memory, disk)
+   */
+  async getMonitoringResources(): Promise<SystemResourcesResponse> {
+    return this.get<SystemResourcesResponse>("/admin/monitoring/resources");
+  }
+
+  /**
+   * Get API endpoint usage statistics
+   */
+  async getMonitoringEndpointUsage(days = 7): Promise<EndpointUsageResponse> {
+    return this.get<EndpointUsageResponse>("/admin/monitoring/endpoint-usage", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get hierarchical feature usage breakdown (Category > Screen > Action)
+   */
+  async getHierarchicalFeatureUsage(
+    days = 7,
+    category?: string
+  ): Promise<HierarchicalFeatureUsageResponse> {
+    return this.get<HierarchicalFeatureUsageResponse>(
+      "/admin/monitoring/feature-usage/hierarchical",
+      {
+        params: { days, category },
+      }
+    );
+  }
+
+  /**
+   * Get paginated activity timeline for a specific user
+   */
+  async getUserActivityTimeline(
+    userId: string,
+    page = 1,
+    pageSize = 50,
+    category?: string,
+    days?: number
+  ): Promise<PaginatedActivityResponse> {
+    return this.get<PaginatedActivityResponse>(`/admin/monitoring/users/${userId}/activity`, {
+      params: { page, page_size: pageSize, category, days },
+    });
+  }
+
+  /**
+   * Get users who used a specific feature
+   */
+  async getFeatureUsers(feature: string, days = 7): Promise<FeatureUsersResponse> {
+    return this.get<FeatureUsersResponse>(
+      `/admin/monitoring/feature-usage/${encodeURIComponent(feature)}/users`,
+      {
+        params: { days },
+      }
+    );
   }
 }
 
