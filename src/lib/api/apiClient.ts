@@ -61,6 +61,12 @@ import {
   DepartmentResponse,
   BranchResponse,
   JobRoleResponse,
+  // Monitoring types
+  ServerHealthResponse,
+  SalesforceSyncStatusResponse,
+  UserActivityStatsResponse,
+  FeatureUsageResponse,
+  SystemResourcesResponse,
 } from "../../types";
 
 /**
@@ -772,6 +778,49 @@ class APIClient {
    */
   async deleteRolePermissionMapping(mappingId: string): Promise<void> {
     return this.delete<void>(`/admin/role-permissions/${mappingId}`);
+  }
+
+  // ============================================================================
+  // SERVER MONITORING (Admin only)
+  // ============================================================================
+
+  /**
+   * Get server health status including database, Redis, and Salesforce connections
+   */
+  async getMonitoringHealth(): Promise<ServerHealthResponse> {
+    return this.get<ServerHealthResponse>("/admin/monitoring/health");
+  }
+
+  /**
+   * Get Salesforce sync status and history
+   */
+  async getMonitoringSyncStatus(limit = 10): Promise<SalesforceSyncStatusResponse> {
+    return this.get<SalesforceSyncStatusResponse>("/admin/monitoring/salesforce-sync", {
+      params: { limit },
+    });
+  }
+
+  /**
+   * Get user activity statistics
+   */
+  async getMonitoringUserActivity(): Promise<UserActivityStatsResponse> {
+    return this.get<UserActivityStatsResponse>("/admin/monitoring/user-activity");
+  }
+
+  /**
+   * Get feature usage statistics
+   */
+  async getMonitoringFeatureUsage(days = 7): Promise<FeatureUsageResponse> {
+    return this.get<FeatureUsageResponse>("/admin/monitoring/feature-usage", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get system resource utilization (CPU, memory, disk)
+   */
+  async getMonitoringResources(): Promise<SystemResourcesResponse> {
+    return this.get<SystemResourcesResponse>("/admin/monitoring/resources");
   }
 }
 
