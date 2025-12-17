@@ -68,6 +68,9 @@ import {
   FeatureUsageResponse,
   SystemResourcesResponse,
   EndpointUsageResponse,
+  HierarchicalFeatureUsageResponse,
+  PaginatedActivityResponse,
+  FeatureUsersResponse,
 } from "../../types";
 
 /**
@@ -831,6 +834,48 @@ class APIClient {
     return this.get<EndpointUsageResponse>("/admin/monitoring/endpoint-usage", {
       params: { days },
     });
+  }
+
+  /**
+   * Get hierarchical feature usage breakdown (Category > Screen > Action)
+   */
+  async getHierarchicalFeatureUsage(
+    days = 7,
+    category?: string
+  ): Promise<HierarchicalFeatureUsageResponse> {
+    return this.get<HierarchicalFeatureUsageResponse>(
+      "/admin/monitoring/feature-usage/hierarchical",
+      {
+        params: { days, category },
+      }
+    );
+  }
+
+  /**
+   * Get paginated activity timeline for a specific user
+   */
+  async getUserActivityTimeline(
+    userId: string,
+    page = 1,
+    pageSize = 50,
+    category?: string,
+    days?: number
+  ): Promise<PaginatedActivityResponse> {
+    return this.get<PaginatedActivityResponse>(`/admin/monitoring/users/${userId}/activity`, {
+      params: { page, page_size: pageSize, category, days },
+    });
+  }
+
+  /**
+   * Get users who used a specific feature
+   */
+  async getFeatureUsers(feature: string, days = 7): Promise<FeatureUsersResponse> {
+    return this.get<FeatureUsersResponse>(
+      `/admin/monitoring/feature-usage/${encodeURIComponent(feature)}/users`,
+      {
+        params: { days },
+      }
+    );
   }
 }
 

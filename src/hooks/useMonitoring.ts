@@ -94,6 +94,53 @@ export function useEndpointUsage(days = 7) {
 }
 
 /**
+ * Hook to fetch hierarchical feature usage statistics
+ * Auto-refreshes every 5 minutes
+ */
+export function useHierarchicalFeatureUsage(days = 7, category?: string) {
+  return useQuery({
+    queryKey: ["monitoring", "hierarchical-feature-usage", days, category],
+    queryFn: () => apiClient.getHierarchicalFeatureUsage(days, category),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to fetch user activity timeline
+ * Auto-refreshes every 1 minute
+ */
+export function useUserActivityTimeline(
+  userId: string,
+  page = 1,
+  pageSize = 50,
+  category?: string,
+  days?: number
+) {
+  return useQuery({
+    queryKey: ["monitoring", "user-activity-timeline", userId, page, pageSize, category, days],
+    queryFn: () => apiClient.getUserActivityTimeline(userId, page, pageSize, category, days),
+    refetchInterval: USER_ACTIVITY_REFRESH_INTERVAL,
+    staleTime: USER_ACTIVITY_REFRESH_INTERVAL - 5000,
+    enabled: !!userId,
+  });
+}
+
+/**
+ * Hook to fetch users who used a specific feature
+ * Auto-refreshes every 5 minutes
+ */
+export function useFeatureUsers(feature: string, days = 7) {
+  return useQuery({
+    queryKey: ["monitoring", "feature-users", feature, days],
+    queryFn: () => apiClient.getFeatureUsers(feature, days),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+    enabled: !!feature,
+  });
+}
+
+/**
  * Hook to manually refresh all monitoring data
  */
 export function useRefreshMonitoring() {
@@ -120,6 +167,16 @@ export function useRefreshMonitoring() {
     },
     refreshEndpointUsage: () => {
       queryClient.invalidateQueries({ queryKey: ["monitoring", "endpoint-usage"] });
+    },
+    refreshHierarchicalFeatureUsage: () => {
+      queryClient.invalidateQueries({ queryKey: ["monitoring", "hierarchical-feature-usage"] });
+    },
+    refreshUserActivityTimeline: (userId?: string) => {
+      queryClient.invalidateQueries({
+        queryKey: userId
+          ? ["monitoring", "user-activity-timeline", userId]
+          : ["monitoring", "user-activity-timeline"],
+      });
     },
   };
 }

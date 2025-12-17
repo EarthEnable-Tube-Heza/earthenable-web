@@ -155,3 +155,91 @@ export interface EndpointUsageResponse {
   overall_error_rate: number;
   endpoints: EndpointUsageItem[];
 }
+
+/**
+ * Action usage within a screen
+ */
+export interface ActionUsage {
+  action: string;
+  usage_count: number;
+  unique_users: number;
+}
+
+/**
+ * Screen usage within a category
+ */
+export interface ScreenUsage {
+  screen: string;
+  display_name: string;
+  total_usage: number;
+  unique_users: number;
+  actions: ActionUsage[];
+}
+
+/**
+ * Category usage statistics
+ */
+export interface CategoryUsage {
+  category: string;
+  display_name: string;
+  icon: string;
+  color: string;
+  total_usage: number;
+  unique_users: number;
+  screens: ScreenUsage[];
+}
+
+/**
+ * Hierarchical feature usage response from /admin/monitoring/feature-usage/hierarchical
+ */
+export interface HierarchicalFeatureUsageResponse {
+  period_days: number;
+  total_activities: number;
+  categories: CategoryUsage[];
+}
+
+/**
+ * Activity timeline item
+ */
+export interface ActivityTimelineItem {
+  id: number;
+  event_name: string;
+  event_type: string;
+  category: string | null;
+  screen: string | null;
+  feature_name: string | null;
+  metadata: Record<string, unknown> | null;
+  occurred_at: string;
+}
+
+/**
+ * Paginated activity response from /admin/monitoring/users/{id}/activity
+ */
+export interface PaginatedActivityResponse {
+  items: ActivityTimelineItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+/**
+ * User who used a specific feature
+ */
+export interface FeatureUsersItem {
+  user_id: string;
+  user_name: string | null;
+  user_email: string | null;
+  usage_count: number;
+  last_used: string;
+}
+
+/**
+ * Response for users who used a specific feature
+ */
+export interface FeatureUsersResponse {
+  feature: string;
+  period_days: number;
+  total_users: number;
+  users: FeatureUsersItem[];
+}
