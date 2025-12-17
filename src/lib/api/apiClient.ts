@@ -61,6 +61,16 @@ import {
   DepartmentResponse,
   BranchResponse,
   JobRoleResponse,
+  // Monitoring types
+  ServerHealthResponse,
+  SalesforceSyncStatusResponse,
+  UserActivityStatsResponse,
+  FeatureUsageResponse,
+  SystemResourcesResponse,
+  EndpointUsageResponse,
+  HierarchicalFeatureUsageResponse,
+  PaginatedActivityResponse,
+  FeatureUsersResponse,
 } from "../../types";
 
 /**
@@ -114,7 +124,7 @@ class APIClient {
   }
 
   /**
-   * Response interceptor: Handle 401 with auto-refresh
+   * Response interceptor: Handle errors with appropriate user feedback
    */
   private setupResponseInterceptor(): void {
     this.client.interceptors.response.use(
@@ -123,6 +133,34 @@ class APIClient {
         const originalRequest = error.config as InternalAxiosRequestConfig & {
           _retry?: boolean;
         };
+
+        // Handle network errors (no response from server)
+        if (!error.response) {
+          // Network error or server unreachable
+          if (typeof window !== "undefined" && !originalRequest._retry) {
+            const currentPath = window.location.pathname;
+            if (currentPath !== "/auth/signin") {
+              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
+              window.location.href = `/auth/signin?error=network${redirectParam}`;
+            }
+          }
+          return Promise.reject(error);
+        }
+
+        // Handle 5xx server errors
+        if (error.response?.status >= 500) {
+          if (typeof window !== "undefined" && !originalRequest._retry) {
+            const currentPath = window.location.pathname;
+            if (currentPath !== "/auth/signin") {
+              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
+              const errorDetail = encodeURIComponent(
+                error.response?.data?.detail || "Server error"
+              );
+              window.location.href = `/auth/signin?error=server&detail=${errorDetail}${redirectParam}`;
+            }
+          }
+          return Promise.reject(error);
+        }
 
         // If error is 401 and we haven't already retried
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -162,7 +200,7 @@ class APIClient {
                 currentPath !== "/auth/signin"
                   ? `&redirect=${encodeURIComponent(currentPath)}`
                   : "";
-              window.location.href = `/auth/signin?session_expired=true${redirectParam}`;
+              window.location.href = `/auth/signin?error=session_expired${redirectParam}`;
             }
 
             return Promise.reject(refreshError);
@@ -772,6 +810,100 @@ class APIClient {
    */
   async deleteRolePermissionMapping(mappingId: string): Promise<void> {
     return this.delete<void>(`/admin/role-permissions/${mappingId}`);
+  }
+
+  // ============================================================================
+  // SERVER MONITORING (Admin only)
+  // ============================================================================
+
+  /**
+   * Get server health status including database, Redis, and Salesforce connections
+   */
+  async getMonitoringHealth(): Promise<ServerHealthResponse> {
+    return this.get<ServerHealthResponse>("/admin/monitoring/health");
+  }
+
+  /**
+   * Get Salesforce sync status and history
+   */
+  async getMonitoringSyncStatus(limit = 10): Promise<SalesforceSyncStatusResponse> {
+    return this.get<SalesforceSyncStatusResponse>("/admin/monitoring/salesforce-sync", {
+      params: { limit },
+    });
+  }
+
+  /**
+   * Get user activity statistics
+   */
+  async getMonitoringUserActivity(): Promise<UserActivityStatsResponse> {
+    return this.get<UserActivityStatsResponse>("/admin/monitoring/user-activity");
+  }
+
+  /**
+   * Get feature usage statistics
+   */
+  async getMonitoringFeatureUsage(days = 7): Promise<FeatureUsageResponse> {
+    return this.get<FeatureUsageResponse>("/admin/monitoring/feature-usage", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get system resource utilization (CPU, memory, disk)
+   */
+  async getMonitoringResources(): Promise<SystemResourcesResponse> {
+    return this.get<SystemResourcesResponse>("/admin/monitoring/resources");
+  }
+
+  /**
+   * Get API endpoint usage statistics
+   */
+  async getMonitoringEndpointUsage(days = 7): Promise<EndpointUsageResponse> {
+    return this.get<EndpointUsageResponse>("/admin/monitoring/endpoint-usage", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get hierarchical feature usage breakdown (Category > Screen > Action)
+   */
+  async getHierarchicalFeatureUsage(
+    days = 7,
+    category?: string
+  ): Promise<HierarchicalFeatureUsageResponse> {
+    return this.get<HierarchicalFeatureUsageResponse>(
+      "/admin/monitoring/feature-usage/hierarchical",
+      {
+        params: { days, category },
+      }
+    );
+  }
+
+  /**
+   * Get paginated activity timeline for a specific user
+   */
+  async getUserActivityTimeline(
+    userId: string,
+    page = 1,
+    pageSize = 50,
+    category?: string,
+    days?: number
+  ): Promise<PaginatedActivityResponse> {
+    return this.get<PaginatedActivityResponse>(`/admin/monitoring/users/${userId}/activity`, {
+      params: { page, page_size: pageSize, category, days },
+    });
+  }
+
+  /**
+   * Get users who used a specific feature
+   */
+  async getFeatureUsers(feature: string, days = 7): Promise<FeatureUsersResponse> {
+    return this.get<FeatureUsersResponse>(
+      `/admin/monitoring/feature-usage/${encodeURIComponent(feature)}/users`,
+      {
+        params: { days },
+      }
+    );
   }
 }
 

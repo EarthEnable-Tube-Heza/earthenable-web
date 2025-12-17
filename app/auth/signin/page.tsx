@@ -25,8 +25,15 @@ function SignInContent() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Check if session expired
-  const sessionExpired = searchParams.get("session_expired") === "true";
+  // Check for different error types from URL params
+  const errorType = searchParams.get("error");
+  const errorDetail = searchParams.get("detail");
+
+  // Legacy support for old session_expired param
+  const sessionExpired =
+    searchParams.get("session_expired") === "true" || errorType === "session_expired";
+  const isNetworkError = errorType === "network";
+  const isServerError = errorType === "server";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -146,6 +153,37 @@ function SignInContent() {
                 <p className="text-status-warning text-sm font-medium">Your session has expired</p>
                 <p className="text-text-secondary text-sm mt-1">
                   Please sign in again to continue where you left off.
+                </p>
+              </div>
+            )}
+
+            {/* Network Error Message */}
+            {isNetworkError && (
+              <div className="mb-6 p-4 bg-status-error/10 border border-status-error rounded-md">
+                <p className="text-status-error text-sm font-medium">
+                  Unable to connect to the server
+                </p>
+                <p className="text-text-secondary text-sm mt-1">
+                  Please check your internet connection and try again. If the problem persists, the
+                  server may be temporarily unavailable.
+                </p>
+              </div>
+            )}
+
+            {/* Server Error Message */}
+            {isServerError && (
+              <div className="mb-6 p-4 bg-status-error/10 border border-status-error rounded-md">
+                <p className="text-status-error text-sm font-medium">Server error occurred</p>
+                <p className="text-text-secondary text-sm mt-1">
+                  The server encountered an unexpected error. Please try again later.
+                  {errorDetail && (
+                    <span className="block mt-1 text-xs text-text-disabled">
+                      Details: {decodeURIComponent(errorDetail)}
+                    </span>
+                  )}
+                </p>
+                <p className="text-text-secondary text-sm mt-2">
+                  If this problem persists, please contact your system administrator.
                 </p>
               </div>
             )}
