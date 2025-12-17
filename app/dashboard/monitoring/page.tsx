@@ -17,6 +17,7 @@ import {
   UserBreakdownCard,
   FeatureUsageCard,
   SystemResourcesCard,
+  EndpointUsageCard,
 } from "@/src/components/monitoring";
 
 export default function MonitoringPage() {
@@ -60,9 +61,10 @@ export default function MonitoringPage() {
         <UserBreakdownCard />
       </div>
 
-      {/* Bottom Row: Feature Usage (full width) */}
-      <div>
+      {/* Bottom Row: Feature Usage and Endpoint Usage */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <FeatureUsageCard days={7} />
+        <EndpointUsageCard days={7} />
       </div>
     </div>
   );

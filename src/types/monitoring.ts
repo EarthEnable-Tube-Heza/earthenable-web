@@ -130,3 +130,28 @@ export interface SystemResourcesResponse {
   load_average: [number, number, number];
   timestamp: string;
 }
+
+/**
+ * Endpoint usage item
+ */
+export interface EndpointUsageItem {
+  endpoint: string;
+  endpoint_name: string | null;
+  method: string;
+  request_count: number;
+  unique_users: number;
+  avg_response_time_ms: number;
+  error_count: number;
+  error_rate: number;
+}
+
+/**
+ * Endpoint usage response from /admin/monitoring/endpoint-usage
+ */
+export interface EndpointUsageResponse {
+  period_days: number;
+  total_requests: number;
+  total_errors: number;
+  overall_error_rate: number;
+  endpoints: EndpointUsageItem[];
+}

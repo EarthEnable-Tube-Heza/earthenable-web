@@ -13,6 +13,7 @@ const SYNC_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const USER_ACTIVITY_REFRESH_INTERVAL = 60 * 1000; // 1 minute
 const FEATURE_USAGE_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const RESOURCES_REFRESH_INTERVAL = 30 * 1000; // 30 seconds
+const ENDPOINT_USAGE_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Hook to fetch server health status
@@ -80,6 +81,19 @@ export function useSystemResources() {
 }
 
 /**
+ * Hook to fetch API endpoint usage statistics
+ * Auto-refreshes every 5 minutes
+ */
+export function useEndpointUsage(days = 7) {
+  return useQuery({
+    queryKey: ["monitoring", "endpoint-usage", days],
+    queryFn: () => apiClient.getMonitoringEndpointUsage(days),
+    refetchInterval: ENDPOINT_USAGE_REFRESH_INTERVAL,
+    staleTime: ENDPOINT_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
  * Hook to manually refresh all monitoring data
  */
 export function useRefreshMonitoring() {
@@ -103,6 +117,9 @@ export function useRefreshMonitoring() {
     },
     refreshResources: () => {
       queryClient.invalidateQueries({ queryKey: ["monitoring", "resources"] });
+    },
+    refreshEndpointUsage: () => {
+      queryClient.invalidateQueries({ queryKey: ["monitoring", "endpoint-usage"] });
     },
   };
 }

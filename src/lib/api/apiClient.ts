@@ -67,6 +67,7 @@ import {
   UserActivityStatsResponse,
   FeatureUsageResponse,
   SystemResourcesResponse,
+  EndpointUsageResponse,
 } from "../../types";
 
 /**
@@ -821,6 +822,15 @@ class APIClient {
    */
   async getMonitoringResources(): Promise<SystemResourcesResponse> {
     return this.get<SystemResourcesResponse>("/admin/monitoring/resources");
+  }
+
+  /**
+   * Get API endpoint usage statistics
+   */
+  async getMonitoringEndpointUsage(days = 7): Promise<EndpointUsageResponse> {
+    return this.get<EndpointUsageResponse>("/admin/monitoring/endpoint-usage", {
+      params: { days },
+    });
   }
 }
 
