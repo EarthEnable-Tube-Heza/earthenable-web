@@ -96,11 +96,20 @@ export function useEndpointUsage(days = 7) {
 /**
  * Hook to fetch hierarchical feature usage statistics
  * Auto-refreshes every 5 minutes
+ * @param days - Number of days to analyze
+ * @param category - Filter by event category
+ * @param role - Filter by user role
+ * @param userId - Filter by specific user ID
  */
-export function useHierarchicalFeatureUsage(days = 7, category?: string) {
+export function useHierarchicalFeatureUsage(
+  days = 7,
+  category?: string,
+  role?: string,
+  userId?: string
+) {
   return useQuery({
-    queryKey: ["monitoring", "hierarchical-feature-usage", days, category],
-    queryFn: () => apiClient.getHierarchicalFeatureUsage(days, category),
+    queryKey: ["monitoring", "hierarchical-feature-usage", days, category, role, userId],
+    queryFn: () => apiClient.getHierarchicalFeatureUsage(days, category, role, userId),
     refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
     staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
   });

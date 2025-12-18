@@ -866,15 +866,21 @@ class APIClient {
 
   /**
    * Get hierarchical feature usage breakdown (Category > Screen > Action)
+   * @param days - Number of days to analyze
+   * @param category - Filter by event category
+   * @param role - Filter by user role
+   * @param userId - Filter by specific user ID
    */
   async getHierarchicalFeatureUsage(
     days = 7,
-    category?: string
+    category?: string,
+    role?: string,
+    userId?: string
   ): Promise<HierarchicalFeatureUsageResponse> {
     return this.get<HierarchicalFeatureUsageResponse>(
       "/admin/monitoring/feature-usage/hierarchical",
       {
-        params: { days, category },
+        params: { days, category, role, user_id: userId },
       }
     );
   }

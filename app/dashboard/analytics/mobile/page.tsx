@@ -14,6 +14,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   PieChart,
   Pie,
@@ -31,6 +32,8 @@ import {
 } from "recharts";
 import { Card, Badge, Spinner, Button } from "@/src/components/ui";
 import { useUserActivityStats, useHierarchicalFeatureUsage } from "@/src/hooks/useMonitoring";
+import { apiClient } from "@/src/lib/api/apiClient";
+import { formatRoleLabel } from "@/src/types/user";
 
 // Category metadata for display
 const CATEGORY_METADATA: Record<string, { displayName: string; icon: string; color: string }> = {
@@ -51,15 +54,6 @@ const DATE_RANGE_OPTIONS = [
   { value: 14, label: "Last 14 days" },
   { value: 30, label: "Last 30 days" },
   { value: 90, label: "Last 90 days" },
-];
-
-// Role filter options
-const ROLE_OPTIONS = [
-  { value: "", label: "All Roles" },
-  { value: "qa_agent", label: "QA Officers" },
-  { value: "field_staff", label: "Field Staff" },
-  { value: "manager", label: "Managers" },
-  { value: "admin", label: "Admins" },
 ];
 
 /**
@@ -194,12 +188,38 @@ export default function MobileAnalyticsPage() {
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  // Fetch data using existing hooks
+  // Fetch user stats (includes dynamic roles from by_role)
+  const { data: userStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: () => apiClient.getUserStats(),
+  });
+
+  // Fetch data using existing hooks - pass role filter
   const { data: userActivityStats, isLoading: activityLoading } = useUserActivityStats();
   const { data: hierarchicalUsage, isLoading: hierarchicalLoading } = useHierarchicalFeatureUsage(
     days,
-    selectedCategory || undefined
+    selectedCategory || undefined,
+    selectedRole || undefined,
+    undefined // user_id
   );
+
+  // Build dynamic role options from user stats
+  const roleOptions = useMemo(() => {
+    const options = [{ value: "", label: "All Roles" }];
+    if (userStats?.by_role) {
+      Object.keys(userStats.by_role).forEach((role) => {
+        // Normalize role string and format label
+        const normalizedRole = role.startsWith("UserRole.")
+          ? role.replace("UserRole.", "").toLowerCase()
+          : role.toLowerCase();
+        options.push({
+          value: normalizedRole,
+          label: `${formatRoleLabel(normalizedRole)} (${userStats.by_role[role]})`,
+        });
+      });
+    }
+    return options;
+  }, [userStats]);
 
   // Compute aggregate stats from hierarchical data
   const aggregateStats = useMemo(() => {
@@ -276,7 +296,7 @@ export default function MobileAnalyticsPage() {
   }, [days]);
 
   // Loading state
-  const isLoading = activityLoading || hierarchicalLoading;
+  const isLoading = activityLoading || hierarchicalLoading || statsLoading;
 
   if (isLoading) {
     return (
@@ -352,7 +372,7 @@ export default function MobileAnalyticsPage() {
               onChange={(e) => setSelectedRole(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
-              {ROLE_OPTIONS.map((opt) => (
+              {roleOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
