@@ -14,6 +14,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   PieChart,
   Pie,
@@ -29,8 +30,16 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { Card, Badge, Spinner, Button } from "@/src/components/ui";
-import { useUserActivityStats, useHierarchicalFeatureUsage } from "@/src/hooks/useMonitoring";
+import { Card, Badge, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
+import {
+  useUserActivityStats,
+  useHierarchicalFeatureUsage,
+  usePlatformAnalytics,
+  useActiveAppUsers,
+  useActivityTimeSeries,
+} from "@/src/hooks/useMonitoring";
+import { apiClient } from "@/src/lib/api/apiClient";
+import { formatRoleLabel } from "@/src/types/user";
 
 // Category metadata for display
 const CATEGORY_METADATA: Record<string, { displayName: string; icon: string; color: string }> = {
@@ -51,15 +60,6 @@ const DATE_RANGE_OPTIONS = [
   { value: 14, label: "Last 14 days" },
   { value: 30, label: "Last 30 days" },
   { value: 90, label: "Last 90 days" },
-];
-
-// Role filter options
-const ROLE_OPTIONS = [
-  { value: "", label: "All Roles" },
-  { value: "qa_agent", label: "QA Officers" },
-  { value: "field_staff", label: "Field Staff" },
-  { value: "manager", label: "Managers" },
-  { value: "admin", label: "Admins" },
 ];
 
 /**
@@ -191,15 +191,59 @@ function TopActionRow({
 export default function MobileAnalyticsPage() {
   // Filter state
   const [days, setDays] = useState(30);
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string[]>([]);
 
-  // Fetch data using existing hooks
+  // Fetch user stats (includes dynamic roles from by_role)
+  const { data: userStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: () => apiClient.getUserStats(),
+  });
+
+  // Fetch data using existing hooks - pass role and user filters
   const { data: userActivityStats, isLoading: activityLoading } = useUserActivityStats();
   const { data: hierarchicalUsage, isLoading: hierarchicalLoading } = useHierarchicalFeatureUsage(
     days,
-    selectedCategory || undefined
+    selectedCategory || undefined,
+    selectedRole.length > 0 ? selectedRole.join(",") : undefined,
+    selectedUserId.length > 0 ? selectedUserId.join(",") : undefined
   );
+  const { data: platformAnalytics, isLoading: platformLoading } = usePlatformAnalytics(days);
+  const { data: activeUsers, isLoading: activeUsersLoading } = useActiveAppUsers();
+  const { data: activityTimeSeries, isLoading: timeSeriesLoading } = useActivityTimeSeries(days);
+
+  // Build dynamic role options from user stats
+  const roleOptions = useMemo(() => {
+    const options: Array<{ value: string; label: string }> = [];
+    if (userStats?.by_role) {
+      Object.keys(userStats.by_role).forEach((role) => {
+        // Normalize role string and format label
+        const normalizedRole = role.startsWith("UserRole.")
+          ? role.replace("UserRole.", "").toLowerCase()
+          : role.toLowerCase();
+        options.push({
+          value: normalizedRole,
+          label: `${formatRoleLabel(normalizedRole)} (${userStats.by_role[role]})`,
+        });
+      });
+    }
+    return options;
+  }, [userStats]);
+
+  // Build user options from active app users
+  const userOptions = useMemo(() => {
+    const options: Array<{ value: string; label: string }> = [];
+    if (activeUsers?.users) {
+      activeUsers.users.forEach((user) => {
+        options.push({
+          value: user.id,
+          label: user.name || user.email,
+        });
+      });
+    }
+    return options;
+  }, [activeUsers]);
 
   // Compute aggregate stats from hierarchical data
   const aggregateStats = useMemo(() => {
@@ -258,25 +302,26 @@ export default function MobileAnalyticsPage() {
     };
   }, [hierarchicalUsage]);
 
-  // Generate mock time series data (in real implementation, fetch from backend)
+  // Transform time series data for chart display
   const timeSeriesData = useMemo(() => {
-    const data = [];
-    const now = new Date();
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      data.push({
-        date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        sessions: Math.floor(Math.random() * 50 + 20),
-        activeUsers: Math.floor(Math.random() * 30 + 10),
-        actions: Math.floor(Math.random() * 500 + 100),
-      });
-    }
-    return data;
-  }, [days]);
+    if (!activityTimeSeries?.data) return [];
+
+    return activityTimeSeries.data.map((item) => ({
+      date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      sessions: item.sessions,
+      activeUsers: item.unique_users,
+      actions: item.actions,
+    }));
+  }, [activityTimeSeries]);
 
   // Loading state
-  const isLoading = activityLoading || hierarchicalLoading;
+  const isLoading =
+    activityLoading ||
+    hierarchicalLoading ||
+    statsLoading ||
+    platformLoading ||
+    activeUsersLoading ||
+    timeSeriesLoading;
 
   if (isLoading) {
     return (
@@ -327,64 +372,76 @@ export default function MobileAnalyticsPage() {
 
       {/* Filters */}
       <Card padding="md" className="mb-6">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-end gap-4">
           {/* Date Range */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
-            <select
-              value={days}
+          <div className="w-40">
+            <LabeledSelect
+              label="Period"
+              value={String(days)}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {DATE_RANGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={DATE_RANGE_OPTIONS.map((opt) => ({
+                value: String(opt.value),
+                label: opt.label,
+              }))}
+              size="sm"
+              fullWidth
+            />
           </div>
 
           {/* Role Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Role:</label>
-            <select
+          <div className="w-56">
+            <MultiSelect
+              label="Role"
+              placeholder="All Roles"
+              options={roleOptions}
               value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {ROLE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              onChange={(values) => setSelectedRole(values)}
+              size="sm"
+            />
           </div>
 
           {/* Category Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Feature:</label>
-            <select
+          <div className="w-44">
+            <LabeledSelect
+              label="Feature"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="">All Features</option>
-              {Object.entries(CATEGORY_METADATA).map(([key, meta]) => (
-                <option key={key} value={key}>
-                  {meta.icon} {meta.displayName}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "All Features" },
+                ...Object.entries(CATEGORY_METADATA).map(([key, meta]) => ({
+                  value: key,
+                  label: `${meta.icon} ${meta.displayName}`,
+                })),
+              ]}
+              size="sm"
+              fullWidth
+            />
+          </div>
+
+          {/* User Filter */}
+          <div className="w-56">
+            <MultiSelect
+              label="User"
+              placeholder="All Users"
+              options={userOptions}
+              value={selectedUserId}
+              onChange={(values) => setSelectedUserId(values)}
+              size="sm"
+            />
           </div>
 
           {/* Clear Filters */}
-          {(selectedRole || selectedCategory || days !== 30) && (
+          {(selectedRole.length > 0 ||
+            selectedCategory ||
+            selectedUserId.length > 0 ||
+            days !== 30) && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
-                setSelectedRole("");
+                setSelectedRole([]);
                 setSelectedCategory("");
+                setSelectedUserId([]);
                 setDays(30);
               }}
             >
@@ -392,6 +449,82 @@ export default function MobileAnalyticsPage() {
             </Button>
           )}
         </div>
+
+        {/* Active Filters Indicator */}
+        {(selectedRole.length > 0 ||
+          selectedCategory ||
+          selectedUserId.length > 0 ||
+          days !== 30) && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Active Filters:
+              </span>
+
+              {days !== 30 && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  <span>📅</span>
+                  {DATE_RANGE_OPTIONS.find((opt) => opt.value === days)?.label || `${days} days`}
+                  <button
+                    onClick={() => setDays(30)}
+                    className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove period filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+
+              {selectedRole.map((role) => (
+                <span
+                  key={`role-${role}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                >
+                  <span>👤</span>
+                  {formatRoleLabel(role)}
+                  <button
+                    onClick={() => setSelectedRole(selectedRole.filter((r) => r !== role))}
+                    className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${formatRoleLabel(role)} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {selectedCategory && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  <span>{CATEGORY_METADATA[selectedCategory]?.icon || "📦"}</span>
+                  {CATEGORY_METADATA[selectedCategory]?.displayName || selectedCategory}
+                  <button
+                    onClick={() => setSelectedCategory("")}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove feature filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+
+              {selectedUserId.map((userId) => (
+                <span
+                  key={`user-${userId}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700"
+                >
+                  <span>🧑</span>
+                  {userOptions.find((u) => u.value === userId)?.label || "Selected User"}
+                  <button
+                    onClick={() => setSelectedUserId(selectedUserId.filter((u) => u !== userId))}
+                    className="ml-1 hover:bg-purple-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove user filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Key Metrics */}
@@ -437,45 +570,55 @@ export default function MobileAnalyticsPage() {
       <Card padding="lg" className="mb-6">
         <SectionHeader
           title="Activity Trends"
-          subtitle="Sessions, active users, and actions over time"
+          subtitle={
+            activityTimeSeries
+              ? `${activityTimeSeries.totals.sessions.toLocaleString()} sessions, ${activityTimeSeries.totals.unique_users.toLocaleString()} unique users, ${activityTimeSeries.totals.actions.toLocaleString()} actions over ${days} days`
+              : "Sessions, active users, and actions over time"
+          }
         />
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EA6A00" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#EA6A00" stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3E57AB" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3E57AB" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "12px" }} />
-              <Area
-                type="monotone"
-                dataKey="sessions"
-                name="Sessions"
-                stroke="#EA6A00"
-                fillOpacity={1}
-                fill="url(#colorSessions)"
-              />
-              <Area
-                type="monotone"
-                dataKey="activeUsers"
-                name="Active Users"
-                stroke="#3E57AB"
-                fillOpacity={1}
-                fill="url(#colorUsers)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        {timeSeriesData && timeSeriesData.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={timeSeriesData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#EA6A00" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#EA6A00" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3E57AB" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3E57AB" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
+                <Area
+                  type="monotone"
+                  dataKey="sessions"
+                  name="Sessions"
+                  stroke="#EA6A00"
+                  fillOpacity={1}
+                  fill="url(#colorSessions)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="activeUsers"
+                  name="Active Users"
+                  stroke="#3E57AB"
+                  fillOpacity={1}
+                  fill="url(#colorUsers)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="h-80 flex items-center justify-center text-gray-500">
+            No activity data available for this period
+          </div>
+        )}
       </Card>
 
       {/* Feature Usage & User Distribution */}
@@ -595,6 +738,213 @@ export default function MobileAnalyticsPage() {
             </div>
           )}
         </Card>
+      </div>
+
+      {/* Platform Analytics */}
+      <div className="mb-6">
+        <SectionHeader
+          title="Platform Analytics"
+          subtitle={`Device and OS distribution from ${platformAnalytics?.total_sessions?.toLocaleString() || 0} sessions by ${platformAnalytics?.total_unique_users?.toLocaleString() || 0} users`}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Device Type Distribution (Android vs iOS) */}
+          <Card padding="lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Distribution</h3>
+            {platformAnalytics?.device_types && platformAnalytics.device_types.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={platformAnalytics.device_types.map((dt) => ({
+                        name:
+                          dt.device_type === "android"
+                            ? "Android"
+                            : dt.device_type === "ios"
+                              ? "iOS"
+                              : dt.device_type,
+                        value: dt.session_count,
+                        users: dt.unique_users,
+                        percentage: dt.percentage,
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      dataKey="value"
+                      paddingAngle={2}
+                      label={({ name, percentage }) => `${name} ${percentage}%`}
+                    >
+                      {platformAnalytics.device_types.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            entry.device_type === "android"
+                              ? "#3DDC84"
+                              : entry.device_type === "ios"
+                                ? "#007AFF"
+                                : "#9E9E9E"
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                No platform data available
+              </div>
+            )}
+            {/* Platform stats */}
+            {platformAnalytics?.device_types && platformAnalytics.device_types.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                {platformAnalytics.device_types.map((dt) => (
+                  <div key={dt.device_type} className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ color: dt.device_type === "android" ? "#3DDC84" : "#007AFF" }}
+                    >
+                      {dt.percentage}%
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {dt.device_type === "android" ? "Android" : "iOS"}
+                    </p>
+                    <p className="text-xs text-gray-400">{dt.unique_users} users</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* OS Version Distribution */}
+          <Card padding="lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">OS Version Distribution</h3>
+            {platformAnalytics?.os_versions && platformAnalytics.os_versions.length > 0 ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={platformAnalytics.os_versions.slice(0, 10).map((os) => ({
+                      name: os.display_name,
+                      sessions: os.session_count,
+                      users: os.unique_users,
+                      percentage: os.percentage,
+                    }))}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={95} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="sessions" name="Sessions" fill="#EA6A00" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-72 flex items-center justify-center text-gray-500">
+                No OS version data available
+              </div>
+            )}
+          </Card>
+
+          {/* App Version Adoption */}
+          <Card padding="lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">App Version Adoption</h3>
+            {platformAnalytics?.app_versions && platformAnalytics.app_versions.length > 0 ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={platformAnalytics.app_versions.map((av) => ({
+                      name: av.app_version,
+                      sessions: av.session_count,
+                      users: av.unique_users,
+                      percentage: av.percentage,
+                      isLatest: av.is_latest,
+                    }))}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={55} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="sessions" name="Sessions" radius={[0, 4, 4, 0]}>
+                      {platformAnalytics.app_versions.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.is_latest ? "#124D37" : "#78373B"}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-72 flex items-center justify-center text-gray-500">
+                No app version data available
+              </div>
+            )}
+            {/* Latest version indicator */}
+            {platformAnalytics?.app_versions && platformAnalytics.app_versions.length > 0 && (
+              <div className="mt-4 flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-[#124D37]"></span>
+                  <span className="text-gray-600">Latest Version</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-[#78373B]"></span>
+                  <span className="text-gray-600">Older Versions</span>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Popular Device Models */}
+          <Card padding="lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Device Models</h3>
+            {platformAnalytics?.device_models && platformAnalytics.device_models.length > 0 ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={platformAnalytics.device_models.slice(0, 10).map((dm) => ({
+                      name: dm.device_model,
+                      sessions: dm.session_count,
+                      users: dm.unique_users,
+                      percentage: dm.percentage,
+                      platform: dm.device_type,
+                    }))}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={95} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="sessions" name="Sessions" radius={[0, 4, 4, 0]}>
+                      {platformAnalytics.device_models.slice(0, 10).map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            entry.device_type === "android"
+                              ? "#3DDC84"
+                              : entry.device_type === "ios"
+                                ? "#007AFF"
+                                : "#3E57AB"
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-72 flex items-center justify-center text-gray-500">
+                No device model data available
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
 
       {/* Behavioral Insights */}

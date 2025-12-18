@@ -96,11 +96,20 @@ export function useEndpointUsage(days = 7) {
 /**
  * Hook to fetch hierarchical feature usage statistics
  * Auto-refreshes every 5 minutes
+ * @param days - Number of days to analyze
+ * @param category - Filter by event category
+ * @param role - Filter by user role
+ * @param userId - Filter by specific user ID
  */
-export function useHierarchicalFeatureUsage(days = 7, category?: string) {
+export function useHierarchicalFeatureUsage(
+  days = 7,
+  category?: string,
+  role?: string,
+  userId?: string
+) {
   return useQuery({
-    queryKey: ["monitoring", "hierarchical-feature-usage", days, category],
-    queryFn: () => apiClient.getHierarchicalFeatureUsage(days, category),
+    queryKey: ["monitoring", "hierarchical-feature-usage", days, category, role, userId],
+    queryFn: () => apiClient.getHierarchicalFeatureUsage(days, category, role, userId),
     refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
     staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
   });
@@ -141,6 +150,46 @@ export function useFeatureUsers(feature: string, days = 7) {
 }
 
 /**
+ * Hook to fetch platform and device analytics
+ * Auto-refreshes every 5 minutes
+ */
+export function usePlatformAnalytics(days = 7) {
+  return useQuery({
+    queryKey: ["monitoring", "platform-analytics", days],
+    queryFn: () => apiClient.getPlatformAnalytics(days),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to fetch users who have actively used the app
+ * Auto-refreshes every 5 minutes
+ */
+export function useActiveAppUsers() {
+  return useQuery({
+    queryKey: ["monitoring", "active-users"],
+    queryFn: () => apiClient.getActiveAppUsers(),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to fetch daily activity statistics for time series charts
+ * Auto-refreshes every 5 minutes
+ * @param days - Number of days to analyze (1-90, default 30)
+ */
+export function useActivityTimeSeries(days = 30) {
+  return useQuery({
+    queryKey: ["monitoring", "activity-time-series", days],
+    queryFn: () => apiClient.getActivityTimeSeries(days),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
  * Hook to manually refresh all monitoring data
  */
 export function useRefreshMonitoring() {
@@ -177,6 +226,12 @@ export function useRefreshMonitoring() {
           ? ["monitoring", "user-activity-timeline", userId]
           : ["monitoring", "user-activity-timeline"],
       });
+    },
+    refreshPlatformAnalytics: () => {
+      queryClient.invalidateQueries({ queryKey: ["monitoring", "platform-analytics"] });
+    },
+    refreshActivityTimeSeries: () => {
+      queryClient.invalidateQueries({ queryKey: ["monitoring", "activity-time-series"] });
     },
   };
 }

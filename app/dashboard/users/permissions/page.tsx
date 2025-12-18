@@ -11,12 +11,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { cn } from "@/src/lib/theme";
+import { LabeledSelect, MultiSelect } from "@/src/components/ui";
 import { OrgHierarchyListItem, OrgRoleOption } from "@/src/types";
 
 export default function PermissionsPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [roleFilter, setRoleFilter] = useState<string>("");
+  const [roleFilter, setRoleFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<boolean | "">("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<OrgHierarchyListItem | null>(null);
@@ -29,7 +30,7 @@ export default function PermissionsPage() {
       apiClient.getOrgHierarchyEntries({
         skip: page * limit,
         limit,
-        role: roleFilter || undefined,
+        role: roleFilter.length > 0 ? roleFilter.join(",") : undefined,
         is_active: statusFilter === "" ? undefined : statusFilter,
       }),
   });
@@ -95,84 +96,96 @@ export default function PermissionsPage() {
       <div className="bg-white rounded-lg shadow-medium p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Role Filter */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Role</label>
-            <select
-              value={roleFilter}
-              onChange={(e) => {
-                setRoleFilter(e.target.value);
-                setPage(0);
-              }}
-              className="w-full pl-4 pr-10 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white bg-no-repeat bg-[length:16px_16px] bg-[right_16px_center]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-              }}
-            >
-              <option value="">All Roles</option>
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <MultiSelect
+            label="Role"
+            placeholder="All Roles"
+            options={roles.map((role) => ({ value: role.value, label: role.label }))}
+            value={roleFilter}
+            onChange={(values) => {
+              setRoleFilter(values);
+              setPage(0);
+            }}
+            size="sm"
+          />
 
           {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Status</label>
-            <select
-              value={statusFilter === "" ? "" : statusFilter ? "true" : "false"}
-              onChange={(e) => {
-                const value = e.target.value;
-                setStatusFilter(value === "" ? "" : value === "true");
-                setPage(0);
-              }}
-              className="w-full pl-4 pr-10 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white bg-no-repeat bg-[length:16px_16px] bg-[right_16px_center]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6L8 10L12 6' stroke='%23666666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-              }}
-            >
-              <option value="">All</option>
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
-          </div>
-
-          {/* Clear Filters */}
-          <div className="flex items-end">
-            {(roleFilter || statusFilter !== "") && (
-              <button
-                onClick={() => {
-                  setRoleFilter("");
-                  setStatusFilter("");
-                  setPage(0);
-                }}
-                className="text-sm text-primary hover:text-primary/80"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
+          <LabeledSelect
+            label="Status"
+            value={statusFilter === "" ? "" : statusFilter ? "true" : "false"}
+            onChange={(e) => {
+              const value = e.target.value;
+              setStatusFilter(value === "" ? "" : value === "true");
+              setPage(0);
+            }}
+            options={[
+              { value: "", label: "All" },
+              { value: "true", label: "Active" },
+              { value: "false", label: "Inactive" },
+            ]}
+            fullWidth
+          />
         </div>
 
-        {/* Active filters summary */}
-        {(roleFilter || statusFilter !== "") && (
-          <div className="mt-4 pt-4 border-t border-border-light flex items-center justify-between">
-            <p className="text-sm text-text-secondary">
-              Found {total} permission entr{total !== 1 ? "ies" : "y"}
-              {roleFilter && <span> with role {formatRoleLabel(roleFilter)}</span>}
-              {statusFilter !== "" && <span> ({statusFilter ? "active" : "inactive"} only)</span>}
-            </p>
-            <button
-              onClick={() => {
-                setRoleFilter("");
-                setStatusFilter("");
-                setPage(0);
-              }}
-              className="text-sm text-primary hover:text-primary/80"
-            >
-              Clear all filters
-            </button>
+        {/* Active Filters Indicator */}
+        {(roleFilter.length > 0 || statusFilter !== "") && (
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                  Active Filters:
+                </span>
+
+                {roleFilter.map((role) => (
+                  <span
+                    key={`role-${role}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                  >
+                    Role: {formatRoleLabel(role)}
+                    <button
+                      onClick={() => {
+                        setRoleFilter(roleFilter.filter((r) => r !== role));
+                        setPage(0);
+                      }}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                      aria-label={`Remove ${formatRoleLabel(role)} filter`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+
+                {statusFilter !== "" && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    Status: {statusFilter ? "Active" : "Inactive"}
+                    <button
+                      onClick={() => {
+                        setStatusFilter("");
+                        setPage(0);
+                      }}
+                      className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                      aria-label="Remove status filter"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+
+                <button
+                  onClick={() => {
+                    setRoleFilter([]);
+                    setStatusFilter("");
+                    setPage(0);
+                  }}
+                  className="text-xs text-status-error hover:text-status-error/80 font-medium ml-2"
+                >
+                  Clear all
+                </button>
+              </div>
+
+              <p className="text-sm text-text-secondary">
+                Found {total} permission entr{total !== 1 ? "ies" : "y"}
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -210,10 +223,10 @@ export default function PermissionsPage() {
               />
             </svg>
             <p className="text-text-secondary">No permission entries found.</p>
-            {(roleFilter || statusFilter !== "") && (
+            {(roleFilter.length > 0 || statusFilter !== "") && (
               <button
                 onClick={() => {
-                  setRoleFilter("");
+                  setRoleFilter([]);
                   setStatusFilter("");
                   setPage(0);
                 }}
@@ -504,23 +517,14 @@ function PermissionModal({ entry, roles, onClose, onSuccess }: PermissionModalPr
           )}
 
           {/* Role */}
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              Role <span className="text-error">*</span>
-            </label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              required
-              className="w-full px-4 py-2 border border-border-light rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {roles.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <LabeledSelect
+            label="Role"
+            value={formData.role}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            required
+            options={roles.map((role) => ({ value: role.value, label: role.label }))}
+            fullWidth
+          />
 
           {/* Role Permissions Display */}
           {selectedRole && (

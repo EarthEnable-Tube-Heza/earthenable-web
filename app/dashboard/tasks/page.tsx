@@ -28,6 +28,7 @@ import {
 import { cn } from "@/src/lib/theme";
 import { Badge } from "@/src/components/ui/Badge";
 import { Select } from "@/src/components/ui/Select";
+import { MultiSelect } from "@/src/components/ui/MultiSelect";
 import { Input } from "@/src/components/ui/Input";
 import { Button } from "@/src/components/ui/Button";
 import { TaskDetailModal } from "@/src/components/TaskDetailModal";
@@ -37,18 +38,18 @@ export default function TasksPage() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [priorityFilter, setPriorityFilter] = useState<string>("");
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("");
-  const [dueTimeFilter, setDueTimeFilter] = useState<DueTimeFilter>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("");
-  const [subjectFilter, setSubjectFilter] = useState<string>("");
-  // Location filters (cascading)
-  const [countryFilter, setCountryFilter] = useState<string>("");
-  const [districtFilter, setDistrictFilter] = useState<string>("");
-  const [sectorFilter, setSectorFilter] = useState<string>("");
-  const [cellFilter, setCellFilter] = useState<string>("");
-  const [villageFilter, setVillageFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
+  const [assigneeFilter, setAssigneeFilter] = useState<string[]>([]);
+  const [dueTimeFilter, setDueTimeFilter] = useState<DueTimeFilter[]>([]);
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [subjectFilter, setSubjectFilter] = useState<string[]>([]);
+  // Location filters (multi-select)
+  const [countryFilter, setCountryFilter] = useState<string[]>([]);
+  const [districtFilter, setDistrictFilter] = useState<string[]>([]);
+  const [sectorFilter, setSectorFilter] = useState<string[]>([]);
+  const [cellFilter, setCellFilter] = useState<string[]>([]);
+  const [villageFilter, setVillageFilter] = useState<string[]>([]);
   // Open cases filter
   const [openCasesFilter, setOpenCasesFilter] = useState<string>("");
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
@@ -88,22 +89,22 @@ export default function TasksPage() {
         skip: page * limit,
         limit,
         search: search || undefined,
-        status: statusFilter || undefined,
-        priority: priorityFilter || undefined,
-        assignee_id: assigneeFilter || undefined,
-        due_time: dueTimeFilter !== "all" ? dueTimeFilter : undefined,
-        type: typeFilter || undefined,
-        subject_id: subjectFilter || undefined,
-        country: countryFilter || undefined,
-        district: districtFilter || undefined,
-        sector: sectorFilter || undefined,
-        cell: cellFilter || undefined,
-        village: villageFilter || undefined,
+        status: statusFilter.length > 0 ? statusFilter : undefined,
+        priority: priorityFilter.length > 0 ? priorityFilter : undefined,
+        assignee_id: assigneeFilter.length > 0 ? assigneeFilter : undefined,
+        due_time: dueTimeFilter.length > 0 ? dueTimeFilter : undefined,
+        type: typeFilter.length > 0 ? typeFilter : undefined,
+        subject_id: subjectFilter.length > 0 ? subjectFilter : undefined,
+        country: countryFilter.length > 0 ? countryFilter : undefined,
+        district: districtFilter.length > 0 ? districtFilter : undefined,
+        sector: sectorFilter.length > 0 ? sectorFilter : undefined,
+        cell: cellFilter.length > 0 ? cellFilter : undefined,
+        village: villageFilter.length > 0 ? villageFilter : undefined,
         has_open_cases: openCasesFilter === "true" ? true : undefined,
       }),
   });
 
-  // Fetch task statistics with filters
+  // Fetch task statistics with filters (for display)
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: [
       "task-stats",
@@ -123,18 +124,25 @@ export default function TasksPage() {
     queryFn: () =>
       apiClient.getTaskStats({
         search: search || undefined,
-        status: statusFilter || undefined,
-        priority: priorityFilter || undefined,
-        assignee_id: assigneeFilter || undefined,
-        type: typeFilter || undefined,
-        subject_id: subjectFilter || undefined,
-        country: countryFilter || undefined,
-        district: districtFilter || undefined,
-        sector: sectorFilter || undefined,
-        cell: cellFilter || undefined,
-        village: villageFilter || undefined,
+        status: statusFilter.length > 0 ? statusFilter : undefined,
+        priority: priorityFilter.length > 0 ? priorityFilter : undefined,
+        assignee_id: assigneeFilter.length > 0 ? assigneeFilter : undefined,
+        type: typeFilter.length > 0 ? typeFilter : undefined,
+        subject_id: subjectFilter.length > 0 ? subjectFilter : undefined,
+        country: countryFilter.length > 0 ? countryFilter : undefined,
+        district: districtFilter.length > 0 ? districtFilter : undefined,
+        sector: sectorFilter.length > 0 ? sectorFilter : undefined,
+        cell: cellFilter.length > 0 ? cellFilter : undefined,
+        village: villageFilter.length > 0 ? villageFilter : undefined,
         has_open_cases: openCasesFilter === "true" ? true : undefined,
       }),
+  });
+
+  // Fetch unfiltered stats for filter options (separate from filtered stats display)
+  const { data: filterOptionsStats } = useQuery({
+    queryKey: ["task-stats-filter-options"],
+    queryFn: () => apiClient.getTaskStats({}),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   // Fetch assignable users
@@ -149,15 +157,15 @@ export default function TasksPage() {
     queryFn: () => apiClient.getTaskSubjects({ limit: 100, is_active: true }),
   });
 
-  // Fetch location values for cascading dropdowns
+  // Fetch location values for dropdowns (pass selected values to filter child options)
   const { data: locationValues } = useQuery({
     queryKey: ["location-values", countryFilter, districtFilter, sectorFilter, cellFilter],
     queryFn: () =>
       apiClient.getLocationValues({
-        country: countryFilter || undefined,
-        district: districtFilter || undefined,
-        sector: sectorFilter || undefined,
-        cell: cellFilter || undefined,
+        country: countryFilter.length > 0 ? countryFilter.join(",") : undefined,
+        district: districtFilter.length > 0 ? districtFilter.join(",") : undefined,
+        sector: sectorFilter.length > 0 ? sectorFilter.join(",") : undefined,
+        cell: cellFilter.length > 0 ? cellFilter.join(",") : undefined,
       }),
   });
 
@@ -189,16 +197,16 @@ export default function TasksPage() {
   const total = tasksData?.total || 0;
   const totalPages = Math.ceil(total / limit);
 
-  // Get unique statuses and priorities from stats
+  // Get unique statuses and priorities from unfiltered stats (for filter dropdown options)
   const statuses = useMemo(() => {
-    if (!stats?.by_status) return [];
-    return Object.keys(stats.by_status).filter((s) => s !== "Unknown");
-  }, [stats]);
+    if (!filterOptionsStats?.by_status) return [];
+    return Object.keys(filterOptionsStats.by_status).filter((s) => s !== "Unknown");
+  }, [filterOptionsStats]);
 
   const priorities = useMemo(() => {
-    if (!stats?.by_priority) return [];
-    return Object.keys(stats.by_priority).filter((p) => p !== "Unknown");
-  }, [stats]);
+    if (!filterOptionsStats?.by_priority) return [];
+    return Object.keys(filterOptionsStats.by_priority).filter((p) => p !== "Unknown");
+  }, [filterOptionsStats]);
 
   // Handle search
   const handleSearch = () => {
@@ -271,16 +279,16 @@ export default function TasksPage() {
 
           {/* Filter context indicator */}
           {(search ||
-            statusFilter ||
-            priorityFilter ||
-            assigneeFilter ||
-            typeFilter ||
-            subjectFilter ||
-            countryFilter ||
-            districtFilter ||
-            sectorFilter ||
-            cellFilter ||
-            villageFilter ||
+            statusFilter.length > 0 ||
+            priorityFilter.length > 0 ||
+            assigneeFilter.length > 0 ||
+            typeFilter.length > 0 ||
+            subjectFilter.length > 0 ||
+            countryFilter.length > 0 ||
+            districtFilter.length > 0 ||
+            sectorFilter.length > 0 ||
+            cellFilter.length > 0 ||
+            villageFilter.length > 0 ||
             openCasesFilter) && (
             <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-2">
               <p className="text-sm text-primary">
@@ -395,345 +403,516 @@ export default function TasksPage() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-medium p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 flex gap-2">
-            <Input
-              placeholder="Search tasks..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="flex-1"
-            />
-            <Button onClick={handleSearch}>Search</Button>
-          </div>
+      <div className="bg-white rounded-lg shadow-medium p-4 sm:p-6">
+        {/* Search Row */}
+        <div className="flex gap-2 mb-4">
+          <Input
+            placeholder="Search tasks..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="flex-1"
+          />
+          <Button onClick={handleSearch}>Search</Button>
+        </div>
 
+        {/* Filter Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
           {/* Status Filter */}
-          <Select
+          <MultiSelect
+            label="Status"
+            placeholder="All Statuses"
+            options={statuses.map((status) => ({ value: status, label: status }))}
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
+            onChange={(values) => {
+              setStatusFilter(values);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            <option value="">All Statuses</option>
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </Select>
+            size="sm"
+          />
 
           {/* Priority Filter */}
-          <Select
+          <MultiSelect
+            label="Priority"
+            placeholder="All Priorities"
+            options={priorities.map((priority) => ({ value: priority, label: priority }))}
             value={priorityFilter}
-            onChange={(e) => {
-              setPriorityFilter(e.target.value);
+            onChange={(values) => {
+              setPriorityFilter(values);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            <option value="">All Priorities</option>
-            {priorities.map((priority) => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </Select>
+            size="sm"
+          />
 
           {/* Assignee Filter */}
-          <Select
+          <MultiSelect
+            label="Assignee"
+            placeholder="All Assignees"
+            options={(assignableUsers || []).map((user) => ({
+              value: user.id,
+              label: user.name || user.email,
+            }))}
             value={assigneeFilter}
-            onChange={(e) => {
-              setAssigneeFilter(e.target.value);
+            onChange={(values) => {
+              setAssigneeFilter(values);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            <option value="">All Assignees</option>
-            {assignableUsers?.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.name || user.email}
-              </option>
-            ))}
-          </Select>
+            size="sm"
+          />
 
           {/* Due Time Filter */}
-          <Select
+          <MultiSelect
+            label="Due Time"
+            placeholder="All Due Times"
+            options={dueTimeFilterOptions
+              .filter((opt) => opt.value !== "all")
+              .map((option) => ({ value: option.value, label: option.label }))}
             value={dueTimeFilter}
-            onChange={(e) => {
-              setDueTimeFilter(e.target.value as DueTimeFilter);
+            onChange={(values) => {
+              setDueTimeFilter(values as DueTimeFilter[]);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            {dueTimeFilterOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            size="sm"
+          />
 
           {/* Task Type Filter */}
-          <Select
+          <MultiSelect
+            label="Type"
+            placeholder="All Types"
+            options={[
+              { value: "Call", label: "Call" },
+              { value: "Meeting", label: "Meeting/Evaluation" },
+            ]}
             value={typeFilter}
-            onChange={(e) => {
-              setTypeFilter(e.target.value);
+            onChange={(values) => {
+              setTypeFilter(values);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            <option value="">All Types</option>
-            <option value="Call">Call</option>
-            <option value="Meeting">Meeting/Evaluation</option>
-          </Select>
+            size="sm"
+          />
 
           {/* Task Subject Filter */}
-          <Select
+          <MultiSelect
+            label="Subject"
+            placeholder="All Subjects"
+            options={(taskSubjectsData?.items || []).map((subject) => ({
+              value: subject.id,
+              label: subject.name,
+            }))}
             value={subjectFilter}
-            onChange={(e) => {
-              setSubjectFilter(e.target.value);
+            onChange={(values) => {
+              setSubjectFilter(values);
               setPage(0);
             }}
-            fullWidth={false}
-          >
-            <option value="">All Subjects</option>
-            {taskSubjectsData?.items?.map((subject) => (
-              <option key={subject.id} value={subject.id}>
-                {subject.name}
-              </option>
-            ))}
-          </Select>
+            size="sm"
+          />
 
-          {/* Open Cases Filter */}
-          <Select
-            value={openCasesFilter}
-            onChange={(e) => {
-              setOpenCasesFilter(e.target.value);
-              setPage(0);
-            }}
-            fullWidth={false}
-          >
-            <option value="">All Tasks</option>
-            <option value="true">With Open Cases</option>
-          </Select>
+          {/* Open Cases Filter - Single select */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Open Cases</label>
+            <Select
+              value={openCasesFilter}
+              onChange={(e) => {
+                setOpenCasesFilter(e.target.value);
+                setPage(0);
+              }}
+              fullWidth
+              size="sm"
+            >
+              <option value="">All Tasks</option>
+              <option value="true">With Open Cases</option>
+            </Select>
+          </div>
         </div>
 
         {/* Location Filters Row */}
-        <div className="flex flex-col lg:flex-row gap-4 mt-4 pt-4 border-t border-border-light">
-          <span className="text-sm font-medium text-text-secondary self-center">Location:</span>
-
-          {/* Country Filter */}
-          <Select
-            value={countryFilter}
-            onChange={(e) => {
-              setCountryFilter(e.target.value);
-              // Reset child filters when parent changes
-              setDistrictFilter("");
-              setSectorFilter("");
-              setCellFilter("");
-              setVillageFilter("");
-              setPage(0);
-            }}
-            fullWidth={false}
-          >
-            <option value="">All Countries</option>
-            {locationValues?.countries?.map((country: string) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </Select>
-
-          {/* District Filter */}
-          <Select
-            value={districtFilter}
-            onChange={(e) => {
-              setDistrictFilter(e.target.value);
-              // Reset child filters when parent changes
-              setSectorFilter("");
-              setCellFilter("");
-              setVillageFilter("");
-              setPage(0);
-            }}
-            fullWidth={false}
-            disabled={!countryFilter}
-          >
-            <option value="">All Districts</option>
-            {locationValues?.districts?.map((district: string) => (
-              <option key={district} value={district}>
-                {district}
-              </option>
-            ))}
-          </Select>
-
-          {/* Sector Filter */}
-          <Select
-            value={sectorFilter}
-            onChange={(e) => {
-              setSectorFilter(e.target.value);
-              // Reset child filters when parent changes
-              setCellFilter("");
-              setVillageFilter("");
-              setPage(0);
-            }}
-            fullWidth={false}
-            disabled={!districtFilter}
-          >
-            <option value="">All Sectors</option>
-            {locationValues?.sectors?.map((sector: string) => (
-              <option key={sector} value={sector}>
-                {sector}
-              </option>
-            ))}
-          </Select>
-
-          {/* Cell Filter */}
-          <Select
-            value={cellFilter}
-            onChange={(e) => {
-              setCellFilter(e.target.value);
-              // Reset child filter when parent changes
-              setVillageFilter("");
-              setPage(0);
-            }}
-            fullWidth={false}
-            disabled={!sectorFilter}
-          >
-            <option value="">All Cells</option>
-            {locationValues?.cells?.map((cell: string) => (
-              <option key={cell} value={cell}>
-                {cell}
-              </option>
-            ))}
-          </Select>
-
-          {/* Village Filter */}
-          <Select
-            value={villageFilter}
-            onChange={(e) => {
-              setVillageFilter(e.target.value);
-              setPage(0);
-            }}
-            fullWidth={false}
-            disabled={!cellFilter}
-          >
-            <option value="">All Villages</option>
-            {locationValues?.villages?.map((village: string) => (
-              <option key={village} value={village}>
-                {village}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        {/* Clear filters */}
-        {(search ||
-          statusFilter ||
-          priorityFilter ||
-          assigneeFilter ||
-          dueTimeFilter !== "all" ||
-          typeFilter ||
-          subjectFilter ||
-          countryFilter ||
-          districtFilter ||
-          sectorFilter ||
-          cellFilter ||
-          villageFilter ||
-          openCasesFilter) && (
-          <div className="mt-4 flex items-center gap-2 flex-wrap">
-            <span className="text-sm text-text-secondary">Active filters:</span>
-            {search && (
-              <Badge variant="default" size="sm">
-                Search: {search}
-              </Badge>
-            )}
-            {statusFilter && (
-              <Badge variant="default" size="sm">
-                Status: {statusFilter}
-              </Badge>
-            )}
-            {priorityFilter && (
-              <Badge variant="default" size="sm">
-                Priority: {priorityFilter}
-              </Badge>
-            )}
-            {assigneeFilter && (
-              <Badge variant="default" size="sm">
-                Assignee:{" "}
-                {assignableUsers?.find((u) => u.id === assigneeFilter)?.name || "Selected"}
-              </Badge>
-            )}
-            {dueTimeFilter !== "all" && (
-              <Badge variant="default" size="sm">
-                Due: {dueTimeFilterOptions.find((o) => o.value === dueTimeFilter)?.label}
-              </Badge>
-            )}
-            {typeFilter && (
-              <Badge variant="default" size="sm">
-                Type: {typeFilter === "Meeting" ? "Meeting/Evaluation" : typeFilter}
-              </Badge>
-            )}
-            {subjectFilter && (
-              <Badge variant="default" size="sm">
-                Subject:{" "}
-                {taskSubjectsData?.items?.find((s) => s.id === subjectFilter)?.name || "Selected"}
-              </Badge>
-            )}
-            {openCasesFilter && (
-              <Badge variant="default" size="sm">
-                Open Cases: Yes
-              </Badge>
-            )}
-            {countryFilter && (
-              <Badge variant="default" size="sm">
-                Country: {countryFilter}
-              </Badge>
-            )}
-            {districtFilter && (
-              <Badge variant="default" size="sm">
-                District: {districtFilter}
-              </Badge>
-            )}
-            {sectorFilter && (
-              <Badge variant="default" size="sm">
-                Sector: {sectorFilter}
-              </Badge>
-            )}
-            {cellFilter && (
-              <Badge variant="default" size="sm">
-                Cell: {cellFilter}
-              </Badge>
-            )}
-            {villageFilter && (
-              <Badge variant="default" size="sm">
-                Village: {villageFilter}
-              </Badge>
-            )}
-            <button
-              onClick={() => {
-                setSearch("");
-                setSearchInput("");
-                setStatusFilter("");
-                setPriorityFilter("");
-                setAssigneeFilter("");
-                setDueTimeFilter("all");
-                setTypeFilter("");
-                setSubjectFilter("");
-                setOpenCasesFilter("");
-                setCountryFilter("");
-                setDistrictFilter("");
-                setSectorFilter("");
-                setCellFilter("");
-                setVillageFilter("");
+        <div className="mt-4 pt-4 border-t border-border-light">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm font-medium text-text-secondary">Location:</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {/* Country Filter */}
+            <MultiSelect
+              label=""
+              placeholder="All Countries"
+              options={(locationValues?.countries || []).map((country: string) => ({
+                value: country,
+                label: country,
+              }))}
+              value={countryFilter}
+              onChange={(values) => {
+                setCountryFilter(values);
                 setPage(0);
               }}
-              className="text-sm text-status-error hover:underline"
-            >
-              Clear all
-            </button>
+              size="sm"
+            />
+
+            {/* District Filter */}
+            <MultiSelect
+              label=""
+              placeholder="All Districts"
+              options={(locationValues?.districts || []).map((district: string) => ({
+                value: district,
+                label: district,
+              }))}
+              value={districtFilter}
+              onChange={(values) => {
+                setDistrictFilter(values);
+                setPage(0);
+              }}
+              size="sm"
+            />
+
+            {/* Sector Filter */}
+            <MultiSelect
+              label=""
+              placeholder="All Sectors"
+              options={(locationValues?.sectors || []).map((sector: string) => ({
+                value: sector,
+                label: sector,
+              }))}
+              value={sectorFilter}
+              onChange={(values) => {
+                setSectorFilter(values);
+                setPage(0);
+              }}
+              size="sm"
+            />
+
+            {/* Cell Filter */}
+            <MultiSelect
+              label=""
+              placeholder="All Cells"
+              options={(locationValues?.cells || []).map((cell: string) => ({
+                value: cell,
+                label: cell,
+              }))}
+              value={cellFilter}
+              onChange={(values) => {
+                setCellFilter(values);
+                setPage(0);
+              }}
+              size="sm"
+            />
+
+            {/* Village Filter */}
+            <MultiSelect
+              label=""
+              placeholder="All Villages"
+              options={(locationValues?.villages || []).map((village: string) => ({
+                value: village,
+                label: village,
+              }))}
+              value={villageFilter}
+              onChange={(values) => {
+                setVillageFilter(values);
+                setPage(0);
+              }}
+              size="sm"
+            />
+          </div>
+        </div>
+
+        {/* Active Filters Indicator */}
+        {(search ||
+          statusFilter.length > 0 ||
+          priorityFilter.length > 0 ||
+          assigneeFilter.length > 0 ||
+          dueTimeFilter.length > 0 ||
+          typeFilter.length > 0 ||
+          subjectFilter.length > 0 ||
+          countryFilter.length > 0 ||
+          districtFilter.length > 0 ||
+          sectorFilter.length > 0 ||
+          cellFilter.length > 0 ||
+          villageFilter.length > 0 ||
+          openCasesFilter) && (
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                Active Filters:
+              </span>
+
+              {search && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                  Search: {search}
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      setSearchInput("");
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove search filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+
+              {/* Status filters - show each selected value */}
+              {statusFilter.map((status) => (
+                <span
+                  key={`status-${status}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                >
+                  Status: {status}
+                  <button
+                    onClick={() => {
+                      setStatusFilter(statusFilter.filter((s) => s !== status));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${status} status filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Priority filters - show each selected value */}
+              {priorityFilter.map((priority) => (
+                <span
+                  key={`priority-${priority}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+                >
+                  Priority: {priority}
+                  <button
+                    onClick={() => {
+                      setPriorityFilter(priorityFilter.filter((p) => p !== priority));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-orange-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${priority} priority filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Assignee filters - show each selected value */}
+              {assigneeFilter.map((assigneeId) => (
+                <span
+                  key={`assignee-${assigneeId}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700"
+                >
+                  Assignee:{" "}
+                  {assignableUsers?.find((u) => u.id === assigneeId)?.name ||
+                    assignableUsers?.find((u) => u.id === assigneeId)?.email ||
+                    "Selected"}
+                  <button
+                    onClick={() => {
+                      setAssigneeFilter(assigneeFilter.filter((a) => a !== assigneeId));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-purple-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove assignee filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Due Time filters - show each selected value */}
+              {dueTimeFilter.map((dueTime) => (
+                <span
+                  key={`due-${dueTime}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700"
+                >
+                  Due: {dueTimeFilterOptions.find((o) => o.value === dueTime)?.label}
+                  <button
+                    onClick={() => {
+                      setDueTimeFilter(dueTimeFilter.filter((d) => d !== dueTime));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-red-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${dueTimeFilterOptions.find((o) => o.value === dueTime)?.label} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Type filters - show each selected value */}
+              {typeFilter.map((type) => (
+                <span
+                  key={`type-${type}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-700"
+                >
+                  Type: {type === "Meeting" ? "Meeting/Evaluation" : type}
+                  <button
+                    onClick={() => {
+                      setTypeFilter(typeFilter.filter((t) => t !== type));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-teal-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${type} type filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Subject filters - show each selected value */}
+              {subjectFilter.map((subjectId) => (
+                <span
+                  key={`subject-${subjectId}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700"
+                >
+                  Subject:{" "}
+                  {taskSubjectsData?.items?.find((s) => s.id === subjectId)?.name || "Selected"}
+                  <button
+                    onClick={() => {
+                      setSubjectFilter(subjectFilter.filter((s) => s !== subjectId));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-indigo-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove subject filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {openCasesFilter && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                  Open Cases: Yes
+                  <button
+                    onClick={() => {
+                      setOpenCasesFilter("");
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-amber-200 rounded-full p-0.5 transition-colors"
+                    aria-label="Remove open cases filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+
+              {/* Country filters */}
+              {countryFilter.map((country) => (
+                <span
+                  key={`country-${country}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  Country: {country}
+                  <button
+                    onClick={() => {
+                      setCountryFilter(countryFilter.filter((c) => c !== country));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${country} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* District filters */}
+              {districtFilter.map((district) => (
+                <span
+                  key={`district-${district}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  District: {district}
+                  <button
+                    onClick={() => {
+                      setDistrictFilter(districtFilter.filter((d) => d !== district));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${district} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Sector filters */}
+              {sectorFilter.map((sector) => (
+                <span
+                  key={`sector-${sector}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  Sector: {sector}
+                  <button
+                    onClick={() => {
+                      setSectorFilter(sectorFilter.filter((s) => s !== sector));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${sector} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Cell filters */}
+              {cellFilter.map((cell) => (
+                <span
+                  key={`cell-${cell}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  Cell: {cell}
+                  <button
+                    onClick={() => {
+                      setCellFilter(cellFilter.filter((c) => c !== cell));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${cell} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              {/* Village filters */}
+              {villageFilter.map((village) => (
+                <span
+                  key={`village-${village}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  Village: {village}
+                  <button
+                    onClick={() => {
+                      setVillageFilter(villageFilter.filter((v) => v !== village));
+                      setPage(0);
+                    }}
+                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                    aria-label={`Remove ${village} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setSearchInput("");
+                  setStatusFilter([]);
+                  setPriorityFilter([]);
+                  setAssigneeFilter([]);
+                  setDueTimeFilter([]);
+                  setTypeFilter([]);
+                  setSubjectFilter([]);
+                  setOpenCasesFilter("");
+                  setCountryFilter([]);
+                  setDistrictFilter([]);
+                  setSectorFilter([]);
+                  setCellFilter([]);
+                  setVillageFilter([]);
+                  setPage(0);
+                }}
+                className="text-xs text-status-error hover:text-status-error/80 font-medium ml-2"
+              >
+                Clear all
+              </button>
+            </div>
           </div>
         )}
       </div>
