@@ -22,6 +22,7 @@ import { EditEmployeeModal } from "@/src/components/admin/EditEmployeeModal";
 import { NewAssignmentModal } from "@/src/components/admin/NewAssignmentModal";
 import { EndEmploymentModal } from "@/src/components/admin/EndEmploymentModal";
 import { EmploymentHistoryCard } from "@/src/components/admin/EmploymentHistoryCard";
+import { UserActivityTab } from "@/src/components/users/UserActivityTab";
 
 /**
  * User Detail Page Component
@@ -426,6 +427,9 @@ export default function UserDetailPage() {
               </p>
             </div>
           </Card>
+
+          {/* App Activity Card - Shows recent user activity from mobile app */}
+          <UserActivityTab userId={userId} />
 
           {/* Employee Details - Only shown if employee record exists */}
           {user.employee && (
