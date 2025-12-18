@@ -11,6 +11,7 @@ import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/compon
 import { Plus, XCircle, Save, Building2, Edit, Info } from "@/src/lib/icons";
 import { useEntities, useCreateEntity, useUpdateEntity } from "@/src/hooks/useExpenses";
 import type { Entity } from "@/src/lib/api/expenseClient";
+import { COUNTRY_OPTIONS, CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 export function EntitiesTab() {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -182,13 +183,7 @@ export function EntitiesTab() {
                   label="Country Code"
                   value={formData.countryCode}
                   onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                  options={[
-                    { value: "", label: "Select Country" },
-                    { value: "RW", label: "RW - Rwanda" },
-                    { value: "KE", label: "KE - Kenya" },
-                    { value: "ZM", label: "ZM - Zambia" },
-                    { value: "IN", label: "IN - India" },
-                  ]}
+                  options={[{ value: "", label: "Select Country" }, ...COUNTRY_OPTIONS]}
                   required
                 />
 
@@ -196,13 +191,7 @@ export function EntitiesTab() {
                   label="Currency"
                   value={formData.currency}
                   onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                  options={[
-                    { value: "RWF", label: "RWF - Rwandan Franc" },
-                    { value: "KES", label: "KES - Kenyan Shilling" },
-                    { value: "ZMW", label: "ZMW - Zambian Kwacha" },
-                    { value: "INR", label: "INR - Indian Rupee" },
-                    { value: "USD", label: "USD - US Dollar" },
-                  ]}
+                  options={CURRENCY_OPTIONS}
                   required
                 />
               </div>
@@ -224,9 +213,7 @@ export function EntitiesTab() {
                 <Input
                   label="QuickBooks Realm ID"
                   value={formData.quickbooksRealmId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quickbooksRealmId: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, quickbooksRealmId: e.target.value })}
                   placeholder="Optional"
                 />
               </div>
@@ -286,9 +273,7 @@ export function EntitiesTab() {
         <Card variant="bordered">
           <div className="text-center py-12">
             <Building2 className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">
-              No entities configured
-            </h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">No entities configured</h3>
             <p className="text-text-secondary mb-4">
               Create your first entity to start managing expenses.
             </p>
