@@ -21,6 +21,9 @@ export type { SelectProps } from "./Select";
 export { LabeledSelect } from "./LabeledSelect";
 export type { LabeledSelectProps } from "./LabeledSelect";
 
+export { MultiSelect } from "./MultiSelect";
+export type { MultiSelectProps, MultiSelectOption } from "./MultiSelect";
+
 // Layout components
 export { Card } from "./Card";
 export type { CardProps } from "./Card";
