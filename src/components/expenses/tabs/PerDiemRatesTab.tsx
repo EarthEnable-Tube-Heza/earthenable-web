@@ -20,6 +20,7 @@ import {
 import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Target, User, Edit, Info, CheckCircle } from "@/src/lib/icons";
 import { usePerDiemRates, useCreatePerDiemRate, useEntities } from "@/src/hooks/useExpenses";
+import { CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 export function PerDiemRatesTab() {
   const [selectedEntityId, setSelectedEntityId] = useState<string>("");
@@ -195,11 +196,7 @@ export function PerDiemRatesTab() {
                 label="Currency"
                 value={formData.currency}
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                options={[
-                  { value: "RWF", label: "RWF - Rwandan Franc" },
-                  { value: "USD", label: "USD - US Dollar" },
-                  { value: "EUR", label: "EUR - Euro" },
-                ]}
+                options={CURRENCY_OPTIONS}
                 required
               />
 

@@ -12,18 +12,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { CreateFormMapping } from "@/src/types/form";
 import { Select } from "@/src/components/ui/Select";
+import { EARTHENABLE_COUNTRIES } from "@/src/lib/constants";
 
 interface CreateFormMappingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const COUNTRIES = [
-  { code: "RW", name: "Rwanda" },
-  { code: "KE", name: "Kenya" },
-  { code: "ZM", name: "Zambia" },
-  { code: "IN", name: "India" },
-];
 
 export function CreateFormMappingModal({ isOpen, onClose }: CreateFormMappingModalProps) {
   const queryClient = useQueryClient();
@@ -145,7 +139,7 @@ export function CreateFormMappingModal({ isOpen, onClose }: CreateFormMappingMod
                 disabled={createMutation.isPending}
               >
                 <option value="default">Default (All Countries)</option>
-                {COUNTRIES.map((country) => (
+                {EARTHENABLE_COUNTRIES.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.name} ({country.code})
                   </option>
