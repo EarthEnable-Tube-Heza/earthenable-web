@@ -34,7 +34,7 @@ import {
   Legend,
 } from "recharts";
 import { apiClient } from "@/src/lib/api";
-import { Card, Button, Badge, Spinner } from "@/src/components/ui";
+import { Card, Button, Badge, Spinner, LabeledSelect } from "@/src/components/ui";
 import { ActivityTimelineItem } from "@/src/types/monitoring";
 
 // Screen metadata for display names
@@ -941,37 +941,32 @@ export default function UserActivityPage() {
 
       {/* Filters */}
       <Card padding="md" className="mb-6">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-end gap-4">
           {/* Category Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Category:</label>
-            <select
+          <div className="w-44">
+            <LabeledSelect
+              label="Category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {CATEGORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={CATEGORY_OPTIONS}
+              size="sm"
+              fullWidth
+            />
           </div>
 
           {/* Date Range Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
-            <select
-              value={days}
+          <div className="w-40">
+            <LabeledSelect
+              label="Period"
+              value={String(days)}
               onChange={(e) => setDays(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              {DATE_RANGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={DATE_RANGE_OPTIONS.map((opt) => ({
+                value: String(opt.value),
+                label: opt.label,
+              }))}
+              size="sm"
+              fullWidth
+            />
           </div>
 
           {/* Clear Filters */}

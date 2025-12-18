@@ -71,6 +71,9 @@ import {
   HierarchicalFeatureUsageResponse,
   PaginatedActivityResponse,
   FeatureUsersResponse,
+  PlatformAnalyticsResponse,
+  ActiveAppUsersResponse,
+  ActivityTimeSeriesResponse,
 } from "../../types";
 
 /**
@@ -598,45 +601,69 @@ class APIClient {
 
   /**
    * Get paginated list of tasks with optional filters
+   * Supports both single values and arrays (converted to comma-separated strings)
    */
   async getTasks(params?: {
     skip?: number;
     limit?: number;
     search?: string;
-    status?: string;
-    subject_id?: string;
-    assignee_id?: string;
-    priority?: string;
-    due_time?: string;
-    type?: string;
-    country?: string;
-    district?: string;
-    sector?: string;
-    cell?: string;
-    village?: string;
+    status?: string | string[];
+    subject_id?: string | string[];
+    assignee_id?: string | string[];
+    priority?: string | string[];
+    due_time?: string | string[];
+    type?: string | string[];
+    country?: string | string[];
+    district?: string | string[];
+    sector?: string | string[];
+    cell?: string | string[];
+    village?: string | string[];
     has_open_cases?: boolean;
   }): Promise<PaginatedTasksResponse> {
-    return this.get<PaginatedTasksResponse>("/admin/tasks", { params });
+    // Convert arrays to comma-separated strings for API
+    const processedParams = params ? this.processArrayParams(params) : undefined;
+    return this.get<PaginatedTasksResponse>("/admin/tasks", { params: processedParams });
   }
 
   /**
    * Get task statistics with optional filters
+   * Supports both single values and arrays (converted to comma-separated strings)
    */
   async getTaskStats(params?: {
     search?: string;
-    status?: string;
-    subject_id?: string;
-    assignee_id?: string;
-    priority?: string;
-    type?: string;
-    country?: string;
-    district?: string;
-    sector?: string;
-    cell?: string;
-    village?: string;
+    status?: string | string[];
+    subject_id?: string | string[];
+    assignee_id?: string | string[];
+    priority?: string | string[];
+    type?: string | string[];
+    country?: string | string[];
+    district?: string | string[];
+    sector?: string | string[];
+    cell?: string | string[];
+    village?: string | string[];
     has_open_cases?: boolean;
   }): Promise<TaskStatsResponse> {
-    return this.get<TaskStatsResponse>("/admin/tasks/stats", { params });
+    // Convert arrays to comma-separated strings for API
+    const processedParams = params ? this.processArrayParams(params) : undefined;
+    return this.get<TaskStatsResponse>("/admin/tasks/stats", { params: processedParams });
+  }
+
+  /**
+   * Helper to convert array parameters to comma-separated strings
+   */
+  private processArrayParams(params: Record<string, unknown>): Record<string, unknown> {
+    const processed: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (Array.isArray(value)) {
+        // Only include if array has values
+        if (value.length > 0) {
+          processed[key] = value.join(",");
+        }
+      } else if (value !== undefined && value !== null && value !== "") {
+        processed[key] = value;
+      }
+    }
+    return processed;
   }
 
   /**
@@ -910,6 +937,33 @@ class APIClient {
         params: { days },
       }
     );
+  }
+
+  /**
+   * Get platform and device analytics
+   * @param days - Number of days to analyze
+   */
+  async getPlatformAnalytics(days = 7): Promise<PlatformAnalyticsResponse> {
+    return this.get<PlatformAnalyticsResponse>("/admin/monitoring/platform-analytics", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get users who have actively used the app
+   */
+  async getActiveAppUsers(): Promise<ActiveAppUsersResponse> {
+    return this.get<ActiveAppUsersResponse>("/admin/monitoring/active-users");
+  }
+
+  /**
+   * Get daily activity statistics for time series charts
+   * @param days - Number of days to analyze (1-90, default 30)
+   */
+  async getActivityTimeSeries(days = 30): Promise<ActivityTimeSeriesResponse> {
+    return this.get<ActivityTimeSeriesResponse>("/admin/monitoring/activity-time-series", {
+      params: { days },
+    });
   }
 }
 

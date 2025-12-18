@@ -243,3 +243,102 @@ export interface FeatureUsersResponse {
   total_users: number;
   users: FeatureUsersItem[];
 }
+
+/**
+ * OS version distribution item
+ */
+export interface OSVersionDistribution {
+  os_name: string; // Android, iOS
+  os_version: string; // e.g., "14", "7.0"
+  display_name: string; // e.g., "Android 14", "iOS 17"
+  session_count: number;
+  unique_users: number;
+  percentage: number;
+}
+
+/**
+ * Device type (platform) distribution item
+ */
+export interface DeviceTypeDistribution {
+  device_type: string; // android, ios
+  session_count: number;
+  unique_users: number;
+  percentage: number;
+}
+
+/**
+ * Device model distribution item
+ */
+export interface DeviceModelDistribution {
+  device_model: string;
+  device_type: string | null;
+  session_count: number;
+  unique_users: number;
+  percentage: number;
+}
+
+/**
+ * App version adoption item
+ */
+export interface AppVersionDistribution {
+  app_version: string;
+  session_count: number;
+  unique_users: number;
+  percentage: number;
+  is_latest: boolean;
+}
+
+/**
+ * Platform analytics response from /admin/monitoring/platform-analytics
+ */
+export interface PlatformAnalyticsResponse {
+  period_days: number;
+  total_sessions: number;
+  total_unique_users: number;
+  device_types: DeviceTypeDistribution[];
+  os_versions: OSVersionDistribution[];
+  device_models: DeviceModelDistribution[];
+  app_versions: AppVersionDistribution[];
+}
+
+/**
+ * User who has actively used the app
+ */
+export interface ActiveAppUser {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string | null;
+  last_login: string;
+}
+
+/**
+ * Response for users who have actively used the app
+ */
+export interface ActiveAppUsersResponse {
+  total: number;
+  users: ActiveAppUser[];
+}
+
+/**
+ * Daily activity statistics for time series charts
+ */
+export interface DailyActivityStats {
+  date: string; // ISO date string (YYYY-MM-DD)
+  sessions: number; // Number of session starts
+  unique_users: number; // Unique users who were active
+  actions: number; // Total user actions/activities
+}
+
+/**
+ * Response for activity time series data
+ */
+export interface ActivityTimeSeriesResponse {
+  period_days: number;
+  data: DailyActivityStats[];
+  totals: {
+    sessions: number;
+    unique_users: number;
+    actions: number;
+  };
+}
