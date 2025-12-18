@@ -16,6 +16,7 @@ import {
 } from "@/src/hooks/useExpenses";
 import { useAuth } from "@/src/lib/auth";
 import { Save, Check, XCircle, Info } from "@/src/lib/icons";
+import { CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 export function NewRequestTab() {
   const { user } = useAuth();
@@ -211,11 +212,7 @@ export function NewRequestTab() {
             label="Currency"
             value={formData.currency}
             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-            options={[
-              { value: "RWF", label: "RWF - Rwandan Franc" },
-              { value: "USD", label: "USD - US Dollar" },
-              { value: "EUR", label: "EUR - Euro" },
-            ]}
+            options={CURRENCY_OPTIONS}
             required
           />
 
