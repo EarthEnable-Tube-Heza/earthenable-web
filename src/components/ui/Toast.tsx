@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Toast Component
@@ -7,11 +7,11 @@
  * Used for temporary feedback messages.
  */
 
-import { useEffect, useState } from 'react';
-import { cn } from '@/src/lib/theme';
+import { useEffect, useState } from "react";
+import { cn } from "@/src/lib/theme";
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
-export type ToastPosition = 'top' | 'bottom';
+export type ToastType = "success" | "error" | "warning" | "info";
+export type ToastPosition = "top" | "bottom";
 
 export interface ToastProps {
   /**
@@ -55,8 +55,8 @@ export interface ToastProps {
  */
 const TOAST_CONFIG = {
   success: {
-    bg: 'bg-[#2ecc71]', // Green
-    text: 'text-white',
+    bg: "bg-[#2ecc71]", // Green
+    text: "text-white",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -69,8 +69,8 @@ const TOAST_CONFIG = {
     ),
   },
   error: {
-    bg: 'bg-[#e74c3c]', // Red
-    text: 'text-white',
+    bg: "bg-[#e74c3c]", // Red
+    text: "text-white",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -83,8 +83,8 @@ const TOAST_CONFIG = {
     ),
   },
   warning: {
-    bg: 'bg-[#f39c12]', // Orange
-    text: 'text-white',
+    bg: "bg-[#f39c12]", // Orange
+    text: "text-white",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -97,8 +97,8 @@ const TOAST_CONFIG = {
     ),
   },
   info: {
-    bg: 'bg-[#3498db]', // Blue
-    text: 'text-white',
+    bg: "bg-[#3498db]", // Blue
+    text: "text-white",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -117,7 +117,7 @@ export function Toast({
   type,
   message,
   duration = 4000,
-  position = 'top',
+  position = "top",
   onDismiss,
   icon,
 }: ToastProps) {
@@ -162,15 +162,24 @@ export function Toast({
       role="alert"
       aria-live="polite"
       className={cn(
-        // Base styles
-        'fixed left-4 right-4 z-[1000]',
-        'flex items-center gap-3',
-        'px-4 py-3 rounded-lg',
-        'shadow-lg',
-        'transition-all duration-300 ease-out',
+        // Base styles - centered positioning
+        "fixed z-[1000]",
+        "flex items-center gap-3",
+        "px-4 py-3 rounded-lg",
+        "shadow-lg",
+        "transition-all duration-300 ease-out",
+
+        // Centered with responsive percentage widths
+        "left-1/2 -translate-x-1/2",
+        // Mobile: ~100% width (with margins via calc)
+        "w-[calc(100%-2rem)]",
+        // Tablet: 80% width
+        "md:w-[80%]",
+        // Desktop: 50% width
+        "lg:w-[50%]",
 
         // Position
-        position === 'top' ? 'top-4' : 'bottom-4',
+        position === "top" ? "top-4" : "bottom-4",
 
         // Background and text
         config.bg,
@@ -178,10 +187,10 @@ export function Toast({
 
         // Animation states
         isAnimating
-          ? 'opacity-100 translate-y-0'
-          : position === 'top'
-            ? 'opacity-0 -translate-y-4'
-            : 'opacity-0 translate-y-4'
+          ? "opacity-100 translate-y-0"
+          : position === "top"
+            ? "opacity-0 -translate-y-4"
+            : "opacity-0 translate-y-4"
       )}
     >
       {/* Icon */}
@@ -195,9 +204,9 @@ export function Toast({
         type="button"
         onClick={handleDismiss}
         className={cn(
-          'flex-shrink-0 rounded-md p-1',
-          'hover:bg-white/20 transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-white/50'
+          "flex-shrink-0 rounded-md p-1",
+          "hover:bg-white/20 transition-colors",
+          "focus:outline-none focus:ring-2 focus:ring-white/50"
         )}
         aria-label="Dismiss"
       >
@@ -214,4 +223,4 @@ export function Toast({
   );
 }
 
-Toast.displayName = 'Toast';
+Toast.displayName = "Toast";

@@ -32,6 +32,9 @@ import { MultiSelect } from "@/src/components/ui/MultiSelect";
 import { Input } from "@/src/components/ui/Input";
 import { Button } from "@/src/components/ui/Button";
 import { TaskDetailModal } from "@/src/components/TaskDetailModal";
+import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
+import { Toast, ToastType } from "@/src/components/ui/Toast";
+import { Eye, UserRoundCog, Trash2, RefreshCw } from "lucide-react";
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
@@ -58,6 +61,19 @@ export default function TasksPage() {
   const [bulkReassignUserId, setBulkReassignUserId] = useState<string>("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showAllSubjects, setShowAllSubjects] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<TaskListItem | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  // Status change state
+  const [taskToChangeStatus, setTaskToChangeStatus] = useState<TaskListItem | null>(null);
+  const [newStatus, setNewStatus] = useState<string>("");
+  const [showBulkStatusConfirm, setShowBulkStatusConfirm] = useState(false);
+  const [bulkNewStatus, setBulkNewStatus] = useState<string>("");
+  // Toast state
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    type: ToastType;
+    message: string;
+  }>({ visible: false, type: "success", message: "" });
   const limit = 20;
 
   // Fetch tasks with filters
@@ -190,6 +206,106 @@ export default function TasksPage() {
       queryClient.invalidateQueries({ queryKey: ["task-stats"] });
       setSelectedTasks(new Set());
       setBulkReassignUserId("");
+    },
+  });
+
+  // Delete single task mutation
+  const deleteMutation = useMutation({
+    mutationFn: (taskId: string) => apiClient.deleteTask(taskId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-stats"] });
+      setTaskToDelete(null);
+      setToast({
+        visible: true,
+        type: "success",
+        message: `Task "${data.task_subject || "task"}" deleted successfully`,
+      });
+    },
+    onError: (error: Error) => {
+      setTaskToDelete(null);
+      setToast({
+        visible: true,
+        type: "error",
+        message: `Failed to delete task: ${error.message || "Unknown error"}`,
+      });
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (taskIds: string[]) => apiClient.bulkDeleteTasks(taskIds),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-stats"] });
+      setSelectedTasks(new Set());
+      setShowBulkDeleteConfirm(false);
+      setToast({
+        visible: true,
+        type: "success",
+        message: `Successfully deleted ${data.deleted_count} task(s)`,
+      });
+    },
+    onError: (error: Error) => {
+      setShowBulkDeleteConfirm(false);
+      setToast({
+        visible: true,
+        type: "error",
+        message: `Failed to delete tasks: ${error.message || "Unknown error"}`,
+      });
+    },
+  });
+
+  // Single task status update mutation
+  const statusUpdateMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      apiClient.updateTaskStatus(taskId, status),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-stats"] });
+      setTaskToChangeStatus(null);
+      setNewStatus("");
+      setToast({
+        visible: true,
+        type: "success",
+        message: `Task status updated to "${data.status}"`,
+      });
+    },
+    onError: (error: Error) => {
+      setTaskToChangeStatus(null);
+      setNewStatus("");
+      setToast({
+        visible: true,
+        type: "error",
+        message: `Failed to update task status: ${error.message || "Unknown error"}`,
+      });
+    },
+  });
+
+  // Bulk status update mutation
+  const bulkStatusUpdateMutation = useMutation({
+    mutationFn: ({ taskIds, status }: { taskIds: string[]; status: string }) =>
+      apiClient.bulkUpdateTaskStatus(taskIds, status),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-stats"] });
+      setSelectedTasks(new Set());
+      setShowBulkStatusConfirm(false);
+      setBulkNewStatus("");
+      setToast({
+        visible: true,
+        type: "success",
+        message: `Successfully updated ${data.updated_count} task(s) to "${data.new_status}"`,
+      });
+    },
+    onError: (error: Error) => {
+      setShowBulkStatusConfirm(false);
+      setBulkNewStatus("");
+      setToast({
+        visible: true,
+        type: "error",
+        message: `Failed to update task status: ${error.message || "Unknown error"}`,
+      });
     },
   });
 
@@ -919,11 +1035,12 @@ export default function TasksPage() {
 
       {/* Bulk Actions */}
       {selectedTasks.size > 0 && (
-        <div className="bg-primary/10 border border-primary rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-primary/10 border border-primary rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <span className="text-sm font-medium text-primary">
             {selectedTasks.size} task(s) selected
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Bulk Reassign */}
             <Select
               value={bulkReassignUserId}
               onChange={(e) => setBulkReassignUserId(e.target.value)}
@@ -941,11 +1058,47 @@ export default function TasksPage() {
               disabled={!bulkReassignUserId || bulkReassignMutation.isPending}
               loading={bulkReassignMutation.isPending}
             >
-              Reassign Selected
+              Reassign
             </Button>
-            <Button variant="ghost" onClick={() => setSelectedTasks(new Set())}>
-              Clear Selection
-            </Button>
+
+            {/* Bulk Status Update */}
+            <div className="border-l border-primary/30 pl-3 flex items-center gap-2">
+              <Select
+                value={bulkNewStatus}
+                onChange={(e) => setBulkNewStatus(e.target.value)}
+                fullWidth={false}
+              >
+                <option value="">Select status...</option>
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </Select>
+              <Button
+                variant="secondary"
+                onClick={() => setShowBulkStatusConfirm(true)}
+                disabled={!bulkNewStatus || bulkStatusUpdateMutation.isPending}
+                loading={bulkStatusUpdateMutation.isPending}
+              >
+                Update Status
+              </Button>
+            </div>
+
+            {/* Delete and Clear */}
+            <div className="border-l border-primary/30 pl-3 flex items-center gap-2">
+              <Button
+                variant="danger"
+                onClick={() => setShowBulkDeleteConfirm(true)}
+                disabled={bulkDeleteMutation.isPending}
+                loading={bulkDeleteMutation.isPending}
+              >
+                Delete
+              </Button>
+              <Button variant="ghost" onClick={() => setSelectedTasks(new Set())}>
+                Clear
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -1093,21 +1246,37 @@ export default function TasksPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => setSelectedTaskId(task.id)}
-                            className="text-status-info hover:text-status-info/80 text-sm font-medium"
+                            className="p-2 rounded-lg text-status-info hover:bg-status-info/10 transition-colors"
+                            title="View task details"
                           >
-                            View
+                            <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => {
                               setSelectedTaskForReassign(task);
                               setShowReassignModal(true);
                             }}
-                            className="text-primary hover:text-primary/80 text-sm font-medium"
+                            className="p-2 rounded-lg text-primary hover:bg-primary/10 transition-colors"
+                            title="Reassign task"
                           >
-                            Reassign
+                            <UserRoundCog className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setTaskToChangeStatus(task)}
+                            className="p-2 rounded-lg text-status-success hover:bg-status-success/10 transition-colors"
+                            title="Change status"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setTaskToDelete(task)}
+                            className="p-2 rounded-lg text-status-error hover:bg-status-error/10 transition-colors"
+                            title="Delete task"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -1188,6 +1357,84 @@ export default function TasksPage() {
         taskId={selectedTaskId}
         isOpen={!!selectedTaskId}
         onClose={() => setSelectedTaskId(null)}
+      />
+
+      {/* Single Task Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={!!taskToDelete}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${taskToDelete?.subject || "this task"}"? This action cannot be undone and the task will be removed from all assigned mobile devices.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={() => {
+          if (taskToDelete) {
+            deleteMutation.mutate(taskToDelete.id);
+          }
+        }}
+        onCancel={() => setTaskToDelete(null)}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={showBulkDeleteConfirm}
+        title="Delete Selected Tasks"
+        message={`Are you sure you want to delete ${selectedTasks.size} task(s)? This action cannot be undone and the tasks will be removed from all assigned mobile devices.`}
+        confirmLabel={`Delete ${selectedTasks.size} Task(s)`}
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={() => {
+          bulkDeleteMutation.mutate(Array.from(selectedTasks));
+        }}
+        onCancel={() => setShowBulkDeleteConfirm(false)}
+      />
+
+      {/* Status Change Modal */}
+      {taskToChangeStatus && (
+        <StatusChangeModal
+          task={taskToChangeStatus}
+          statuses={statuses}
+          selectedStatus={newStatus}
+          onStatusChange={setNewStatus}
+          onClose={() => {
+            setTaskToChangeStatus(null);
+            setNewStatus("");
+          }}
+          onConfirm={() => {
+            if (newStatus && taskToChangeStatus) {
+              statusUpdateMutation.mutate({
+                taskId: taskToChangeStatus.id,
+                status: newStatus,
+              });
+            }
+          }}
+          isLoading={statusUpdateMutation.isPending}
+        />
+      )}
+
+      {/* Bulk Status Update Confirmation */}
+      <ConfirmDialog
+        isOpen={showBulkStatusConfirm}
+        title="Update Task Status"
+        message={`Are you sure you want to change the status of ${selectedTasks.size} task(s) to "${bulkNewStatus}"?`}
+        confirmLabel={`Update ${selectedTasks.size} Task(s)`}
+        cancelLabel="Cancel"
+        confirmVariant="primary"
+        onConfirm={() => {
+          bulkStatusUpdateMutation.mutate({
+            taskIds: Array.from(selectedTasks),
+            status: bulkNewStatus,
+          });
+        }}
+        onCancel={() => setShowBulkStatusConfirm(false)}
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
     </div>
   );
@@ -1327,6 +1574,69 @@ function ReassignModal({
             loading={isLoading}
           >
             Reassign
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Status Change Modal Component
+function StatusChangeModal({
+  task,
+  statuses,
+  selectedStatus,
+  onStatusChange,
+  onClose,
+  onConfirm,
+  isLoading,
+}: {
+  task: TaskListItem;
+  statuses: string[];
+  selectedStatus: string;
+  onStatusChange: (status: string) => void;
+  onClose: () => void;
+  onConfirm: () => void;
+  isLoading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="p-6 border-b border-border-light">
+          <h2 className="text-xl font-heading font-bold text-text-primary">Change Task Status</h2>
+          <p className="text-sm text-text-secondary mt-1 line-clamp-2">
+            {task.subject || "Untitled Task"}
+          </p>
+        </div>
+
+        <div className="p-6">
+          <label className="block text-sm font-medium text-text-primary mb-2">
+            Select New Status
+          </label>
+          <Select value={selectedStatus} onChange={(e) => onStatusChange(e.target.value)} fullWidth>
+            <option value="">Select a status...</option>
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </Select>
+
+          <p className="text-xs text-text-secondary mt-2">
+            Current status: <span className="font-medium">{task.status || "Unknown"}</span>
+          </p>
+        </div>
+
+        <div className="px-6 py-4 border-t border-border-light flex justify-end gap-3">
+          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={!selectedStatus || selectedStatus === task.status || isLoading}
+            loading={isLoading}
+          >
+            Update Status
           </Button>
         </div>
       </div>

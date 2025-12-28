@@ -9,8 +9,11 @@
 
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/api";
+import { Select } from "./ui/Select";
+import { Button } from "./ui/Button";
+import { Toast, ToastType } from "./ui/Toast";
 import {
   ContactDetail,
   OpportunityDetail,
@@ -356,6 +359,15 @@ function CaseCard({ caseItem }: { caseItem: CaseDetail }) {
  * Task Detail Modal
  */
 export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProps) {
+  const queryClient = useQueryClient();
+  const [isEditingStatus, setIsEditingStatus] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    type: ToastType;
+    message: string;
+  }>({ visible: false, type: "success", message: "" });
+
   // Fetch complete task data
   const {
     data: task,
@@ -365,6 +377,41 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
     queryKey: ["task-complete", taskId],
     queryFn: () => apiClient.getTaskComplete(taskId!),
     enabled: !!taskId && isOpen,
+  });
+
+  // Fetch available statuses for dropdown
+  const { data: stats } = useQuery({
+    queryKey: ["task-stats-filter-options"],
+    queryFn: () => apiClient.getTaskStats({}),
+    staleTime: 5 * 60 * 1000,
+  });
+  const statuses = stats?.by_status
+    ? Object.keys(stats.by_status).filter((s) => s !== "Unknown")
+    : [];
+
+  // Status update mutation
+  const statusUpdateMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      apiClient.updateTaskStatus(taskId, status),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["task-complete", taskId] });
+      setIsEditingStatus(false);
+      setNewStatus("");
+      setToast({
+        visible: true,
+        type: "success",
+        message: `Task status updated to "${data.status}"`,
+      });
+    },
+    onError: (error: Error) => {
+      setToast({
+        visible: true,
+        type: "error",
+        message: `Failed to update status: ${error.message || "Unknown error"}`,
+      });
+    },
   });
 
   // Format date helper
@@ -469,11 +516,77 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
             ) : task ? (
               <div className="space-y-6">
                 {/* Status Badges */}
-                <div className="flex flex-wrap gap-2">
-                  {task.status && (
-                    <Badge variant={getStatusVariant(task.status)} size="md">
-                      {task.status}
-                    </Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  {isEditingStatus ? (
+                    <div className="flex items-center gap-2 bg-background-light rounded-lg p-2">
+                      <Select
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value)}
+                        size="sm"
+                      >
+                        <option value="">Select status...</option>
+                        {statuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </Select>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (newStatus && taskId) {
+                            statusUpdateMutation.mutate({ taskId, status: newStatus });
+                          }
+                        }}
+                        disabled={
+                          !newStatus || newStatus === task.status || statusUpdateMutation.isPending
+                        }
+                        loading={statusUpdateMutation.isPending}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingStatus(false);
+                          setNewStatus("");
+                        }}
+                        disabled={statusUpdateMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {task.status && (
+                        <button
+                          onClick={() => {
+                            setIsEditingStatus(true);
+                            setNewStatus(task.status || "");
+                          }}
+                          className="group flex items-center gap-1.5"
+                          title="Click to change status"
+                        >
+                          <Badge variant={getStatusVariant(task.status)} size="md">
+                            {task.status}
+                          </Badge>
+                          <svg
+                            className="w-3.5 h-3.5 text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </>
                   )}
                   {task.priority && (
                     <Badge variant={getPriorityVariant(task.priority)} size="md">
@@ -825,6 +938,14 @@ export function TaskDetailModal({ taskId, isOpen, onClose }: TaskDetailModalProp
           </div>
         </Dialog.Panel>
       </div>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+      />
     </Dialog>
   );
 }
