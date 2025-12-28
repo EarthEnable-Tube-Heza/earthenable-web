@@ -721,6 +721,47 @@ class APIClient {
     return this.post<BulkReassignResponse>("/admin/tasks/bulk-reassign", data);
   }
 
+  /**
+   * Soft delete a task (sets is_deleted = true)
+   * Creates visibility log entries to notify mobile apps to remove the task
+   */
+  async deleteTask(
+    taskId: string
+  ): Promise<{ message: string; task_id: string; task_subject?: string }> {
+    return this.delete<{ message: string; task_id: string; task_subject?: string }>(
+      `/admin/tasks/${taskId}`
+    );
+  }
+
+  /**
+   * Bulk soft delete multiple tasks
+   */
+  async bulkDeleteTasks(taskIds: string[]): Promise<{ message: string; deleted_count: number }> {
+    return this.post<{ message: string; deleted_count: number }>("/admin/tasks/bulk-delete", {
+      task_ids: taskIds,
+    });
+  }
+
+  /**
+   * Update task status (single task)
+   */
+  async updateTaskStatus(taskId: string, status: string): Promise<TaskDetail> {
+    return this.patch<TaskDetail>(`/admin/tasks/${taskId}`, { status });
+  }
+
+  /**
+   * Bulk update status for multiple tasks
+   */
+  async bulkUpdateTaskStatus(
+    taskIds: string[],
+    status: string
+  ): Promise<{ message: string; updated_count: number; new_status: string }> {
+    return this.post<{ message: string; updated_count: number; new_status: string }>(
+      "/admin/tasks/bulk-update-status",
+      { task_ids: taskIds, status }
+    );
+  }
+
   // ============================================================================
   // ORG HIERARCHY / PERMISSION MANAGEMENT (Admin only)
   // ============================================================================
