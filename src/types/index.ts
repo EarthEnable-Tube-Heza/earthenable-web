@@ -12,3 +12,4 @@ export * from "./entity";
 export * from "./task";
 export * from "./permission";
 export * from "./monitoring";
+export * from "./sync";

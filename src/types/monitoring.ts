@@ -282,6 +282,8 @@ export interface DeviceModelDistribution {
  */
 export interface AppVersionDistribution {
   app_version: string;
+  build_number: string | null;
+  display_version: string; // Combined display e.g., "1.0.0 (8)" or just "1.0.0"
   session_count: number;
   unique_users: number;
   percentage: number;
@@ -341,4 +343,33 @@ export interface ActivityTimeSeriesResponse {
     unique_users: number;
     actions: number;
   };
+}
+
+/**
+ * User login frequency statistics
+ */
+export interface UserLoginFrequency {
+  user_id: string;
+  user_name: string | null;
+  user_email: string | null;
+  role: string | null;
+  total_sessions: number;
+  sessions_in_period: number;
+  first_login: string | null;
+  last_login: string | null;
+  avg_sessions_per_day: number;
+  avg_gap_hours: number | null;
+  last_device: string | null;
+  last_app_version: string | null;
+}
+
+/**
+ * Response for user login frequency statistics
+ */
+export interface UserLoginFrequencyResponse {
+  period_days: number;
+  period_label: string;
+  total_users: number;
+  total_sessions: number;
+  users: UserLoginFrequency[];
 }

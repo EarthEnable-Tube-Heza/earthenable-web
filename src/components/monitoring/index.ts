@@ -13,3 +13,4 @@ export { FeatureUsageCard } from "./FeatureUsageCard";
 export { SystemResourcesCard } from "./SystemResourcesCard";
 export { EndpointUsageCard } from "./EndpointUsageCard";
 export { HierarchicalFeatureUsageCard } from "./HierarchicalFeatureUsageCard";
+export { LoginFrequencyCard } from "./LoginFrequencyCard";
