@@ -40,6 +40,7 @@ import {
 } from "@/src/hooks/useMonitoring";
 import { apiClient } from "@/src/lib/api/apiClient";
 import { formatRoleLabel } from "@/src/types/user";
+import { LoginFrequencyCard } from "@/src/components/monitoring";
 
 // Category metadata for display
 const CATEGORY_METADATA: Record<string, { displayName: string; icon: string; color: string }> = {
@@ -192,7 +193,7 @@ export default function MobileAnalyticsPage() {
   // Filter state
   const [days, setDays] = useState(30);
   const [selectedRole, setSelectedRole] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string[]>([]);
 
   // Fetch user stats (includes dynamic roles from by_role)
@@ -205,7 +206,7 @@ export default function MobileAnalyticsPage() {
   const { data: userActivityStats, isLoading: activityLoading } = useUserActivityStats();
   const { data: hierarchicalUsage, isLoading: hierarchicalLoading } = useHierarchicalFeatureUsage(
     days,
-    selectedCategory || undefined,
+    selectedCategory.length > 0 ? selectedCategory.join(",") : undefined,
     selectedRole.length > 0 ? selectedRole.join(",") : undefined,
     selectedUserId.length > 0 ? selectedUserId.join(",") : undefined
   );
@@ -371,7 +372,7 @@ export default function MobileAnalyticsPage() {
       </div>
 
       {/* Filters */}
-      <Card padding="md" className="mb-6">
+      <Card padding="md" className="mb-6 overflow-visible">
         <div className="flex flex-wrap items-end gap-4">
           {/* Date Range */}
           <div className="w-40">
@@ -401,20 +402,17 @@ export default function MobileAnalyticsPage() {
           </div>
 
           {/* Category Filter */}
-          <div className="w-44">
-            <LabeledSelect
+          <div className="w-56">
+            <MultiSelect
               label="Feature"
+              placeholder="All Features"
+              options={Object.entries(CATEGORY_METADATA).map(([key, meta]) => ({
+                value: key,
+                label: `${meta.icon} ${meta.displayName}`,
+              }))}
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              options={[
-                { value: "", label: "All Features" },
-                ...Object.entries(CATEGORY_METADATA).map(([key, meta]) => ({
-                  value: key,
-                  label: `${meta.icon} ${meta.displayName}`,
-                })),
-              ]}
+              onChange={(values) => setSelectedCategory(values)}
               size="sm"
-              fullWidth
             />
           </div>
 
@@ -432,7 +430,7 @@ export default function MobileAnalyticsPage() {
 
           {/* Clear Filters */}
           {(selectedRole.length > 0 ||
-            selectedCategory ||
+            selectedCategory.length > 0 ||
             selectedUserId.length > 0 ||
             days !== 30) && (
             <Button
@@ -440,7 +438,7 @@ export default function MobileAnalyticsPage() {
               size="sm"
               onClick={() => {
                 setSelectedRole([]);
-                setSelectedCategory("");
+                setSelectedCategory([]);
                 setSelectedUserId([]);
                 setDays(30);
               }}
@@ -452,7 +450,7 @@ export default function MobileAnalyticsPage() {
 
         {/* Active Filters Indicator */}
         {(selectedRole.length > 0 ||
-          selectedCategory ||
+          selectedCategory.length > 0 ||
           selectedUserId.length > 0 ||
           days !== 30) && (
           <div className="mt-4 pt-4 border-t border-gray-100">
@@ -492,19 +490,24 @@ export default function MobileAnalyticsPage() {
                 </span>
               ))}
 
-              {selectedCategory && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                  <span>{CATEGORY_METADATA[selectedCategory]?.icon || "📦"}</span>
-                  {CATEGORY_METADATA[selectedCategory]?.displayName || selectedCategory}
+              {selectedCategory.map((category) => (
+                <span
+                  key={`category-${category}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                >
+                  <span>{CATEGORY_METADATA[category]?.icon || "📦"}</span>
+                  {CATEGORY_METADATA[category]?.displayName || category}
                   <button
-                    onClick={() => setSelectedCategory("")}
+                    onClick={() =>
+                      setSelectedCategory(selectedCategory.filter((c) => c !== category))
+                    }
                     className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors"
-                    aria-label="Remove feature filter"
+                    aria-label={`Remove ${CATEGORY_METADATA[category]?.displayName || category} filter`}
                   >
                     ×
                   </button>
                 </span>
-              )}
+              ))}
 
               {selectedUserId.map((userId) => (
                 <span
@@ -620,6 +623,11 @@ export default function MobileAnalyticsPage() {
           </div>
         )}
       </Card>
+
+      {/* User Login Frequency */}
+      <div className="mb-6">
+        <LoginFrequencyCard />
+      </div>
 
       {/* Feature Usage & User Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -856,18 +864,18 @@ export default function MobileAnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={platformAnalytics.app_versions.map((av) => ({
-                      name: av.app_version,
+                      name: av.display_version,
                       sessions: av.session_count,
                       users: av.unique_users,
                       percentage: av.percentage,
                       isLatest: av.is_latest,
                     }))}
                     layout="vertical"
-                    margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={55} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={75} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="sessions" name="Sessions" radius={[0, 4, 4, 0]}>
                       {platformAnalytics.app_versions.map((entry, index) => (
@@ -1055,66 +1063,6 @@ export default function MobileAnalyticsPage() {
             </div>
           </div>
         </div>
-      </Card>
-
-      {/* Recent Logins */}
-      <Card padding="lg">
-        <div className="flex items-center justify-between mb-4">
-          <SectionHeader title="Recent Logins" subtitle="Latest user sessions" />
-          <Link
-            href="/dashboard/users"
-            className="text-sm text-primary hover:text-primary/80 font-medium"
-          >
-            View All Users →
-          </Link>
-        </div>
-        {userActivityStats?.recent_logins && userActivityStats.recent_logins.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-xs text-gray-500 uppercase border-b border-gray-100">
-                  <th className="pb-3 font-medium">User</th>
-                  <th className="pb-3 font-medium">Device</th>
-                  <th className="pb-3 font-medium">Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {userActivityStats.recent_logins.map((login, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="py-3">
-                      <Link
-                        href={`/dashboard/users/${login.user_id}`}
-                        className="hover:text-primary"
-                      >
-                        <p className="font-medium text-gray-900">
-                          {login.user_name || "Unknown User"}
-                        </p>
-                        <p className="text-xs text-gray-500">{login.user_email}</p>
-                      </Link>
-                    </td>
-                    <td className="py-3">
-                      <Badge variant="default" size="sm">
-                        {login.device_type || "Unknown"}
-                      </Badge>
-                    </td>
-                    <td className="py-3 text-sm text-gray-600">
-                      {new Date(login.logged_in_at).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <p>No recent logins</p>
-          </div>
-        )}
       </Card>
     </div>
   );

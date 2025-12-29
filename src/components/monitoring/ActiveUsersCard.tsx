@@ -3,7 +3,7 @@
 /**
  * ActiveUsersCard Component
  *
- * Displays currently online users, DAU/WAU/MAU, and recent logins.
+ * Displays currently online users and DAU/WAU/MAU metrics.
  */
 
 import { Card, Spinner } from "@/src/components/ui";
@@ -11,19 +11,6 @@ import { useUserActivityStats } from "@/src/hooks/useMonitoring";
 
 export function ActiveUsersCard() {
   const { data, isLoading, error, dataUpdatedAt } = useUserActivityStats();
-
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString();
-  };
 
   const formatLastUpdated = (timestamp: number): string => {
     return new Date(timestamp).toLocaleTimeString();
@@ -79,23 +66,6 @@ export function ActiveUsersCard() {
           <p className="text-xs text-gray-500">MAU</p>
         </div>
       </div>
-
-      {data.recent_logins.length > 0 && (
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Logins</h4>
-          <div className="space-y-2">
-            {data.recent_logins.slice(0, 5).map((login, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 truncate">
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="truncate">{login.user_name || login.user_email}</span>
-                </div>
-                <span className="text-gray-500 text-xs">{formatDate(login.logged_in_at)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="mt-4 pt-2 border-t text-xs text-gray-400 text-right">
         Last updated: {formatLastUpdated(dataUpdatedAt)}
