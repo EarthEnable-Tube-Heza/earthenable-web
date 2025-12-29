@@ -75,11 +75,12 @@ export function useUserSyncStates(
   page = 1,
   pageSize = 20,
   userId?: string,
+  role?: string,
   forceFullSync?: boolean
 ) {
   return useQuery({
-    queryKey: ["user-sync-states", page, pageSize, userId, forceFullSync],
-    queryFn: () => apiClient.getUserSyncStates(page, pageSize, userId, forceFullSync),
+    queryKey: ["user-sync-states", page, pageSize, userId, role, forceFullSync],
+    queryFn: () => apiClient.getUserSyncStates(page, pageSize, userId, role, forceFullSync),
     refetchInterval: SYNC_STATS_REFRESH_INTERVAL,
     staleTime: SYNC_STATS_REFRESH_INTERVAL - 5000,
   });
