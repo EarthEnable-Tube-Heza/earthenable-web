@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, Badge, Spinner, Button, LabeledSelect } from "@/src/components/ui";
+import { Card, Badge, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
 import {
   useSalesforceSyncHistory,
   useSalesforceSyncStats,
@@ -571,15 +571,58 @@ function UserSyncSessionsTab() {
 
 // User Sync States Tab Content
 function UserSyncStatesTab() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0); // 0-based pagination like users/tasks
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [forceFullSyncFilter, setForceFullSyncFilter] = useState<string>("");
+  const limit = 20;
 
+  // Fetch states with max page size for client-side filtering (API max is 100)
   const { data: states, isLoading } = useUserSyncStates(
-    page,
-    20,
+    1, // Always fetch from page 1
+    100, // Max allowed by API
+    undefined,
     undefined,
     forceFullSyncFilter === "" ? undefined : forceFullSyncFilter === "true"
   );
+
+  // Extract unique roles and users from the data for filter options
+  const roleOptions = states?.states
+    ? Array.from(new Set(states.states.map((s) => s.user_role).filter(Boolean)))
+        .sort()
+        .map((role) => ({ value: role!, label: formatRoleLabel(role!) }))
+    : [];
+
+  const userOptions = states?.states
+    ? Array.from(
+        new Map(
+          states.states
+            .filter((s) => s.user_name || s.user_email)
+            .map((s) => [s.user_id, { id: s.user_id, name: s.user_name, email: s.user_email }])
+        ).values()
+      )
+        .sort((a, b) => (a.name || a.email || "").localeCompare(b.name || b.email || ""))
+        .map((u) => ({ value: u.id, label: u.name || u.email || u.id }))
+    : [];
+
+  // Apply client-side filters
+  const filteredStates =
+    states?.states.filter((state) => {
+      // Role filter
+      if (selectedRoles.length > 0 && !selectedRoles.includes(state.user_role || "")) {
+        return false;
+      }
+      // User filter
+      if (selectedUsers.length > 0 && !selectedUsers.includes(state.user_id)) {
+        return false;
+      }
+      return true;
+    }) || [];
+
+  // Client-side pagination
+  const total = filteredStates.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const paginatedStates = filteredStates.slice(page * limit, (page + 1) * limit);
 
   if (isLoading) {
     return (
@@ -591,19 +634,45 @@ function UserSyncStatesTab() {
 
   return (
     <div className="space-y-6">
-      {/* Filter */}
+      {/* Filters */}
       <Card padding="md" className="overflow-visible">
         <div className="flex flex-wrap items-end gap-4">
+          <div className="w-56">
+            <MultiSelect
+              label="Role"
+              options={roleOptions}
+              value={selectedRoles}
+              onChange={(values) => {
+                setSelectedRoles(values);
+                setPage(0);
+              }}
+              placeholder="All Roles"
+              size="sm"
+            />
+          </div>
+          <div className="w-64">
+            <MultiSelect
+              label="User"
+              options={userOptions}
+              value={selectedUsers}
+              onChange={(values) => {
+                setSelectedUsers(values);
+                setPage(0);
+              }}
+              placeholder="All Users"
+              size="sm"
+            />
+          </div>
           <div className="w-48">
             <LabeledSelect
               label="Force Full Sync"
               value={forceFullSyncFilter}
               onChange={(e) => {
                 setForceFullSyncFilter(e.target.value);
-                setPage(1);
+                setPage(0);
               }}
               options={[
-                { value: "", label: "All Users" },
+                { value: "", label: "All States" },
                 { value: "true", label: "Needing Full Sync" },
                 { value: "false", label: "Normal State" },
               ]}
@@ -617,7 +686,7 @@ function UserSyncStatesTab() {
       {/* States Table */}
       <Card padding="md">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">User Sync States</h3>
-        {states && states.states.length > 0 ? (
+        {paginatedStates.length > 0 ? (
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -625,18 +694,25 @@ function UserSyncStatesTab() {
                   <tr className="border-b bg-gray-50">
                     <th className="text-left py-2 px-3 font-medium text-gray-700">User</th>
                     <th className="text-left py-2 px-3 font-medium text-gray-700">Role</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-700">Installation</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-700">Total Syncs</th>
-                    <th className="text-right py-2 px-3 font-medium text-gray-700">Tasks Synced</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-700">Last Full</th>
-                    <th className="text-left py-2 px-3 font-medium text-gray-700">
-                      Last Incremental
+                    <th className="text-right py-2 px-3 font-medium text-gray-700">Syncs</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700">
+                      <span title="New tasks synced">New</span>
                     </th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700">
+                      <span title="Updated tasks synced">Updated</span>
+                    </th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700">
+                      <span title="Deleted tasks synced">Deleted</span>
+                    </th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-700">
+                      <span title="Estimated current tasks (new - deleted)">Current</span>
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-gray-700">Last Sync</th>
                     <th className="text-left py-2 px-3 font-medium text-gray-700">Force Full</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {states.states.map((state) => (
+                  {paginatedStates.map((state) => (
                     <tr key={state.id} className="border-b hover:bg-gray-50">
                       <td className="py-2 px-3">
                         <div className="flex flex-col">
@@ -658,33 +734,28 @@ function UserSyncStatesTab() {
                           </Badge>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-xs text-gray-500 font-mono truncate max-w-[100px]">
-                        {state.installation_id?.slice(0, 8) || "-"}
-                      </td>
                       <td className="py-2 px-3 text-right font-medium">{state.total_syncs}</td>
-                      <td className="py-2 px-3 text-right">
-                        {state.total_tasks_synced.toLocaleString()}
+                      <td className="py-2 px-3 text-right text-green-600">
+                        {state.total_tasks_new?.toLocaleString() ?? "-"}
+                      </td>
+                      <td className="py-2 px-3 text-right text-blue-600">
+                        {state.total_tasks_updated?.toLocaleString() ?? "-"}
+                      </td>
+                      <td className="py-2 px-3 text-right text-red-600">
+                        {state.total_tasks_deleted?.toLocaleString() ?? "-"}
+                      </td>
+                      <td className="py-2 px-3 text-right font-semibold">
+                        {state.current_task_count?.toLocaleString() ?? "-"}
                       </td>
                       <td className="py-2 px-3">
                         <span
                           title={
-                            state.last_full_sync_at
-                              ? new Date(state.last_full_sync_at).toLocaleString()
+                            state.last_sync_timestamp
+                              ? new Date(state.last_sync_timestamp).toLocaleString()
                               : undefined
                           }
                         >
-                          {formatRelativeTime(state.last_full_sync_at)}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3">
-                        <span
-                          title={
-                            state.last_incremental_sync_at
-                              ? new Date(state.last_incremental_sync_at).toLocaleString()
-                              : undefined
-                          }
-                        >
-                          {formatRelativeTime(state.last_incremental_sync_at)}
+                          {formatRelativeTime(state.last_sync_timestamp)}
                         </span>
                       </td>
                       <td className="py-2 px-3">
@@ -697,7 +768,65 @@ function UserSyncStatesTab() {
                 </tbody>
               </table>
             </div>
-            <Pagination page={states.page} totalPages={states.total_pages} onPageChange={setPage} />
+
+            {/* Pagination - matching users/tasks tables */}
+            {totalPages > 1 && (
+              <div className="px-2 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                <div className="text-sm text-gray-500">
+                  Showing {page * limit + 1} to {Math.min((page + 1) * limit, total)} of {total}{" "}
+                  states
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(0)}
+                    disabled={page === 0}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      page === 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={() => setPage(Math.max(0, page - 1))}
+                    disabled={page === 0}
+                    className={`px-4 py-2 rounded-md text-sm font-medium ${
+                      page === 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-2 text-sm text-gray-500">
+                    Page {page + 1} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                    disabled={page >= totalPages - 1}
+                    className={`px-4 py-2 rounded-md text-sm font-medium ${
+                      page >= totalPages - 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={() => setPage(totalPages - 1)}
+                    disabled={page >= totalPages - 1}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      page >= totalPages - 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <p className="text-center text-gray-500 py-8">No sync states found</p>
