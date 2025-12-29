@@ -143,6 +143,11 @@ export interface UserSyncStateDetail {
   last_sync_timestamp: string | null;
   total_syncs: number;
   total_tasks_synced: number;
+  // Task breakdown from sync sessions
+  total_tasks_new: number | null;
+  total_tasks_updated: number | null;
+  total_tasks_deleted: number | null;
+  current_task_count: number | null; // Estimated: new - deleted
   last_full_sync_at: string | null;
   last_incremental_sync_at: string | null;
   force_full_sync: boolean;

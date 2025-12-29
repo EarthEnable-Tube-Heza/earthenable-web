@@ -1098,6 +1098,7 @@ class APIClient {
     page = 1,
     pageSize = 20,
     userId?: string,
+    role?: string,
     forceFullSync?: boolean
   ): Promise<UserSyncStatesResponse> {
     return this.get<UserSyncStatesResponse>("/admin/monitoring/user-sync/states", {
@@ -1105,6 +1106,7 @@ class APIClient {
         page,
         page_size: pageSize,
         user_id: userId,
+        role,
         force_full_sync: forceFullSync,
       },
     });
