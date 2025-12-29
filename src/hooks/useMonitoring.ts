@@ -190,6 +190,22 @@ export function useActivityTimeSeries(days = 30) {
 }
 
 /**
+ * Hook to fetch user login frequency statistics
+ * Auto-refreshes every 5 minutes
+ * @param days - Number of days to analyze (default 7)
+ * @param period - Period filter: 'today', 'yesterday', 'week', 'month', 'all'
+ * @param limit - Maximum users to return (default 50)
+ */
+export function useLoginFrequency(days = 7, period?: string, limit = 50) {
+  return useQuery({
+    queryKey: ["monitoring", "login-frequency", days, period, limit],
+    queryFn: () => apiClient.getLoginFrequency(days, period, limit),
+    refetchInterval: FEATURE_USAGE_REFRESH_INTERVAL,
+    staleTime: FEATURE_USAGE_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
  * Hook to manually refresh all monitoring data
  */
 export function useRefreshMonitoring() {

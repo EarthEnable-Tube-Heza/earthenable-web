@@ -74,6 +74,13 @@ import {
   PlatformAnalyticsResponse,
   ActiveAppUsersResponse,
   ActivityTimeSeriesResponse,
+  UserLoginFrequencyResponse,
+  // Sync types
+  SalesforceSyncHistoryResponse,
+  SalesforceSyncStatsResponse,
+  UserSyncSessionsResponse,
+  UserSyncStatesResponse,
+  UserSyncStatsResponse,
 } from "../../types";
 
 /**
@@ -1003,6 +1010,111 @@ class APIClient {
    */
   async getActivityTimeSeries(days = 30): Promise<ActivityTimeSeriesResponse> {
     return this.get<ActivityTimeSeriesResponse>("/admin/monitoring/activity-time-series", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get user login frequency statistics
+   * @param days - Number of days to analyze (default 7)
+   * @param period - Period filter: 'today', 'yesterday', 'week', 'month', 'all'
+   * @param limit - Maximum users to return (default 50)
+   */
+  async getLoginFrequency(
+    days = 7,
+    period?: string,
+    limit = 50
+  ): Promise<UserLoginFrequencyResponse> {
+    return this.get<UserLoginFrequencyResponse>("/admin/monitoring/login-frequency", {
+      params: { days, period, limit },
+    });
+  }
+
+  // =========================================================================
+  // Salesforce Sync Endpoints
+  // =========================================================================
+
+  /**
+   * Get detailed Salesforce sync history with pagination
+   */
+  async getSalesforceSyncHistory(
+    page = 1,
+    pageSize = 20,
+    status?: string,
+    syncType?: string,
+    days?: number
+  ): Promise<SalesforceSyncHistoryResponse> {
+    return this.get<SalesforceSyncHistoryResponse>("/admin/monitoring/salesforce-sync/history", {
+      params: {
+        page,
+        page_size: pageSize,
+        status,
+        sync_type: syncType,
+        days,
+      },
+    });
+  }
+
+  /**
+   * Get aggregated Salesforce sync statistics
+   */
+  async getSalesforceSyncStats(days = 7): Promise<SalesforceSyncStatsResponse> {
+    return this.get<SalesforceSyncStatsResponse>("/admin/monitoring/salesforce-sync/stats", {
+      params: { days },
+    });
+  }
+
+  // =========================================================================
+  // User Sync Endpoints
+  // =========================================================================
+
+  /**
+   * Get user sync sessions history with pagination
+   */
+  async getUserSyncSessions(
+    page = 1,
+    pageSize = 20,
+    userId?: string,
+    syncType?: string,
+    success?: boolean,
+    days?: number
+  ): Promise<UserSyncSessionsResponse> {
+    return this.get<UserSyncSessionsResponse>("/admin/monitoring/user-sync/sessions", {
+      params: {
+        page,
+        page_size: pageSize,
+        user_id: userId,
+        sync_type: syncType,
+        success,
+        days,
+      },
+    });
+  }
+
+  /**
+   * Get user sync states with pagination
+   */
+  async getUserSyncStates(
+    page = 1,
+    pageSize = 20,
+    userId?: string,
+    forceFullSync?: boolean
+  ): Promise<UserSyncStatesResponse> {
+    return this.get<UserSyncStatesResponse>("/admin/monitoring/user-sync/states", {
+      params: {
+        page,
+        page_size: pageSize,
+        user_id: userId,
+        force_full_sync: forceFullSync,
+      },
+    });
+  }
+
+  /**
+   * Get aggregated user sync statistics
+   */
+  async getUserSyncStats(days = 7): Promise<UserSyncStatsResponse> {
+    return this.get<UserSyncStatsResponse>("/admin/monitoring/user-sync/stats", {
       params: { days },
     });
   }
