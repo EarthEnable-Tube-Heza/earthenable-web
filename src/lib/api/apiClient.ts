@@ -81,6 +81,15 @@ import {
   UserSyncSessionsResponse,
   UserSyncStatesResponse,
   UserSyncStatsResponse,
+  // Notification types
+  PaginatedNotificationsResponse,
+  NotificationStatsResponse,
+  NotificationDetailResponse,
+  ResendNotificationResponse,
+  SendNotificationRequest,
+  SendNotificationResponse,
+  NotificationFilters,
+  PaginatedUserNotificationStatsResponse,
 } from "../../types";
 
 /**
@@ -157,18 +166,9 @@ class APIClient {
           return Promise.reject(error);
         }
 
-        // Handle 5xx server errors
+        // Handle 5xx server errors - let components handle these, don't redirect
         if (error.response?.status >= 500) {
-          if (typeof window !== "undefined" && !originalRequest._retry) {
-            const currentPath = window.location.pathname;
-            if (currentPath !== "/auth/signin") {
-              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
-              const errorDetail = encodeURIComponent(
-                error.response?.data?.detail || "Server error"
-              );
-              window.location.href = `/auth/signin?error=server&detail=${errorDetail}${redirectParam}`;
-            }
-          }
+          console.error("Server error:", error.response?.data?.detail || "Unknown server error");
           return Promise.reject(error);
         }
 
@@ -1119,6 +1119,95 @@ class APIClient {
     return this.get<UserSyncStatsResponse>("/admin/monitoring/user-sync/stats", {
       params: { days },
     });
+  }
+
+  // =========================================================================
+  // Notification Management Endpoints (Admin only)
+  // =========================================================================
+
+  /**
+   * Get paginated list of notifications with optional filters
+   */
+  async getNotifications(filters?: NotificationFilters): Promise<PaginatedNotificationsResponse> {
+    // Build query params from filters
+    const params: Record<string, unknown> = {};
+
+    if (filters) {
+      if (filters.skip !== undefined) params.skip = filters.skip;
+      if (filters.limit !== undefined) params.limit = filters.limit;
+      if (filters.user_id) params.user_id = filters.user_id;
+      if (filters.search) params.search = filters.search;
+      if (filters.date_from) params.date_from = filters.date_from;
+      if (filters.date_to) params.date_to = filters.date_to;
+
+      // Convert notification types array to comma-separated string
+      if (filters.notification_types && filters.notification_types.length > 0) {
+        params.notification_types = filters.notification_types.join(",");
+      }
+
+      // Convert status filter to is_sent/is_read params
+      if (filters.status && filters.status !== "all") {
+        switch (filters.status) {
+          case "pending":
+            params.is_sent = false;
+            break;
+          case "sent":
+            params.is_sent = true;
+            params.is_read = false;
+            break;
+          case "read":
+            params.is_sent = true;
+            params.is_read = true;
+            break;
+        }
+      }
+    }
+
+    return this.get<PaginatedNotificationsResponse>("/admin/notifications", { params });
+  }
+
+  /**
+   * Get notification statistics
+   */
+  async getNotificationStats(days = 7): Promise<NotificationStatsResponse> {
+    return this.get<NotificationStatsResponse>("/admin/notifications/stats", {
+      params: { days },
+    });
+  }
+
+  /**
+   * Get notification statistics grouped by user
+   */
+  async getNotificationsByUser(params?: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    days?: number;
+  }): Promise<PaginatedUserNotificationStatsResponse> {
+    return this.get<PaginatedUserNotificationStatsResponse>("/admin/notifications/by-user", {
+      params,
+    });
+  }
+
+  /**
+   * Get notification detail by ID
+   */
+  async getNotificationById(notificationId: string): Promise<NotificationDetailResponse> {
+    return this.get<NotificationDetailResponse>(`/admin/notifications/${notificationId}`);
+  }
+
+  /**
+   * Resend a failed or pending notification
+   */
+  async resendNotification(notificationId: string): Promise<ResendNotificationResponse> {
+    return this.post<ResendNotificationResponse>(`/admin/notifications/${notificationId}/resend`);
+  }
+
+  /**
+   * Send a custom notification to one or more users
+   */
+  async sendNotification(request: SendNotificationRequest): Promise<SendNotificationResponse> {
+    return this.post<SendNotificationResponse>("/admin/notifications/send", request);
   }
 }
 
