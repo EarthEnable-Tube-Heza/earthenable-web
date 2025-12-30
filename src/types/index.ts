@@ -13,3 +13,4 @@ export * from "./task";
 export * from "./permission";
 export * from "./monitoring";
 export * from "./sync";
+export * from "./notification";
