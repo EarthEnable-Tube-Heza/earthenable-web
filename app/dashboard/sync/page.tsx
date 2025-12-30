@@ -19,6 +19,8 @@ import {
   useUserSyncStats,
 } from "@/src/hooks/useSync";
 import { formatRoleLabel } from "@/src/types/user";
+import { UserSyncStateDetail } from "@/src/types/sync";
+import { UserSyncSessionsModal } from "@/src/components/UserSyncSessionsModal";
 
 // Tab types
 type TabType = "salesforce" | "user-sessions" | "user-states";
@@ -575,7 +577,22 @@ function UserSyncStatesTab() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [forceFullSyncFilter, setForceFullSyncFilter] = useState<string>("");
+  const [selectedUserForModal, setSelectedUserForModal] = useState<UserSyncStateDetail | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const limit = 20;
+
+  // Handle row click to open modal
+  const handleRowClick = (state: UserSyncStateDetail) => {
+    setSelectedUserForModal(state);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUserForModal(null);
+  };
 
   // Fetch states with max page size for client-side filtering (API max is 100)
   const { data: states, isLoading } = useUserSyncStates(
@@ -713,12 +730,18 @@ function UserSyncStatesTab() {
                 </thead>
                 <tbody>
                   {paginatedStates.map((state) => (
-                    <tr key={state.id} className="border-b hover:bg-gray-50">
+                    <tr
+                      key={state.id}
+                      className="border-b hover:bg-blue-50 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(state)}
+                      title="Click to view sync sessions"
+                    >
                       <td className="py-2 px-3">
                         <div className="flex flex-col">
                           <Link
                             href={`/dashboard/users/${state.user_id}`}
                             className="font-medium text-gray-900 hover:text-primary truncate max-w-[150px]"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             {state.user_name || "Unknown"}
                           </Link>
@@ -832,6 +855,13 @@ function UserSyncStatesTab() {
           <p className="text-center text-gray-500 py-8">No sync states found</p>
         )}
       </Card>
+
+      {/* User Sync Sessions Modal */}
+      <UserSyncSessionsModal
+        user={selectedUserForModal}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
