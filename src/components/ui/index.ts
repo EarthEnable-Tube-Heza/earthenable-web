@@ -47,6 +47,9 @@ export type { ToastProps, ToastType, ToastPosition } from "./Toast";
 export { ConfirmDialog } from "./ConfirmDialog";
 export type { ConfirmDialogProps } from "./ConfirmDialog";
 
+export { Tooltip } from "./Tooltip";
+export type { TooltipProps } from "./Tooltip";
+
 // Display components
 export { PersonCard } from "./PersonCard";
 export type { PersonCardProps } from "./PersonCard";
