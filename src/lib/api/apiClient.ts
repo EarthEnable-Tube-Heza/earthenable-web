@@ -90,6 +90,26 @@ import {
   SendNotificationResponse,
   NotificationFilters,
   PaginatedUserNotificationStatsResponse,
+  // SMS types
+  SmsSettings,
+  SmsSettingsCreate,
+  SmsSettingsUpdate,
+  SmsTemplate,
+  SmsTemplateCreate,
+  SmsTemplateUpdate,
+  SmsTemplateFilters,
+  SmsTemplatePreviewRequest,
+  SmsTemplatePreviewResponse,
+  SmsLog,
+  PaginatedSmsLogsResponse,
+  SmsLogsFilters,
+  SmsStats,
+  SendSmsRequest,
+  SendSmsResponse,
+  SendBulkSmsRequest,
+  SendBulkSmsResponse,
+  TestSmsRequest,
+  TestSmsResponse,
 } from "../../types";
 
 /**
@@ -1208,6 +1228,121 @@ class APIClient {
    */
   async sendNotification(request: SendNotificationRequest): Promise<SendNotificationResponse> {
     return this.post<SendNotificationResponse>("/admin/notifications/send", request);
+  }
+
+  // ============================================================================
+  // SMS MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get SMS settings for an entity
+   */
+  async getSmsSettings(entityId: string): Promise<SmsSettings> {
+    return this.get<SmsSettings>(`/admin/sms/settings/${entityId}`);
+  }
+
+  /**
+   * Create SMS settings for an entity
+   */
+  async createSmsSettings(data: SmsSettingsCreate): Promise<SmsSettings> {
+    return this.post<SmsSettings>("/admin/sms/settings", data);
+  }
+
+  /**
+   * Update SMS settings for an entity
+   */
+  async updateSmsSettings(entityId: string, data: SmsSettingsUpdate): Promise<SmsSettings> {
+    return this.put<SmsSettings>(`/admin/sms/settings/${entityId}`, data);
+  }
+
+  /**
+   * Test SMS settings by sending a test message
+   */
+  async testSmsSettings(entityId: string, data: TestSmsRequest): Promise<TestSmsResponse> {
+    return this.post<TestSmsResponse>(`/admin/sms/settings/${entityId}/test`, data);
+  }
+
+  /**
+   * List SMS templates with optional filters
+   */
+  async getSmsTemplates(filters?: SmsTemplateFilters): Promise<SmsTemplate[]> {
+    return this.get<SmsTemplate[]>("/admin/sms/templates", { params: filters });
+  }
+
+  /**
+   * Get a specific SMS template
+   */
+  async getSmsTemplate(templateId: string): Promise<SmsTemplate> {
+    return this.get<SmsTemplate>(`/admin/sms/templates/${templateId}`);
+  }
+
+  /**
+   * Create a new SMS template
+   */
+  async createSmsTemplate(data: SmsTemplateCreate): Promise<SmsTemplate> {
+    return this.post<SmsTemplate>("/admin/sms/templates", data);
+  }
+
+  /**
+   * Update an SMS template
+   */
+  async updateSmsTemplate(templateId: string, data: SmsTemplateUpdate): Promise<SmsTemplate> {
+    return this.put<SmsTemplate>(`/admin/sms/templates/${templateId}`, data);
+  }
+
+  /**
+   * Delete an SMS template
+   */
+  async deleteSmsTemplate(templateId: string): Promise<void> {
+    return this.delete<void>(`/admin/sms/templates/${templateId}`);
+  }
+
+  /**
+   * Preview an SMS template with sample variables
+   */
+  async previewSmsTemplate(
+    templateId: string,
+    data: SmsTemplatePreviewRequest
+  ): Promise<SmsTemplatePreviewResponse> {
+    return this.post<SmsTemplatePreviewResponse>(
+      `/admin/sms/templates/${templateId}/preview`,
+      data
+    );
+  }
+
+  /**
+   * Get SMS logs with pagination and filters
+   */
+  async getSmsLogs(filters?: SmsLogsFilters): Promise<PaginatedSmsLogsResponse> {
+    return this.get<PaginatedSmsLogsResponse>("/admin/sms/logs", { params: filters });
+  }
+
+  /**
+   * Get a specific SMS log entry
+   */
+  async getSmsLog(logId: string): Promise<SmsLog> {
+    return this.get<SmsLog>(`/admin/sms/logs/${logId}`);
+  }
+
+  /**
+   * Get SMS statistics for an entity
+   */
+  async getSmsStats(entityId: string, days: number = 30): Promise<SmsStats> {
+    return this.get<SmsStats>("/admin/sms/stats", { params: { entity_id: entityId, days } });
+  }
+
+  /**
+   * Send an SMS (templated or raw)
+   */
+  async sendSms(data: SendSmsRequest): Promise<SendSmsResponse> {
+    return this.post<SendSmsResponse>("/admin/sms/send", data);
+  }
+
+  /**
+   * Send bulk SMS using a template
+   */
+  async sendBulkSms(data: SendBulkSmsRequest): Promise<SendBulkSmsResponse> {
+    return this.post<SendBulkSmsResponse>("/admin/sms/send-bulk", data);
   }
 }
 

@@ -71,6 +71,12 @@ const navItems: NavItem[] = [
     adminOnly: true,
   },
   {
+    href: "/dashboard/sms",
+    label: "SMS",
+    icon: "📱",
+    adminOnly: true,
+  },
+  {
     href: "/dashboard/components",
     label: "Components",
     icon: "🎨",
