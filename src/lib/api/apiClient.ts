@@ -1237,8 +1237,8 @@ class APIClient {
   /**
    * Get SMS settings for an entity
    */
-  async getSmsSettings(entityId: string): Promise<SmsSettings> {
-    return this.get<SmsSettings>(`/admin/sms/settings/${entityId}`);
+  async getSmsSettings(entityId: string): Promise<SmsSettings | null> {
+    return this.get<SmsSettings | null>(`/admin/sms/settings/${entityId}`);
   }
 
   /**
