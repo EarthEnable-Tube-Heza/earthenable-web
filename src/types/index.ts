@@ -14,3 +14,4 @@ export * from "./permission";
 export * from "./monitoring";
 export * from "./sync";
 export * from "./notification";
+export * from "./sms";
