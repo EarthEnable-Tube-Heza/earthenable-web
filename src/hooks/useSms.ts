@@ -17,6 +17,8 @@ import {
   SendSmsRequest,
   SendBulkSmsRequest,
   TestSmsRequest,
+  EvaluationSmsConfigCreate,
+  EvaluationSmsConfigUpdate,
 } from "@/src/types";
 
 // ==================== Query Keys ====================
@@ -30,6 +32,13 @@ export const smsQueryKeys = {
   log: (id: string) => [...smsQueryKeys.all, "log", id] as const,
   stats: (entityId: string, days?: number) =>
     [...smsQueryKeys.all, "stats", entityId, days] as const,
+  evaluationConfigs: (filters?: {
+    entity_id?: string;
+    task_subject_id?: string;
+    is_enabled?: boolean;
+  }) => [...smsQueryKeys.all, "evaluation-configs", filters] as const,
+  evaluationConfig: (id: string) => [...smsQueryKeys.all, "evaluation-config", id] as const,
+  taskSubjectsForSms: () => [...smsQueryKeys.all, "task-subjects"] as const,
 };
 
 // ==================== SMS Settings Hooks ====================
@@ -252,5 +261,92 @@ export function useSendBulkSms() {
         queryKey: smsQueryKeys.settings(variables.entity_id),
       });
     },
+  });
+}
+
+// ==================== Evaluation SMS Config Hooks ====================
+
+/**
+ * Hook to get evaluation SMS configs with optional filters
+ */
+export function useEvaluationSmsConfigs(filters?: {
+  entity_id?: string;
+  task_subject_id?: string;
+  is_enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: smsQueryKeys.evaluationConfigs(filters),
+    queryFn: () => apiClient.getEvaluationSmsConfigs(filters),
+    enabled: !!filters?.entity_id,
+  });
+}
+
+/**
+ * Hook to get a specific evaluation SMS config
+ */
+export function useEvaluationSmsConfig(configId: string | undefined) {
+  return useQuery({
+    queryKey: smsQueryKeys.evaluationConfig(configId || ""),
+    queryFn: () => apiClient.getEvaluationSmsConfig(configId!),
+    enabled: !!configId,
+  });
+}
+
+/**
+ * Hook to create evaluation SMS config
+ */
+export function useCreateEvaluationSmsConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: EvaluationSmsConfigCreate) => apiClient.createEvaluationSmsConfig(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: smsQueryKeys.evaluationConfigs({ entity_id: variables.entity_id }),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to update evaluation SMS config
+ */
+export function useUpdateEvaluationSmsConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ configId, data }: { configId: string; data: EvaluationSmsConfigUpdate }) =>
+      apiClient.updateEvaluationSmsConfig(configId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: smsQueryKeys.evaluationConfigs(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to delete evaluation SMS config
+ */
+export function useDeleteEvaluationSmsConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (configId: string) => apiClient.deleteEvaluationSmsConfig(configId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: smsQueryKeys.evaluationConfigs(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to get task subjects for SMS config dropdown
+ */
+export function useTaskSubjectsForSms() {
+  return useQuery({
+    queryKey: smsQueryKeys.taskSubjectsForSms(),
+    queryFn: () => apiClient.getTaskSubjectsForSms(),
   });
 }

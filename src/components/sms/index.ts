@@ -8,3 +8,4 @@ export { SmsSettingsModal } from "./SmsSettingsModal";
 export { SmsTemplateModal } from "./SmsTemplateModal";
 export { SmsLogDetailModal } from "./SmsLogDetailModal";
 export { SendSmsModal } from "./SendSmsModal";
+export { EvaluationConfigModal } from "./EvaluationConfigModal";

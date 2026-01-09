@@ -7,7 +7,13 @@
  */
 
 import { useState } from "react";
-import { useSmsSettings, useSmsTemplates, useSmsLogs, useSmsStats } from "@/src/hooks/useSms";
+import {
+  useSmsSettings,
+  useSmsTemplates,
+  useSmsLogs,
+  useSmsStats,
+  useEvaluationSmsConfigs,
+} from "@/src/hooks/useSms";
 import { useEntities } from "@/src/hooks/useExpenses";
 import { Badge } from "@/src/components/ui/Badge";
 import { Button } from "@/src/components/ui/Button";
@@ -20,14 +26,16 @@ import {
   getSmsStatusColors,
   getLanguageLabel,
   getCategoryLabel,
+  getRecipientTypeLabel,
 } from "@/src/types/sms";
 import { cn } from "@/src/lib/theme";
 import { SmsSettingsModal } from "@/src/components/sms/SmsSettingsModal";
 import { SmsTemplateModal } from "@/src/components/sms/SmsTemplateModal";
 import { SmsLogDetailModal } from "@/src/components/sms/SmsLogDetailModal";
 import { SendSmsModal } from "@/src/components/sms/SendSmsModal";
+import { EvaluationConfigModal } from "@/src/components/sms/EvaluationConfigModal";
 
-type TabType = "messages" | "templates" | "logs" | "settings";
+type TabType = "messages" | "templates" | "automations" | "logs" | "settings";
 
 export default function SmsManagementPage() {
   const [activeTab, setActiveTab] = useState<TabType>("messages");
@@ -42,6 +50,8 @@ export default function SmsManagementPage() {
   const [isLogDetailOpen, setIsLogDetailOpen] = useState(false);
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [isSendSmsOpen, setIsSendSmsOpen] = useState(false);
+  const [isEvalConfigModalOpen, setIsEvalConfigModalOpen] = useState(false);
+  const [selectedEvalConfigId, setSelectedEvalConfigId] = useState<string | null>(null);
 
   // Fetch entities
   const { data: entitiesData } = useEntities();
@@ -63,6 +73,9 @@ export default function SmsManagementPage() {
     skip: page * limit,
     limit,
   });
+  const { data: evalConfigs, isLoading: isLoadingEvalConfigs } = useEvaluationSmsConfigs({
+    entity_id: selectedEntityId,
+  });
 
   const logs = logsData?.items || [];
   const totalLogs = logsData?.total || 0;
@@ -81,6 +94,16 @@ export default function SmsManagementPage() {
   const handleViewLog = (logId: string) => {
     setSelectedLogId(logId);
     setIsLogDetailOpen(true);
+  };
+
+  const handleEditEvalConfig = (configId: string) => {
+    setSelectedEvalConfigId(configId);
+    setIsEvalConfigModalOpen(true);
+  };
+
+  const handleCreateEvalConfig = () => {
+    setSelectedEvalConfigId(null);
+    setIsEvalConfigModalOpen(true);
   };
 
   return (
@@ -228,23 +251,26 @@ export default function SmsManagementPage() {
       {/* Tabs */}
       <div className="border-b border-border-light">
         <nav className="flex gap-4">
-          {(["messages", "templates", "logs", "settings"] as TabType[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "pb-2 px-1 text-sm font-medium border-b-2 transition-colors",
-                activeTab === tab
-                  ? "border-primary text-primary"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              )}
-            >
-              {tab === "messages" && "Messages"}
-              {tab === "templates" && "Templates"}
-              {tab === "logs" && "Logs"}
-              {tab === "settings" && "Settings"}
-            </button>
-          ))}
+          {(["messages", "templates", "automations", "logs", "settings"] as TabType[]).map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "pb-2 px-1 text-sm font-medium border-b-2 transition-colors",
+                  activeTab === tab
+                    ? "border-primary text-primary"
+                    : "border-transparent text-text-secondary hover:text-text-primary"
+                )}
+              >
+                {tab === "messages" && "Messages"}
+                {tab === "templates" && "Templates"}
+                {tab === "automations" && "Automations"}
+                {tab === "logs" && "Logs"}
+                {tab === "settings" && "Settings"}
+              </button>
+            )
+          )}
         </nav>
       </div>
 
@@ -476,6 +502,133 @@ export default function SmsManagementPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditTemplate(template.id)}
+                        >
+                          Edit
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "automations" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-medium text-text-primary">SMS Automations</h2>
+              <p className="text-sm text-text-secondary mt-1">
+                Configure automatic SMS notifications for evaluation task completions
+              </p>
+            </div>
+            <Button variant="primary" size="sm" onClick={handleCreateEvalConfig}>
+              Create Automation
+            </Button>
+          </div>
+
+          {isLoadingEvalConfigs ? (
+            <div className="flex items-center justify-center py-12">
+              <Spinner size="lg" />
+            </div>
+          ) : !evalConfigs || evalConfigs.length === 0 ? (
+            <Card padding="lg" className="text-center">
+              <p className="text-text-secondary">No automations configured for this entity.</p>
+              <p className="text-sm text-text-secondary mt-1">
+                Create an automation to send SMS when evaluation tasks are completed.
+              </p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleCreateEvalConfig}>
+                Create First Automation
+              </Button>
+            </Card>
+          ) : (
+            <div className="bg-white rounded-lg border border-border-light overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-background-light border-b border-border-light">
+                  <tr>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">
+                      Task Subject
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">
+                      Recipient
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">
+                      Pass Template
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">
+                      Fail Template
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-text-secondary">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {evalConfigs.map((config) => (
+                    <tr
+                      key={config.id}
+                      className="border-b border-border-light hover:bg-background-light"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-text-primary">
+                          {config.task_subject?.name || "Unknown Subject"}
+                        </div>
+                        {config.qa_subject_mapping && (
+                          <div className="text-xs text-text-secondary">
+                            QA: {config.qa_subject_mapping}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="default" size="sm">
+                          {getRecipientTypeLabel(config.recipient_type)}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        {config.pass_template ? (
+                          <div>
+                            <code className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                              {config.pass_template.code}
+                            </code>
+                            <div className="text-xs text-text-secondary mt-1">
+                              {getLanguageLabel(config.pass_template.language)}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-text-secondary text-xs">Default</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {config.fail_template ? (
+                          <div>
+                            <code className="text-xs bg-red-50 text-red-700 px-2 py-1 rounded">
+                              {config.fail_template.code}
+                            </code>
+                            <div className="text-xs text-text-secondary mt-1">
+                              {getLanguageLabel(config.fail_template.language)}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-text-secondary text-xs">Default</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {config.is_enabled ? (
+                          <Badge variant="success" size="sm">
+                            Enabled
+                          </Badge>
+                        ) : (
+                          <Badge variant="default" size="sm">
+                            Disabled
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditEvalConfig(config.id)}
                         >
                           Edit
                         </Button>
@@ -796,6 +949,16 @@ export default function SmsManagementPage() {
         entityId={selectedEntityId}
         isOpen={isSendSmsOpen}
         onClose={() => setIsSendSmsOpen(false)}
+      />
+
+      <EvaluationConfigModal
+        entityId={selectedEntityId}
+        configId={selectedEvalConfigId}
+        isOpen={isEvalConfigModalOpen}
+        onClose={() => {
+          setIsEvalConfigModalOpen(false);
+          setSelectedEvalConfigId(null);
+        }}
       />
     </div>
   );
