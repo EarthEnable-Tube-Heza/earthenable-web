@@ -110,6 +110,11 @@ import {
   SendBulkSmsResponse,
   TestSmsRequest,
   TestSmsResponse,
+  // Evaluation SMS Config types
+  EvaluationSmsConfig,
+  EvaluationSmsConfigCreate,
+  EvaluationSmsConfigUpdate,
+  TaskSubjectBrief,
 } from "../../types";
 
 /**
@@ -1343,6 +1348,47 @@ class APIClient {
    */
   async sendBulkSms(data: SendBulkSmsRequest): Promise<SendBulkSmsResponse> {
     return this.post<SendBulkSmsResponse>("/admin/sms/send-bulk", data);
+  }
+
+  // ==================== Evaluation SMS Config Methods ====================
+
+  async getEvaluationSmsConfigs(filters?: {
+    entity_id?: string;
+    task_subject_id?: string;
+    is_enabled?: boolean;
+  }): Promise<EvaluationSmsConfig[]> {
+    const params = new URLSearchParams();
+    if (filters?.entity_id) params.append("entity_id", filters.entity_id);
+    if (filters?.task_subject_id) params.append("task_subject_id", filters.task_subject_id);
+    if (filters?.is_enabled !== undefined) params.append("is_enabled", String(filters.is_enabled));
+
+    const queryString = params.toString();
+    return this.get<EvaluationSmsConfig[]>(
+      `/admin/sms/evaluation-configs${queryString ? `?${queryString}` : ""}`
+    );
+  }
+
+  async getEvaluationSmsConfig(configId: string): Promise<EvaluationSmsConfig> {
+    return this.get<EvaluationSmsConfig>(`/admin/sms/evaluation-configs/${configId}`);
+  }
+
+  async createEvaluationSmsConfig(data: EvaluationSmsConfigCreate): Promise<EvaluationSmsConfig> {
+    return this.post<EvaluationSmsConfig>("/admin/sms/evaluation-configs", data);
+  }
+
+  async updateEvaluationSmsConfig(
+    configId: string,
+    data: EvaluationSmsConfigUpdate
+  ): Promise<EvaluationSmsConfig> {
+    return this.put<EvaluationSmsConfig>(`/admin/sms/evaluation-configs/${configId}`, data);
+  }
+
+  async deleteEvaluationSmsConfig(configId: string): Promise<void> {
+    return this.delete<void>(`/admin/sms/evaluation-configs/${configId}`);
+  }
+
+  async getTaskSubjectsForSms(): Promise<TaskSubjectBrief[]> {
+    return this.get<TaskSubjectBrief[]>("/admin/sms/task-subjects");
   }
 }
 

@@ -319,3 +319,68 @@ export function getCategoryLabel(category: string): string {
   };
   return labels[category] || category;
 }
+
+// ==================== Evaluation SMS Config ====================
+
+export interface TaskSubjectBrief {
+  id: string;
+  name: string;
+}
+
+export interface SmsTemplateBrief {
+  id: string;
+  code: string;
+  name: string;
+  language: string;
+}
+
+export interface EvaluationSmsConfig {
+  id: string;
+  entity_id: string;
+  task_subject_id: string;
+  is_enabled: boolean;
+  qa_subject_mapping?: string;
+  recipient_type: string;
+  pass_template_id?: string;
+  fail_template_id?: string;
+  task_subject?: TaskSubjectBrief;
+  pass_template?: SmsTemplateBrief;
+  fail_template?: SmsTemplateBrief;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EvaluationSmsConfigCreate {
+  entity_id: string;
+  task_subject_id: string;
+  is_enabled?: boolean;
+  qa_subject_mapping?: string;
+  recipient_type?: string;
+  pass_template_id?: string;
+  fail_template_id?: string;
+}
+
+export interface EvaluationSmsConfigUpdate {
+  is_enabled?: boolean;
+  qa_subject_mapping?: string;
+  recipient_type?: string;
+  pass_template_id?: string;
+  fail_template_id?: string;
+}
+
+export const RECIPIENT_TYPES = {
+  MASON: "mason",
+  CONSTRUCTION_LEAD: "construction_lead",
+  DISTRICT_MANAGER: "district_manager",
+  CUSTOMER: "customer",
+} as const;
+
+export function getRecipientTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    mason: "Mason",
+    construction_lead: "Construction Lead",
+    district_manager: "District Manager",
+    customer: "Customer",
+  };
+  return labels[type] || type;
+}
