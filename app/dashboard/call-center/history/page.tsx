@@ -8,6 +8,7 @@
 
 import { useState, useCallback } from "react";
 import { useCallLogs } from "@/src/hooks/useCallCenter";
+import { CallCenterHeader } from "@/src/components/call-center";
 import { CallHistoryTable } from "@/src/components/call-center/CallHistoryTable";
 import { CallDetailModal } from "@/src/components/call-center/CallDetailModal";
 import { CallLog, CallDirection, CallStatus } from "@/src/types/voice";
@@ -64,6 +65,9 @@ export default function CallHistoryPage() {
 
   return (
     <div className="space-y-6">
+      {/* Shared Header with Entity Selector */}
+      <CallCenterHeader description="View and search call logs and recordings" />
+
       {/* Filters */}
       <Card variant="bordered" padding="md" className="mb-6">
         <div className="flex flex-wrap gap-4 items-end">
@@ -105,40 +109,41 @@ export default function CallHistoryPage() {
               <option value="">All</option>
               <option value={CallStatus.COMPLETED}>Completed</option>
               <option value={CallStatus.MISSED}>Missed</option>
+              <option value={CallStatus.BUSY}>Busy</option>
+              <option value={CallStatus.NO_ANSWER}>No Answer</option>
               <option value={CallStatus.FAILED}>Failed</option>
-              <option value={CallStatus.IN_PROGRESS}>In Progress</option>
-              <option value={CallStatus.VOICEMAIL}>Voicemail</option>
             </Select>
           </div>
-          <div className="flex gap-2">
-            <Button variant="primary" onClick={handleSearch}>
-              Search
-            </Button>
-            <Button variant="outline" onClick={handleClearFilters}>
+          <Button variant="primary" size="sm" onClick={handleSearch}>
+            Search
+          </Button>
+          {(phoneSearch || directionFilter || statusFilter) && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
               Clear
             </Button>
-          </div>
+          )}
         </div>
       </Card>
 
       {/* Call History Table */}
-      <Card variant="bordered" padding="none">
-        <CallHistoryTable
-          calls={callLogsResponse?.items || []}
-          isLoading={isLoading}
-          totalCount={callLogsResponse?.total || 0}
-          currentPage={currentPage}
-          pageSize={PAGE_SIZE}
-          onPageChange={handlePageChange}
-          onSelectCall={handleSelectCall}
-        />
-      </Card>
+      <CallHistoryTable
+        calls={callLogsResponse?.items || []}
+        isLoading={isLoading}
+        totalCount={callLogsResponse?.total || 0}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onSelectCall={handleSelectCall}
+      />
 
       {/* Call Detail Modal */}
       <CallDetailModal
         call={selectedCall}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedCall(null);
+        }}
       />
     </div>
   );

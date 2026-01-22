@@ -26,6 +26,8 @@ export enum CallStatus {
   COMPLETED = "completed",
   FAILED = "failed",
   MISSED = "missed",
+  BUSY = "busy",
+  NO_ANSWER = "no_answer",
   VOICEMAIL = "voicemail",
 }
 
@@ -491,6 +493,16 @@ export const CALL_STATUS_CONFIG: Record<
     label: "Missed",
     color: "text-orange-700",
     bgColor: "bg-orange-100",
+  },
+  [CallStatus.BUSY]: {
+    label: "Busy",
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-100",
+  },
+  [CallStatus.NO_ANSWER]: {
+    label: "No Answer",
+    color: "text-amber-700",
+    bgColor: "bg-amber-100",
   },
   [CallStatus.VOICEMAIL]: {
     label: "Voicemail",

@@ -13,7 +13,7 @@ import {
   useUpdateCallback,
   useCancelCallback,
 } from "@/src/hooks/useCallCenter";
-import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
+import { CallCenterHeader } from "@/src/components/call-center";
 import { CallbacksList } from "@/src/components/call-center/CallbacksList";
 import { ScheduleCallbackModal } from "@/src/components/call-center/ScheduleCallbackModal";
 import {
@@ -58,34 +58,23 @@ export default function CallbacksPage() {
   const updateMutation = useUpdateCallback();
   const cancelMutation = useCancelCallback();
 
-  // Call center context for dialing
-  const { makeCall, canMakeCall } = useCallCenterContext();
-
-  // Open modal for new callback
+  // Handle new callback
   const handleNewCallback = useCallback(() => {
     setEditingCallback(null);
     setIsModalOpen(true);
   }, []);
 
-  // Open modal for editing
+  // Handle edit
   const handleEdit = useCallback((callback: CallCallback) => {
     setEditingCallback(callback);
     setIsModalOpen(true);
   }, []);
 
-  // Handle dial callback
-  const handleDial = useCallback(
-    async (callback: CallCallback) => {
-      if (canMakeCall) {
-        await makeCall(callback.phone_number, callback.contact_name);
-      }
-    },
-    [canMakeCall, makeCall]
-  );
-
-  // Handle complete callback (mark as complete without calling)
-  const handleComplete = useCallback(
+  // Handle call now (mark as completed after calling)
+  const handleCallNow = useCallback(
     (callback: CallCallback) => {
+      // In a real implementation, this would initiate a call
+      // For now, we'll mark it as completed
       updateMutation.mutate(
         { callbackId: callback.id, data: { status: CallbackStatus.COMPLETED } },
         { onSuccess: () => refetch() }
@@ -138,18 +127,11 @@ export default function CallbacksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex justify-end">
-        <Button variant="primary" onClick={handleNewCallback}>
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Schedule Callback
-        </Button>
-      </div>
+      {/* Shared Header with Entity Selector */}
+      <CallCenterHeader description="Manage scheduled callbacks and follow-ups" />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Stats Cards with Action */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="bordered" padding="md">
           <div className="flex items-center justify-between">
             <div>
@@ -198,81 +180,91 @@ export default function CallbacksPage() {
             </div>
           </div>
         </Card>
+        {/* Schedule Callback Action Card */}
+        <Card
+          variant="bordered"
+          padding="md"
+          className="flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+          onClick={handleNewCallback}
+        >
+          <div className="flex items-center gap-2 text-primary">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span className="font-medium">Schedule Callback</span>
+          </div>
+        </Card>
       </div>
 
       {/* Filters */}
-      <Card variant="bordered" padding="md" className="mb-6">
+      <Card variant="bordered" padding="md">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="w-40">
             <label className="block text-sm font-medium text-text-secondary mb-1">Status</label>
             <Select
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value as CallbackStatus | "");
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setStatusFilter(e.target.value as CallbackStatus | "")}
             >
               <option value="">All</option>
               <option value={CallbackStatus.PENDING}>Pending</option>
               <option value={CallbackStatus.IN_PROGRESS}>In Progress</option>
               <option value={CallbackStatus.COMPLETED}>Completed</option>
               <option value={CallbackStatus.CANCELLED}>Cancelled</option>
-              <option value={CallbackStatus.FAILED}>Failed</option>
             </Select>
           </div>
           <div className="w-40">
             <label className="block text-sm font-medium text-text-secondary mb-1">Priority</label>
             <Select
               value={priorityFilter}
-              onChange={(e) => {
-                setPriorityFilter(e.target.value as CallbackPriority | "");
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setPriorityFilter(e.target.value as CallbackPriority | "")}
             >
               <option value="">All</option>
-              <option value={CallbackPriority.URGENT}>Urgent</option>
-              <option value={CallbackPriority.HIGH}>High</option>
-              <option value={CallbackPriority.NORMAL}>Normal</option>
               <option value={CallbackPriority.LOW}>Low</option>
+              <option value={CallbackPriority.NORMAL}>Normal</option>
+              <option value={CallbackPriority.HIGH}>High</option>
+              <option value={CallbackPriority.URGENT}>Urgent</option>
             </Select>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setStatusFilter("");
-              setPriorityFilter("");
-              setCurrentPage(1);
-            }}
-          >
-            Clear Filters
-          </Button>
+          {(statusFilter || priorityFilter) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStatusFilter("");
+                setPriorityFilter("");
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </Card>
 
       {/* Callbacks List */}
-      <Card variant="bordered" padding="none">
-        <CallbacksList
-          callbacks={callbacksResponse?.items || []}
-          isLoading={isLoading}
-          totalCount={callbacksResponse?.total || 0}
-          currentPage={currentPage}
-          pageSize={PAGE_SIZE}
-          onPageChange={handlePageChange}
-          onDial={canMakeCall ? handleDial : undefined}
-          onEdit={handleEdit}
-          onComplete={handleComplete}
-          onCancel={handleCancel}
-        />
-      </Card>
+      <CallbacksList
+        callbacks={callbacksResponse?.items || []}
+        isLoading={isLoading}
+        totalCount={callbacksResponse?.total || 0}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onEdit={handleEdit}
+        onDial={handleCallNow}
+        onCancel={handleCancel}
+      />
 
-      {/* Schedule Callback Modal */}
+      {/* Schedule/Edit Modal */}
       <ScheduleCallbackModal
-        callback={editingCallback}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
+        callback={editingCallback}
         isSubmitting={createMutation.isPending || updateMutation.isPending}
-        entityId={entityId}
       />
     </div>
   );

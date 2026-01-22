@@ -15,7 +15,7 @@ import {
   voiceQueryKeys,
 } from "@/src/hooks/useCallCenter";
 import { apiClient } from "@/src/lib/api";
-import { VoiceSettingsForm } from "@/src/components/call-center/VoiceSettingsForm";
+import { VoiceSettingsForm, CallCenterHeader } from "@/src/components/call-center";
 import { VoiceSettingsCreate, VoiceSettingsUpdate } from "@/src/types/voice";
 import { useAuth } from "@/src/lib/auth";
 import { Alert, Card, Badge, Spinner } from "@/src/components/ui";
@@ -304,7 +304,10 @@ export default function CallCenterSettingsPage() {
     checks.webrtcConfig.status === "success";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
+      {/* Shared Header with Entity Selector */}
+      <CallCenterHeader description="Configure voice service and Africa's Talking integration" />
+
       {/* Debug Status Panel */}
       <Card variant="bordered" padding="md">
         <div className="flex items-center justify-between mb-4">
