@@ -8,8 +8,7 @@
 
 import { useAuth } from "@/src/lib/auth";
 import { formatRoleLabel } from "@/src/types/user";
-import { Card } from "@/src/components/ui/Card";
-import { Badge } from "@/src/components/ui/Badge";
+import { Card, Badge, PageHeader } from "@/src/components/ui";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -44,11 +43,12 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">My Profile</h1>
-        <p className="text-text-secondary mt-2">View and manage your account information</p>
-      </div>
+      {/* Page Header */}
+      <PageHeader
+        title="My Profile"
+        description="View and manage your account information"
+        pathLabels={{ profile: "Profile" }}
+      />
 
       {/* Profile Overview Card */}
       <Card variant="elevated" padding="lg">

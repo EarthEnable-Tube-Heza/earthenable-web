@@ -15,12 +15,7 @@ import {
   useEvaluationSmsConfigs,
 } from "@/src/hooks/useSms";
 import { useEntities } from "@/src/hooks/useExpenses";
-import { Badge } from "@/src/components/ui/Badge";
-import { Button } from "@/src/components/ui/Button";
-import { Card } from "@/src/components/ui/Card";
-import { Select } from "@/src/components/ui/Select";
-import { Spinner } from "@/src/components/ui/Spinner";
-import { Tooltip } from "@/src/components/ui/Tooltip";
+import { Badge, Button, Card, Select, Spinner, Tooltip, PageHeader } from "@/src/components/ui";
 import {
   getSmsStatusLabel,
   getSmsStatusColors,
@@ -108,50 +103,49 @@ export default function SmsManagementPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-text-primary">SMS Management</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Manage SMS settings, templates, and view delivery logs
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Select
-            value={selectedEntityId}
-            onChange={(e) => {
-              setSelectedEntityId(e.target.value);
-              setPage(0);
-            }}
-            className="w-48"
-          >
-            <option value="">Select Entity</option>
-            {entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>
-                {entity.name} ({entity.code})
-              </option>
-            ))}
-          </Select>
-          <Tooltip
-            content={
-              !selectedEntityId
-                ? "Please select an entity first"
-                : !smsSettings?.is_configured
-                  ? "SMS is not configured. Go to Settings tab to configure API credentials."
-                  : null
-            }
-            position="bottom"
-          >
-            <Button
-              variant="primary"
-              onClick={() => setIsSendSmsOpen(true)}
-              disabled={!selectedEntityId || !smsSettings?.is_configured}
+      {/* Page Header */}
+      <PageHeader
+        title="SMS Management"
+        description="Manage SMS settings, templates, and view delivery logs"
+        pathLabels={{ sms: "SMS" }}
+        actions={
+          <div className="flex items-center gap-3">
+            <Select
+              value={selectedEntityId}
+              onChange={(e) => {
+                setSelectedEntityId(e.target.value);
+                setPage(0);
+              }}
+              className="w-48"
             >
-              Send SMS
-            </Button>
-          </Tooltip>
-        </div>
-      </div>
+              <option value="">Select Entity</option>
+              {entities.map((entity) => (
+                <option key={entity.id} value={entity.id}>
+                  {entity.name} ({entity.code})
+                </option>
+              ))}
+            </Select>
+            <Tooltip
+              content={
+                !selectedEntityId
+                  ? "Please select an entity first"
+                  : !smsSettings?.is_configured
+                    ? "SMS is not configured. Go to Settings tab to configure API credentials."
+                    : null
+              }
+              position="bottom"
+            >
+              <Button
+                variant="primary"
+                onClick={() => setIsSendSmsOpen(true)}
+                disabled={!selectedEntityId || !smsSettings?.is_configured}
+              >
+                Send SMS
+              </Button>
+            </Tooltip>
+          </div>
+        }
+      />
 
       {/* Stats Cards */}
       {selectedEntityId && smsStats && (

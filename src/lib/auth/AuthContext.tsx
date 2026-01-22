@@ -132,6 +132,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           document.cookie = `earthenable_access_token=${accessToken}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
         }
 
+        // Auto-select entity for single-entity users if not already selected
+        let finalSelectedEntityId = selectedEntityId;
+        if (
+          !finalSelectedEntityId &&
+          entityInfo &&
+          !entityInfo.is_multi_entity_user &&
+          entityInfo.accessible_entities?.length === 1
+        ) {
+          finalSelectedEntityId = entityInfo.accessible_entities[0].id;
+          localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, finalSelectedEntityId);
+        }
+
         setState({
           user,
           accessToken,
@@ -141,7 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isLoading: false,
           error: null,
           entityInfo,
-          selectedEntityId,
+          selectedEntityId: finalSelectedEntityId,
         });
 
         // Verify token is still valid by fetching current user

@@ -10,7 +10,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, Badge, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
+import {
+  Card,
+  Badge,
+  Spinner,
+  Button,
+  LabeledSelect,
+  MultiSelect,
+  PageHeader,
+} from "@/src/components/ui";
 import {
   useSalesforceSyncHistory,
   useSalesforceSyncStats,
@@ -872,26 +880,13 @@ export default function SyncPage() {
 
   return (
     <div className="container mx-auto max-w-7xl">
-      {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-gray-500">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">
-              Dashboard
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li className="text-gray-900 font-medium">Sync</li>
-        </ol>
-      </nav>
-
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-heading font-bold text-gray-900">Sync Dashboard</h1>
-        <p className="text-gray-500 mt-1">
-          Monitor and investigate synchronization between Salesforce, API, and mobile app users
-        </p>
-      </div>
+      <PageHeader
+        title="Sync Dashboard"
+        description="Monitor and investigate synchronization between Salesforce, API, and mobile app users"
+        pathLabels={{ sync: "Sync" }}
+        className="mb-6"
+      />
 
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">

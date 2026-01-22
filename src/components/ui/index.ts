@@ -53,3 +53,16 @@ export type { TooltipProps } from "./Tooltip";
 // Display components
 export { PersonCard } from "./PersonCard";
 export type { PersonCardProps } from "./PersonCard";
+
+// Navigation & Layout components
+export { Breadcrumbs } from "./Breadcrumbs";
+export type { BreadcrumbsProps, BreadcrumbItem } from "./Breadcrumbs";
+
+export { PageHeader } from "./PageHeader";
+export type { PageHeaderProps } from "./PageHeader";
+
+export { TabNavigation } from "./TabNavigation";
+export type { TabNavigationProps, TabItem } from "./TabNavigation";
+
+export { SectionLayout } from "./SectionLayout";
+export type { SectionLayoutProps } from "./SectionLayout";

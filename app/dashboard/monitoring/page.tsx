@@ -8,7 +8,7 @@
  */
 
 import { useRequireAdmin } from "@/src/lib/auth";
-import { Button } from "@/src/components/ui";
+import { Button, PageHeader } from "@/src/components/ui";
 import { useRefreshMonitoring } from "@/src/hooks/useMonitoring";
 import {
   ServerHealthCard,
@@ -36,18 +36,17 @@ export default function MonitoringPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-text-primary">Server Monitoring</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Real-time server health, sync status, and resource utilization
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={refreshAll}>
-          Refresh All
-        </Button>
-      </div>
+      {/* Page Header */}
+      <PageHeader
+        title="Server Monitoring"
+        description="Real-time server health, sync status, and resource utilization"
+        pathLabels={{ monitoring: "Monitoring" }}
+        actions={
+          <Button variant="outline" size="sm" onClick={refreshAll}>
+            Refresh All
+          </Button>
+        }
+      />
 
       {/* Top Row: Health, Sync, Resources */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
