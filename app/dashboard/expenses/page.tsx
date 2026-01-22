@@ -13,7 +13,7 @@
  */
 
 import { useState } from "react";
-import { Card } from "@/src/components/ui";
+import { Card, PageHeader } from "@/src/components/ui";
 import { ExpenseStats } from "@/src/components/expenses/ExpenseStats";
 import { MyExpensesTab } from "@/src/components/expenses/tabs/MyExpensesTab";
 import { NewRequestTab } from "@/src/components/expenses/tabs/NewRequestTab";
@@ -122,10 +122,11 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary font-heading">Expense Management</h1>
-        <p className="text-text-secondary mt-1">Manage expenses, budgets, and payment requests</p>
-      </div>
+      <PageHeader
+        title="Expense Management"
+        description="Manage expenses, budgets, and payment requests"
+        pathLabels={{ expenses: "Expenses" }}
+      />
 
       {/* Stats Overview */}
       <ExpenseStats />

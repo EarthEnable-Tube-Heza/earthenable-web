@@ -9,8 +9,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useTokenExpiry } from "@/src/lib/auth";
-import { Card } from "@/src/components/ui/Card";
-import { Button } from "@/src/components/ui/Button";
+import { Card, Button, PageHeader } from "@/src/components/ui";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -56,13 +55,12 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">Settings</h1>
-        <p className="text-text-secondary mt-2">
-          Manage your dashboard preferences and account settings
-        </p>
-      </div>
+      {/* Page Header */}
+      <PageHeader
+        title="Settings"
+        description="Manage your dashboard preferences and account settings"
+        pathLabels={{ settings: "Settings" }}
+      />
 
       {/* Session Management */}
       <Card header="Session Management" divided padding="lg">

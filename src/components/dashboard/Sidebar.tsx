@@ -77,6 +77,11 @@ const navItems: NavItem[] = [
     adminOnly: true,
   },
   {
+    href: "/dashboard/call-center",
+    label: "Call Center",
+    icon: "📞",
+  },
+  {
     href: "/dashboard/components",
     label: "Components",
     icon: "🎨",

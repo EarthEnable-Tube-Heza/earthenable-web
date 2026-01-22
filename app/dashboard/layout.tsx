@@ -12,6 +12,8 @@ import { SidebarProvider } from "@/src/contexts/SidebarContext";
 import { Sidebar } from "@/src/components/dashboard/Sidebar";
 import { Header } from "@/src/components/dashboard/Header";
 import { EntitySelectionModal } from "@/src/components/dashboard/EntitySelectionModal";
+import { CallCenterProvider } from "@/src/hooks/useAfricasTalkingClient";
+import { FloatingSoftphone } from "@/src/components/call-center";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Protect dashboard routes - redirect to sign-in if not authenticated
@@ -36,22 +38,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-background-primary">
-        {/* Sidebar */}
-        <Sidebar />
+      <CallCenterProvider options={{ autoInitialize: false }}>
+        <div className="flex min-h-screen bg-background-primary">
+          {/* Sidebar */}
+          <Sidebar />
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <Header />
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Header */}
+            <Header />
 
-          {/* Page Content */}
-          <main className="flex-1 p-4 md:p-6 overflow-x-auto">{children}</main>
+            {/* Page Content */}
+            <main className="flex-1 p-4 md:p-6 overflow-x-auto">{children}</main>
+          </div>
+
+          {/* Entity Selection Modal - Shows when user hasn't selected an entity */}
+          <EntitySelectionModal />
+
+          {/* Floating Softphone - Always accessible from dashboard */}
+          <FloatingSoftphone />
         </div>
-
-        {/* Entity Selection Modal - Shows when user hasn't selected an entity */}
-        <EntitySelectionModal />
-      </div>
+      </CallCenterProvider>
     </SidebarProvider>
   );
 }

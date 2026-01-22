@@ -34,6 +34,7 @@ earthenable-web/
 The web hub uses **the exact same theme** as the React Native mobile app for visual consistency:
 
 **Brand Colors:**
+
 - Primary Orange: `#EA6A00`
 - Secondary Dark Red/Brown: `#78373B`
 - Accent Gold: `#D5A34C`
@@ -41,11 +42,13 @@ The web hub uses **the exact same theme** as the React Native mobile app for vis
 - Blue: `#3E57AB`
 
 **Backgrounds:**
+
 - Primary Cream: `#F7EDDB`
 - White: `#FFFFFF`
 - Light: `#FDFCFC`
 
 **Status Colors:**
+
 - Error: `#E04562`
 - Success: `#124D37`
 - Warning: `#D5A34C`
@@ -54,6 +57,7 @@ The web hub uses **the exact same theme** as the React Native mobile app for vis
 ### Typography
 
 **Font Families** (via Google Fonts):
+
 1. **Ropa Sans** - Headings and titles
 2. **Literata** - Flourish elements
 3. **Lato** - Body text and UI
@@ -67,6 +71,7 @@ Theme is configured in `tailwind.config.ts` to match the mobile app's design sys
 ### Google OAuth Integration
 
 **Flow:**
+
 1. User clicks "Sign in with Google"
 2. Google OAuth popup/redirect
 3. Exchange Google token for JWT via `/api/v1/auth/google`
@@ -77,14 +82,15 @@ Theme is configured in `tailwind.config.ts` to match the mobile app's design sys
 
 ⚠️ **IMPORTANT SECURITY NOTE**: The web hub uses **much stricter** token expiration than the mobile app to protect sensitive admin/manager operations:
 
-| Setting | Mobile App | Web Hub | Reason |
-|---------|-----------|---------------|---------|
-| Access token expiry | 30 days | **1 hour** (backend) | No offline needs, higher security |
-| Refresh token expiry | 90 days | **7 days** (backend) | Limit session hijacking window |
-| Auto-refresh threshold | 7 days before | **10 minutes before** | Seamless UX with security |
-| Critical warning | 24 hours before | **2 minutes before** | Time to save work |
+| Setting                | Mobile App      | Web Hub               | Reason                            |
+| ---------------------- | --------------- | --------------------- | --------------------------------- |
+| Access token expiry    | 30 days         | **1 hour** (backend)  | No offline needs, higher security |
+| Refresh token expiry   | 90 days         | **7 days** (backend)  | Limit session hijacking window    |
+| Auto-refresh threshold | 7 days before   | **10 minutes before** | Seamless UX with security         |
+| Critical warning       | 24 hours before | **2 minutes before**  | Time to save work                 |
 
 **Why stricter expiration?**
+
 - Web hub doesn't need offline capability
 - Admin/Manager roles have elevated permissions
 - Shorter sessions reduce risk of unauthorized access if session is compromised
@@ -92,12 +98,14 @@ Theme is configured in `tailwind.config.ts` to match the mobile app's design sys
 - Mitigates session hijacking and malicious actor risks
 
 **Configuration** (in `.env.local`):
+
 ```bash
 NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=10  # minutes before expiry to auto-refresh
 NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD=2  # minutes before expiry to show warning
 ```
 
 **Protected Routes:**
+
 - Middleware checks auth status
 - Redirects to `/auth/signin` if unauthenticated
 - Role-based access control (admin-only pages)
@@ -115,6 +123,7 @@ The API client (`src/lib/api/apiClient.ts`) implements:
 ```
 
 **Key Features:**
+
 - Automatic token injection in headers
 - 401 detection triggers refresh
 - Request queueing during refresh (prevents race conditions)
@@ -124,6 +133,7 @@ The API client (`src/lib/api/apiClient.ts`) implements:
 ### API Version Management
 
 API endpoints use versioned base URL:
+
 ```
 NEXT_PUBLIC_API_BASE_URL/api/NEXT_PUBLIC_API_VERSION/...
 ```
@@ -136,12 +146,13 @@ Default version: `v1`
 
 - **main** - Production releases (deployed to production)
 - **develop** - Development branch (deployed to staging)
-- **feature/*** - Feature branches
-- **bugfix/*** - Bug fixes
+- **feature/\*** - Feature branches
+- **bugfix/\*** - Bug fixes
 
 ### Workflow Steps
 
 1. **Create feature branch from develop**
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -149,6 +160,7 @@ Default version: `v1`
    ```
 
 2. **Make changes and commit**
+
    ```bash
    git add .
    git commit -m "feat: add user list page with search"
@@ -156,6 +168,7 @@ Default version: `v1`
    ```
 
 3. **Create PR to develop**
+
    ```bash
    gh pr create --base develop --head feature/user-list-page \
      --title "feat: User list page" \
@@ -174,22 +187,26 @@ Default version: `v1`
 ## Code Quality Standards
 
 ### Type Checking
+
 ```bash
 npm run type-check    # TypeScript check (fast, no build)
 ```
 
 ### Linting
+
 ```bash
 npm run lint          # ESLint
 npm run lint:fix      # Auto-fix issues
 ```
 
 ### Formatting
+
 ```bash
 npm run format        # Prettier
 ```
 
 ### Run All Checks
+
 ```bash
 npm run check-all     # Type check + lint + test
 ```
@@ -197,6 +214,7 @@ npm run check-all     # Type check + lint + test
 ## Common Commands
 
 ### Development
+
 ```bash
 npm run dev           # Start dev server (http://localhost:3000)
 npm run build         # Production build
@@ -204,6 +222,7 @@ npm start             # Start production server
 ```
 
 ### Code Quality
+
 ```bash
 npm run type-check    # TypeScript validation
 npm run lint          # ESLint check
@@ -212,6 +231,7 @@ npm run check-all     # All checks
 ```
 
 ### Testing
+
 ```bash
 npm test              # Run tests
 npm run test:watch    # Watch mode
@@ -265,6 +285,48 @@ PATCH  /api/v1/admin/forms/mappings/{id} # Update mapping
 
 **Authorization**: All admin endpoints require `role='admin'`
 
+### Backend Service Architecture
+
+The backend follows a **service-oriented architecture** where ALL business logic lives in dedicated service classes. This ensures:
+
+- Consistent behavior whether operations come from web hub, mobile app, or Salesforce sync
+- Bulk and inline operations trigger the same side effects
+- Single place to fix bugs or add features
+
+**Core principle:** API endpoints are thin - they delegate ALL logic to services.
+
+**See `earthenable-api/CLAUDE.md` for comprehensive service design guidelines.**
+
+### Task Operations - Notification Control
+
+Task status updates and reassignments support a `send_notification` parameter (default: `true`) that controls whether push notifications are sent to users. This is useful when managers want to make bulk changes without spamming users.
+
+**Endpoints supporting `send_notification`:**
+
+```
+PATCH  /api/v1/admin/tasks/{id}           # Inline status update
+POST   /api/v1/admin/tasks/bulk-update-status  # Bulk status update
+POST   /api/v1/admin/tasks/{id}/reassign  # Inline reassignment
+POST   /api/v1/admin/tasks/bulk-reassign  # Bulk reassignment
+```
+
+**Example - Bulk update without notifications:**
+
+```typescript
+await apiClient.post("/admin/tasks/bulk-update-status", {
+  task_ids: ["id1", "id2", "id3"],
+  status: "Completed",
+  send_notification: false, // Suppress notifications for bulk cleanup
+});
+```
+
+**When to use `send_notification: false`:**
+
+- Data cleanup or bulk corrections
+- Migrating tasks between statuses
+- Testing in production with real tasks
+- Any scenario where notifications would be noise
+
 ### Shared Models
 
 TypeScript types should match backend Pydantic schemas:
@@ -272,9 +334,9 @@ TypeScript types should match backend Pydantic schemas:
 ```typescript
 // src/types/user.ts
 export enum UserRole {
-  QA_AGENT = 'qa_agent',
-  MANAGER = 'manager',
-  ADMIN = 'admin',
+  QA_AGENT = "qa_agent",
+  MANAGER = "manager",
+  ADMIN = "admin",
 }
 
 export interface User {
@@ -295,14 +357,17 @@ The hub uses a comprehensive component library built with the EarthEnable design
 ### Available Components
 
 **Form Components:**
+
 - `Button` - Primary interaction component with 5 variants (primary, secondary, outline, ghost, danger)
 - `Input` - Text input with label, error states, icons, and password visibility toggle
 - `Select` - Dropdown select with consistent styling and theme integration
 
 **Layout Components:**
+
 - `Card` - Container component with variants (default, bordered, elevated) and optional header/footer
 
 **Feedback Components:**
+
 - `Badge` - Status indicators and labels with multiple variants and sizes
 - `Spinner` - Loading indicators with configurable size and color
 
@@ -354,6 +419,7 @@ Visit `/dashboard/components` to see all components with interactive examples an
 ### Design Principles
 
 All components follow these principles:
+
 1. **Theme Constants** - All styling uses values from `src/lib/theme/constants.ts`
 2. **Consistent Sizing** - Components use 3 standard sizes (sm: 36px, md: 44px, lg: 52px)
 3. **Accessibility** - ARIA labels, keyboard navigation, focus states
@@ -363,6 +429,7 @@ All components follow these principles:
 ### Creating New Components
 
 When adding new components:
+
 1. Create in `src/components/ui/ComponentName.tsx`
 2. Use `forwardRef` for ref forwarding
 3. Export props interface (e.g., `ButtonProps`)
@@ -390,7 +457,7 @@ export default async function UsersPage() {
 Use for interactivity, state, effects:
 
 ```typescript
-'use client';
+"use client";
 
 export function UserEditModal({ user }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -403,10 +470,10 @@ export function UserEditModal({ user }: Props) {
 ```typescript
 // middleware.ts
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth_token');
+  const token = request.cookies.get("auth_token");
 
-  if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
+  if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 }
 ```

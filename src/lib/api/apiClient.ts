@@ -115,6 +115,32 @@ import {
   EvaluationSmsConfigCreate,
   EvaluationSmsConfigUpdate,
   TaskSubjectBrief,
+  // Voice/Call Center types
+  VoiceSettings,
+  VoiceSettingsCreate,
+  VoiceSettingsUpdate,
+  CallQueue,
+  CallQueueCreate,
+  CallQueueUpdate,
+  QueueAgent,
+  QueueAgentAdd,
+  AgentStatus,
+  AgentStatusEnum,
+  CallLog,
+  CallLogFilters,
+  PaginatedCallLogsResponse,
+  CallDetail,
+  CallCallback,
+  CallbackCreate,
+  CallbackUpdate,
+  CallbackFilters,
+  PaginatedCallbacksResponse,
+  DialRequest,
+  CallInitiateResponse,
+  WebRTCConfig,
+  CallCenterStats,
+  QueueStats,
+  AgentStats,
 } from "../../types";
 
 /**
@@ -1389,6 +1415,326 @@ class APIClient {
 
   async getTaskSubjectsForSms(): Promise<TaskSubjectBrief[]> {
     return this.get<TaskSubjectBrief[]>("/admin/sms/task-subjects");
+  }
+
+  // ============================================================================
+  // VOICE/CALL CENTER MANAGEMENT
+  // ============================================================================
+
+  // ==================== Voice Settings ====================
+
+  /**
+   * Get voice settings for an entity
+   */
+  async getVoiceSettings(entityId: string): Promise<VoiceSettings | null> {
+    return this.get<VoiceSettings | null>(`/admin/voice/settings/${entityId}`);
+  }
+
+  /**
+   * Create voice settings for an entity
+   */
+  async createVoiceSettings(data: VoiceSettingsCreate): Promise<VoiceSettings> {
+    return this.post<VoiceSettings>("/admin/voice/settings", data);
+  }
+
+  /**
+   * Update voice settings for an entity
+   */
+  async updateVoiceSettings(entityId: string, data: VoiceSettingsUpdate): Promise<VoiceSettings> {
+    return this.put<VoiceSettings>(`/admin/voice/settings/${entityId}`, data);
+  }
+
+  /**
+   * Test voice settings by making a test call
+   */
+  async testVoiceSettings(
+    entityId: string,
+    phoneNumber: string
+  ): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>(
+      `/admin/voice/settings/${entityId}/test`,
+      { phone_number: phoneNumber }
+    );
+  }
+
+  // ==================== Call Queues ====================
+
+  /**
+   * Get all call queues for an entity
+   */
+  async getCallQueues(filters?: { entity_id?: string; is_active?: boolean }): Promise<CallQueue[]> {
+    return this.get<CallQueue[]>("/admin/voice/queues", { params: filters });
+  }
+
+  /**
+   * Get a specific call queue
+   */
+  async getCallQueue(queueId: string): Promise<CallQueue> {
+    return this.get<CallQueue>(`/admin/voice/queues/${queueId}`);
+  }
+
+  /**
+   * Create a new call queue
+   */
+  async createCallQueue(data: CallQueueCreate): Promise<CallQueue> {
+    return this.post<CallQueue>("/admin/voice/queues", data);
+  }
+
+  /**
+   * Update a call queue
+   */
+  async updateCallQueue(queueId: string, data: CallQueueUpdate): Promise<CallQueue> {
+    return this.put<CallQueue>(`/admin/voice/queues/${queueId}`, data);
+  }
+
+  /**
+   * Delete a call queue
+   */
+  async deleteCallQueue(queueId: string): Promise<void> {
+    return this.delete<void>(`/admin/voice/queues/${queueId}`);
+  }
+
+  // ==================== Queue Agents ====================
+
+  /**
+   * Get agents assigned to a queue
+   */
+  async getQueueAgents(queueId: string): Promise<QueueAgent[]> {
+    return this.get<QueueAgent[]>(`/admin/voice/queues/${queueId}/agents`);
+  }
+
+  /**
+   * Add an agent to a queue
+   */
+  async addQueueAgent(queueId: string, data: QueueAgentAdd): Promise<QueueAgent> {
+    return this.post<QueueAgent>(`/admin/voice/queues/${queueId}/agents`, data);
+  }
+
+  /**
+   * Remove an agent from a queue
+   */
+  async removeQueueAgent(queueId: string, userId: string): Promise<void> {
+    return this.delete<void>(`/admin/voice/queues/${queueId}/agents/${userId}`);
+  }
+
+  // ==================== Call Logs (Admin) ====================
+
+  /**
+   * Get call logs with pagination and filters
+   */
+  async getCallLogs(filters?: CallLogFilters): Promise<PaginatedCallLogsResponse> {
+    return this.get<PaginatedCallLogsResponse>("/admin/voice/calls", { params: filters });
+  }
+
+  /**
+   * Get a specific call log with full details
+   */
+  async getCallDetail(callId: string): Promise<CallDetail> {
+    return this.get<CallDetail>(`/admin/voice/calls/${callId}`);
+  }
+
+  /**
+   * Get presigned URL for call recording
+   */
+  async getCallRecordingUrl(callId: string): Promise<{ url: string; expires_in: number }> {
+    return this.get<{ url: string; expires_in: number }>(`/admin/voice/calls/${callId}/recording`);
+  }
+
+  /**
+   * Update call log notes
+   */
+  async updateCallNotes(callId: string, notes: string): Promise<CallLog> {
+    return this.patch<CallLog>(`/admin/voice/calls/${callId}`, { notes });
+  }
+
+  // ==================== Callbacks ====================
+
+  /**
+   * Get callbacks with pagination and filters
+   */
+  async getCallbacks(filters?: CallbackFilters): Promise<PaginatedCallbacksResponse> {
+    return this.get<PaginatedCallbacksResponse>("/admin/voice/callbacks", { params: filters });
+  }
+
+  /**
+   * Get a specific callback
+   */
+  async getCallback(callbackId: string): Promise<CallCallback> {
+    return this.get<CallCallback>(`/admin/voice/callbacks/${callbackId}`);
+  }
+
+  /**
+   * Create a new callback
+   */
+  async createCallback(data: CallbackCreate): Promise<CallCallback> {
+    return this.post<CallCallback>("/admin/voice/callbacks", data);
+  }
+
+  /**
+   * Update a callback
+   */
+  async updateCallback(callbackId: string, data: CallbackUpdate): Promise<CallCallback> {
+    return this.put<CallCallback>(`/admin/voice/callbacks/${callbackId}`, data);
+  }
+
+  /**
+   * Cancel a callback
+   */
+  async cancelCallback(callbackId: string): Promise<void> {
+    return this.delete<void>(`/admin/voice/callbacks/${callbackId}`);
+  }
+
+  // ==================== Agent Status (Admin) ====================
+
+  /**
+   * Get all agent statuses for an entity
+   */
+  async getAgentStatuses(entityId?: string): Promise<AgentStatus[]> {
+    return this.get<AgentStatus[]>("/admin/voice/agents/status", {
+      params: entityId ? { entity_id: entityId } : undefined,
+    });
+  }
+
+  /**
+   * Admin override of agent status
+   */
+  async setAgentStatus(userId: string, status: AgentStatusEnum): Promise<AgentStatus> {
+    return this.put<AgentStatus>(`/admin/voice/agents/${userId}/status`, { status });
+  }
+
+  // ==================== Call Center Statistics ====================
+
+  /**
+   * Get call center statistics
+   */
+  async getCallCenterStats(entityId: string, days: number = 30): Promise<CallCenterStats> {
+    return this.get<CallCenterStats>("/admin/voice/stats", {
+      params: { entity_id: entityId, days },
+    });
+  }
+
+  /**
+   * Get queue statistics
+   */
+  async getQueueStats(entityId: string): Promise<QueueStats[]> {
+    return this.get<QueueStats[]>("/admin/voice/stats/queues", {
+      params: { entity_id: entityId },
+    });
+  }
+
+  /**
+   * Get agent statistics
+   */
+  async getAgentStats(entityId: string, days: number = 7): Promise<AgentStats[]> {
+    return this.get<AgentStats[]>("/admin/voice/stats/agents", {
+      params: { entity_id: entityId, days },
+    });
+  }
+
+  // ==================== Outbound Calls (Admin) ====================
+
+  /**
+   * Initiate an outbound call (admin)
+   */
+  async initiateCall(data: DialRequest): Promise<CallInitiateResponse> {
+    return this.post<CallInitiateResponse>("/admin/voice/calls/initiate", data);
+  }
+
+  // ============================================================================
+  // VOICE/CALL CENTER - AGENT ENDPOINTS (Self-service)
+  // ============================================================================
+
+  /**
+   * Get current agent's status
+   */
+  async getMyAgentStatus(entityId: string): Promise<AgentStatus | null> {
+    return this.get<AgentStatus | null>(`/voice/agent/status?entity_id=${entityId}`);
+  }
+
+  /**
+   * Update current agent's status
+   */
+  async updateMyAgentStatus(entityId: string, status: AgentStatusEnum): Promise<AgentStatus> {
+    return this.put<AgentStatus>(`/voice/agent/status?entity_id=${entityId}`, { status });
+  }
+
+  /**
+   * Get queues the current agent is assigned to
+   */
+  async getMyQueues(entityId: string): Promise<CallQueue[]> {
+    return this.get<CallQueue[]>(`/voice/agent/queues?entity_id=${entityId}`);
+  }
+
+  /**
+   * Get current agent's active call
+   */
+  async getMyActiveCall(entityId: string): Promise<CallDetail | null> {
+    return this.get<CallDetail | null>(`/voice/agent/calls/active?entity_id=${entityId}`);
+  }
+
+  /**
+   * Initiate an outbound call as agent
+   */
+  async dialNumber(data: DialRequest): Promise<CallInitiateResponse> {
+    return this.post<CallInitiateResponse>("/voice/agent/calls/dial", data);
+  }
+
+  /**
+   * End the current call
+   */
+  async endCall(callId: string): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>(`/voice/agent/calls/${callId}/end`);
+  }
+
+  /**
+   * Put call on hold
+   */
+  async holdCall(callId: string): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>(`/voice/agent/calls/${callId}/hold`);
+  }
+
+  /**
+   * Resume call from hold
+   */
+  async resumeCall(callId: string): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>(`/voice/agent/calls/${callId}/resume`);
+  }
+
+  /**
+   * Transfer call to another number or queue
+   */
+  async transferCall(
+    callId: string,
+    target: string,
+    transferType: "cold" | "warm" = "cold"
+  ): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>(
+      `/voice/agent/calls/${callId}/transfer`,
+      { target, transfer_type: transferType }
+    );
+  }
+
+  /**
+   * Get callbacks assigned to current agent
+   */
+  async getMyCallbacks(entityId: string): Promise<CallCallback[]> {
+    return this.get<CallCallback[]>(`/voice/agent/callbacks/mine?entity_id=${entityId}`);
+  }
+
+  /**
+   * Get WebRTC configuration for browser-based calling
+   */
+  async getWebRTCConfig(entityId: string): Promise<WebRTCConfig> {
+    return this.get<WebRTCConfig>(`/voice/agent/webrtc-config?entity_id=${entityId}`);
+  }
+
+  /**
+   * Get agent's recent call history
+   */
+  async getMyCallHistory(entityId: string, limit: number = 20): Promise<CallLog[]> {
+    return this.get<CallLog[]>(`/voice/agent/calls/history?entity_id=${entityId}`, {
+      params: { limit },
+    });
   }
 }
 
