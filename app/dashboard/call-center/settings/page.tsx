@@ -448,6 +448,7 @@ export default function CallCenterSettingsPage() {
       {selectedEntityId && (
         <VoiceSettingsForm
           settings={settings || null}
+          entityId={selectedEntityId}
           isLoading={isSettingsLoading}
           onSave={handleSave}
           isSaving={updateMutation.isPending || createMutation.isPending}

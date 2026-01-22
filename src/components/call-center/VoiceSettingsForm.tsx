@@ -14,6 +14,8 @@ import { Button, Input, Card, Badge, Spinner } from "@/src/components/ui";
 interface VoiceSettingsFormProps {
   /** Current settings */
   settings: VoiceSettings | null;
+  /** Selected entity ID for callback URL generation */
+  entityId?: string;
   /** Whether settings are loading */
   isLoading?: boolean;
   /** Callback when settings are saved */
@@ -30,6 +32,7 @@ interface VoiceSettingsFormProps {
 
 export function VoiceSettingsForm({
   settings,
+  entityId,
   isLoading = false,
   onSave,
   isSaving = false,
@@ -37,13 +40,17 @@ export function VoiceSettingsForm({
   isTesting = false,
   className,
 }: VoiceSettingsFormProps) {
+  // Generate the actual callback URL based on API base URL and entity ID
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.earthenable.org";
+  const webhookBaseUrl = entityId
+    ? `${apiBaseUrl}/api/v1/voice/webhooks/${entityId}`
+    : `${apiBaseUrl}/api/v1/voice/webhooks/{entity_id}`;
   // Form state
   const [apiKey, setApiKey] = useState("");
   const [apiUsername, setApiUsername] = useState("");
   const [phoneNumbers, setPhoneNumbers] = useState("");
   const [recordingEnabled, setRecordingEnabled] = useState(true);
   const [recordingStorageUrl, setRecordingStorageUrl] = useState("");
-  const [callbackBaseUrl, setCallbackBaseUrl] = useState("");
   const [isEnabled, setIsEnabled] = useState(false);
   const [useSandbox, setUseSandbox] = useState(true);
   const [webrtcEnabled, setWebrtcEnabled] = useState(true);
@@ -59,7 +66,6 @@ export function VoiceSettingsForm({
       setPhoneNumbers(settings.phone_numbers?.join(", ") || "");
       setRecordingEnabled(settings.recording_enabled);
       setRecordingStorageUrl(settings.recording_storage_url || "");
-      setCallbackBaseUrl(settings.callback_base_url || "");
       setIsEnabled(settings.is_enabled);
       setUseSandbox(settings.use_sandbox);
       setWebrtcEnabled(settings.webrtc_enabled);
@@ -86,7 +92,7 @@ export function VoiceSettingsForm({
           : undefined,
         recording_enabled: recordingEnabled,
         recording_storage_url: recordingStorageUrl || undefined,
-        callback_base_url: callbackBaseUrl || undefined,
+        callback_base_url: webhookBaseUrl,
         is_enabled: isEnabled,
         use_sandbox: useSandbox,
         webrtc_enabled: webrtcEnabled,
@@ -104,7 +110,7 @@ export function VoiceSettingsForm({
       phoneNumbers,
       recordingEnabled,
       recordingStorageUrl,
-      callbackBaseUrl,
+      webhookBaseUrl,
       isEnabled,
       useSandbox,
       webrtcEnabled,
@@ -286,15 +292,87 @@ export function VoiceSettingsForm({
       <Card variant="bordered" padding="md">
         <h3 className="text-lg font-heading font-semibold text-text-primary mb-4">Webhooks</h3>
 
-        <Input
-          label="Callback Base URL"
-          placeholder="https://api.yourdomain.com/api/v1/voice/webhooks"
-          value={callbackBaseUrl}
-          onChange={(e) => setCallbackBaseUrl(e.target.value)}
-        />
-        <p className="text-xs text-text-disabled mt-1">
-          Base URL for Africa&apos;s Talking voice callbacks
-        </p>
+        <div className="space-y-4">
+          {/* Generated Callback Base URL */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">
+              Callback Base URL
+            </label>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 px-3 py-2 bg-background-light border border-border-light rounded-lg text-sm font-mono text-text-primary break-all">
+                {webhookBaseUrl}
+              </code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(webhookBaseUrl);
+                }}
+                title="Copy to clipboard"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+              </Button>
+            </div>
+            <p className="text-xs text-text-disabled mt-1">
+              This URL is automatically generated based on the selected entity
+            </p>
+          </div>
+
+          {/* Individual Webhook Endpoints */}
+          <div className="pt-4 border-t border-border-light">
+            <p className="text-sm font-medium text-text-secondary mb-3">
+              Configure these URLs in your Africa&apos;s Talking dashboard:
+            </p>
+            <div className="space-y-2">
+              {[
+                { name: "Call Start (callUrl)", path: "/call-start" },
+                { name: "Call Notification (callbackUrl)", path: "/call-notification" },
+                { name: "Recording Ready", path: "/recording-ready" },
+                { name: "DTMF Input", path: "/dtmf" },
+              ].map((endpoint) => (
+                <div key={endpoint.path} className="flex items-center gap-2">
+                  <span className="text-xs text-text-secondary w-48 flex-shrink-0">
+                    {endpoint.name}:
+                  </span>
+                  <code className="flex-1 px-2 py-1 bg-background-light border border-border-light rounded text-xs font-mono text-text-primary break-all">
+                    {webhookBaseUrl}
+                    {endpoint.path}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${webhookBaseUrl}${endpoint.path}`);
+                    }}
+                    className="p-1 text-text-secondary hover:text-primary transition-colors"
+                    title="Copy"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </Card>
 
       {/* Limits & Costs */}
