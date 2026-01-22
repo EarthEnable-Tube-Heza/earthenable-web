@@ -5,7 +5,7 @@
  *
  * Shared header for all call center pages with:
  * - Page title and description
- * - Entity selector (always visible)
+ * - Entity selector (always visible, persisted across tabs)
  * - Open Softphone action button
  * - Stats cards (always visible)
  * - Settings summary (always visible)
@@ -15,10 +15,13 @@
  * and see key metrics regardless of which tab they're on.
  */
 
-import { useState, useMemo, useEffect } from "react";
-import { useVoiceSettings, useMyQueues, useCallCenterStats } from "@/src/hooks/useCallCenter";
-import { useEntities } from "@/src/hooks/useExpenses";
-import { useAuth } from "@/src/lib/auth";
+import { useMemo } from "react";
+import {
+  useVoiceSettings,
+  useMyQueues,
+  useCallCenterStats,
+  useCallCenterEntity,
+} from "@/src/hooks/useCallCenter";
 import {
   PageHeader,
   TabNavigation,
@@ -43,35 +46,13 @@ const callCenterTabs: TabItem[] = [
 export interface CallCenterHeaderProps {
   /** Page-specific description */
   description?: string;
-  /** Callback when entity changes */
-  onEntityChange?: (entityId: string) => void;
-  /** Current selected entity ID (controlled mode) */
-  selectedEntityId?: string;
 }
 
 export function CallCenterHeader({
   description = "Manage calls, callbacks, and voice service settings",
-  onEntityChange,
-  selectedEntityId: controlledEntityId,
 }: CallCenterHeaderProps) {
-  const { user } = useAuth();
-  const [internalEntityId, setInternalEntityId] = useState<string>(user?.entity_id || "");
-
-  // Use controlled or internal state
-  const selectedEntityId = controlledEntityId ?? internalEntityId;
-  const setSelectedEntityId = onEntityChange ?? setInternalEntityId;
-
-  // Fetch entities
-  const { data: entitiesData } = useEntities();
-  const entities = entitiesData?.entities || [];
-
-  // Set default entity if not selected
-  useEffect(() => {
-    const availableEntities = entitiesData?.entities || [];
-    if (!selectedEntityId && availableEntities.length > 0) {
-      setSelectedEntityId(availableEntities[0].id);
-    }
-  }, [selectedEntityId, entitiesData, setSelectedEntityId]);
+  // Use persistent entity selection (survives page navigation)
+  const { selectedEntityId, setSelectedEntityId, entities } = useCallCenterEntity();
 
   // Fetch voice settings, stats, and queue assignment
   const { data: voiceSettings, isLoading: isLoadingSettings } = useVoiceSettings(selectedEntityId);

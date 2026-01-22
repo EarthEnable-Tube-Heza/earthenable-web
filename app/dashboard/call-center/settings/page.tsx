@@ -12,6 +12,7 @@ import {
   useVoiceSettings,
   useCreateVoiceSettings,
   useUpdateVoiceSettings,
+  useCallCenterEntity,
   voiceQueryKeys,
 } from "@/src/hooks/useCallCenter";
 import { apiClient } from "@/src/lib/api";
@@ -96,7 +97,10 @@ function StatusCheckItem({
 }
 
 export default function CallCenterSettingsPage() {
-  const { user, selectedEntityId, entityInfo } = useAuth();
+  const { user } = useAuth();
+  // Use persistent entity selection (shared with header)
+  const { selectedEntityId, entities } = useCallCenterEntity();
+  const selectedEntity = entities.find((e) => e.id === selectedEntityId);
 
   // Fetch voice settings
   const {
@@ -135,9 +139,6 @@ export default function CallCenterSettingsPage() {
   // Mutations
   const createMutation = useCreateVoiceSettings();
   const updateMutation = useUpdateVoiceSettings();
-
-  // Get entity name
-  const selectedEntity = entityInfo?.accessible_entities?.find((e) => e.id === selectedEntityId);
 
   // Handle save
   const handleSave = useCallback(
@@ -374,15 +375,17 @@ export default function CallCenterSettingsPage() {
               {JSON.stringify(
                 {
                   selectedEntityId,
-                  entityInfo: entityInfo
+                  selectedEntity: selectedEntity
                     ? {
-                        is_multi_entity_user: entityInfo.is_multi_entity_user,
-                        accessible_entities: entityInfo.accessible_entities?.map((e) => ({
-                          id: e.id,
-                          name: e.name,
-                        })),
+                        id: selectedEntity.id,
+                        name: selectedEntity.name,
+                        code: selectedEntity.code,
                       }
                     : null,
+                  availableEntities: entities.map((e) => ({
+                    id: e.id,
+                    name: e.name,
+                  })),
                   settings: settings
                     ? {
                         id: settings.id,

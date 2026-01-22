@@ -12,6 +12,7 @@ import {
   useCreateCallback,
   useUpdateCallback,
   useCancelCallback,
+  useCallCenterEntity,
 } from "@/src/hooks/useCallCenter";
 import { CallCenterHeader } from "@/src/components/call-center";
 import { CallbacksList } from "@/src/components/call-center/CallbacksList";
@@ -23,35 +24,34 @@ import {
   CallbackCreate,
   CallbackUpdate,
 } from "@/src/types/voice";
-import { Card, Button, Select } from "@/src/components/ui";
-import { useAuth } from "@/src/lib/auth";
+import { Card } from "@/src/components/ui";
+import { MultiSelect } from "@/src/components/ui/MultiSelect";
 
 const PAGE_SIZE = 20;
 
 export default function CallbacksPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCallback, setEditingCallback] = useState<CallCallback | null>(null);
 
   // Filters
-  const [statusFilter, setStatusFilter] = useState<CallbackStatus | "">("");
-  const [priorityFilter, setPriorityFilter] = useState<CallbackPriority | "">("");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
 
-  // Get current user and entity
-  const { user } = useAuth();
-  const entityId = user?.entity_id || "";
+  // Use persistent entity selection (shared with header)
+  const { selectedEntityId } = useCallCenterEntity();
 
   // Build filters object
   const filters = {
-    entity_id: entityId,
-    status: statusFilter || undefined,
-    priority: priorityFilter || undefined,
-    skip: (currentPage - 1) * PAGE_SIZE,
+    entity_id: selectedEntityId,
+    status: statusFilter.length > 0 ? statusFilter.join(",") : undefined,
+    priority: priorityFilter.length > 0 ? priorityFilter.join(",") : undefined,
+    skip: currentPage * PAGE_SIZE,
     limit: PAGE_SIZE,
   };
 
   // Fetch callbacks
-  const { data: callbacksResponse, isLoading, refetch } = useCallbacks(filters);
+  const { data: callbacksResponse, isLoading, error, refetch } = useCallbacks(filters);
 
   // Mutations
   const createMutation = useCreateCallback();
@@ -120,6 +120,16 @@ export default function CallbacksPage() {
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
   }, []);
+
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    setStatusFilter([]);
+    setPriorityFilter([]);
+    setCurrentPage(0);
+  }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = statusFilter.length > 0 || priorityFilter.length > 0;
 
   // Count by status
   const pendingCount =
@@ -202,53 +212,118 @@ export default function CallbacksPage() {
       </div>
 
       {/* Filters */}
-      <Card variant="bordered" padding="md">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Status</label>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as CallbackStatus | "")}
-            >
-              <option value="">All</option>
-              <option value={CallbackStatus.PENDING}>Pending</option>
-              <option value={CallbackStatus.IN_PROGRESS}>In Progress</option>
-              <option value={CallbackStatus.COMPLETED}>Completed</option>
-              <option value={CallbackStatus.CANCELLED}>Cancelled</option>
-            </Select>
-          </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Priority</label>
-            <Select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as CallbackPriority | "")}
-            >
-              <option value="">All</option>
-              <option value={CallbackPriority.LOW}>Low</option>
-              <option value={CallbackPriority.NORMAL}>Normal</option>
-              <option value={CallbackPriority.HIGH}>High</option>
-              <option value={CallbackPriority.URGENT}>Urgent</option>
-            </Select>
-          </div>
-          {(statusFilter || priorityFilter) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setStatusFilter("");
-                setPriorityFilter("");
-              }}
-            >
-              Clear Filters
-            </Button>
-          )}
+      <div className="bg-white rounded-lg shadow-medium p-4 sm:p-6">
+        {/* Filter Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <MultiSelect
+            label="Status"
+            placeholder="All Statuses"
+            options={[
+              { value: CallbackStatus.PENDING, label: "Pending" },
+              { value: CallbackStatus.IN_PROGRESS, label: "In Progress" },
+              { value: CallbackStatus.COMPLETED, label: "Completed" },
+              { value: CallbackStatus.CANCELLED, label: "Cancelled" },
+            ]}
+            value={statusFilter}
+            onChange={(values) => {
+              setStatusFilter(values);
+              setCurrentPage(0);
+            }}
+            size="sm"
+          />
+          <MultiSelect
+            label="Priority"
+            placeholder="All Priorities"
+            options={[
+              { value: CallbackPriority.LOW, label: "Low" },
+              { value: CallbackPriority.NORMAL, label: "Normal" },
+              { value: CallbackPriority.HIGH, label: "High" },
+              { value: CallbackPriority.URGENT, label: "Urgent" },
+            ]}
+            value={priorityFilter}
+            onChange={(values) => {
+              setPriorityFilter(values);
+              setCurrentPage(0);
+            }}
+            size="sm"
+          />
         </div>
-      </Card>
+
+        {/* Active Filters */}
+        {hasActiveFilters && (
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                Active Filters:
+              </span>
+              {statusFilter.map((status) => {
+                const label =
+                  {
+                    [CallbackStatus.PENDING]: "Pending",
+                    [CallbackStatus.IN_PROGRESS]: "In Progress",
+                    [CallbackStatus.COMPLETED]: "Completed",
+                    [CallbackStatus.CANCELLED]: "Cancelled",
+                  }[status] || status;
+                return (
+                  <span
+                    key={`status-${status}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                  >
+                    Status: {label}
+                    <button
+                      onClick={() => {
+                        setStatusFilter(statusFilter.filter((s) => s !== status));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              {priorityFilter.map((priority) => {
+                const label =
+                  {
+                    [CallbackPriority.LOW]: "Low",
+                    [CallbackPriority.NORMAL]: "Normal",
+                    [CallbackPriority.HIGH]: "High",
+                    [CallbackPriority.URGENT]: "Urgent",
+                  }[priority] || priority;
+                return (
+                  <span
+                    key={`priority-${priority}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+                  >
+                    Priority: {label}
+                    <button
+                      onClick={() => {
+                        setPriorityFilter(priorityFilter.filter((p) => p !== priority));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-orange-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              <button
+                onClick={handleClearFilters}
+                className="text-xs text-status-error hover:text-status-error/80 font-medium ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Callbacks List */}
       <CallbacksList
         callbacks={callbacksResponse?.items || []}
         isLoading={isLoading}
+        error={error as Error | null}
         totalCount={callbacksResponse?.total || 0}
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
@@ -256,6 +331,7 @@ export default function CallbacksPage() {
         onEdit={handleEdit}
         onDial={handleCallNow}
         onCancel={handleCancel}
+        onRetry={refetch}
       />
 
       {/* Schedule/Edit Modal */}

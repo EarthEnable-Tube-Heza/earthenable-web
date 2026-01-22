@@ -251,8 +251,8 @@ export interface CallLog {
 
 export interface CallLogFilters {
   entity_id?: string;
-  direction?: CallDirection;
-  status?: CallStatus;
+  direction?: CallDirection | string; // Can be single value or comma-separated for multi-select
+  status?: CallStatus | string; // Can be single value or comma-separated for multi-select
   agent_user_id?: string;
   queue_id?: string;
   has_recording?: boolean;
@@ -331,10 +331,10 @@ export interface CallbackUpdate {
 
 export interface CallbackFilters {
   entity_id?: string;
-  status?: CallbackStatus;
+  status?: CallbackStatus | string; // Can be single value or comma-separated for multi-select
   assigned_agent_id?: string;
   queue_id?: string;
-  priority?: CallbackPriority;
+  priority?: CallbackPriority | string; // Can be single value or comma-separated for multi-select
   scheduled_from?: string;
   scheduled_to?: string;
   skip?: number;

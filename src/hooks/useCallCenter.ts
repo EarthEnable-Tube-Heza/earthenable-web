@@ -4,8 +4,11 @@
  * React Query hooks for call center management.
  */
 
+import { useState, useEffect, useCallback as useReactCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { useAuth } from "@/src/lib/auth";
+import { useEntities } from "@/src/hooks/useExpenses";
 import {
   VoiceSettingsCreate,
   VoiceSettingsUpdate,
@@ -55,6 +58,68 @@ export const voiceQueryKeys = {
   myCallHistory: (limit?: number) => [...voiceQueryKeys.all, "my-call-history", limit] as const,
   webrtcConfig: () => [...voiceQueryKeys.all, "webrtc-config"] as const,
 };
+
+// ==================== Entity Selection Persistence ====================
+
+const CALL_CENTER_ENTITY_KEY = "callCenterSelectedEntity";
+
+/**
+ * Hook to manage persistent entity selection for call center pages.
+ * Persists selection to localStorage so it survives page navigation.
+ */
+export function useCallCenterEntity() {
+  const { user } = useAuth();
+  const { data: entitiesData } = useEntities();
+  const entities = useMemo(() => entitiesData?.entities || [], [entitiesData?.entities]);
+
+  // Initialize from localStorage, fallback to user's entity
+  const [selectedEntityId, setSelectedEntityIdState] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(CALL_CENTER_ENTITY_KEY);
+      if (stored) return stored;
+    }
+    return user?.entity_id || "";
+  });
+
+  // Update localStorage when selection changes
+  const setSelectedEntityId = useReactCallback((entityId: string) => {
+    setSelectedEntityIdState(entityId);
+    if (typeof window !== "undefined") {
+      if (entityId) {
+        localStorage.setItem(CALL_CENTER_ENTITY_KEY, entityId);
+      } else {
+        localStorage.removeItem(CALL_CENTER_ENTITY_KEY);
+      }
+    }
+  }, []);
+
+  // Set default entity if not selected and entities are available
+  useEffect(() => {
+    if (!selectedEntityId && entities.length > 0) {
+      // Try user's entity first, then first available
+      const defaultEntity = user?.entity_id || entities[0].id;
+      setSelectedEntityId(defaultEntity);
+    }
+  }, [selectedEntityId, entities, user?.entity_id, setSelectedEntityId]);
+
+  // Validate stored entity still exists
+  useEffect(() => {
+    if (selectedEntityId && entities.length > 0) {
+      const entityExists = entities.some((e) => e.id === selectedEntityId);
+      if (!entityExists) {
+        // Stored entity no longer valid, reset to default
+        const defaultEntity = user?.entity_id || entities[0].id;
+        setSelectedEntityId(defaultEntity);
+      }
+    }
+  }, [selectedEntityId, entities, user?.entity_id, setSelectedEntityId]);
+
+  return {
+    selectedEntityId,
+    setSelectedEntityId,
+    entities,
+  };
+}
 
 // ==================== Voice Settings Hooks ====================
 

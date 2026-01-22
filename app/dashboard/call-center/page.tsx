@@ -7,27 +7,14 @@
  * Uses shared CallCenterHeader for stats, settings summary, and entity selection.
  */
 
-import { useState, useMemo, useEffect } from "react";
-import { useVoiceSettings, useMyQueues } from "@/src/hooks/useCallCenter";
-import { useEntities } from "@/src/hooks/useExpenses";
-import { useAuth } from "@/src/lib/auth";
+import { useMemo } from "react";
+import { useVoiceSettings, useMyQueues, useCallCenterEntity } from "@/src/hooks/useCallCenter";
 import { WorkspaceView, CallCenterHeader } from "@/src/components/call-center";
 import { Card } from "@/src/components/ui";
 
 export default function CallCenterPage() {
-  const { user } = useAuth();
-  const [selectedEntityId, setSelectedEntityId] = useState<string>(user?.entity_id || "");
-
-  // Fetch entities for default selection
-  const { data: entitiesData } = useEntities();
-
-  // Set default entity if not selected
-  useEffect(() => {
-    const entities = entitiesData?.entities || [];
-    if (!selectedEntityId && entities.length > 0) {
-      setSelectedEntityId(entities[0].id);
-    }
-  }, [selectedEntityId, entitiesData]);
+  // Use persistent entity selection (shared with header)
+  const { selectedEntityId } = useCallCenterEntity();
 
   // Fetch data for queue warning
   const { data: voiceSettings } = useVoiceSettings(selectedEntityId);
@@ -50,11 +37,7 @@ export default function CallCenterPage() {
   return (
     <div className="space-y-6">
       {/* Shared Header with Entity Selector, Stats, Settings Summary, and Tabs */}
-      <CallCenterHeader
-        description="Manage calls, view statistics, and access softphone"
-        selectedEntityId={selectedEntityId}
-        onEntityChange={setSelectedEntityId}
-      />
+      <CallCenterHeader description="Manage calls, view statistics, and access softphone" />
 
       {/* Agent Queue Assignment Warning */}
       {selectedEntityId && configStatus.isConfigured && !isAssignedToQueue && (

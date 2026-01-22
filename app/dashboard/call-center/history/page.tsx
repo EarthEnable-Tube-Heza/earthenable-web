@@ -7,36 +7,42 @@
  */
 
 import { useState, useCallback } from "react";
-import { useCallLogs } from "@/src/hooks/useCallCenter";
+import { useCallLogs, useCallCenterEntity } from "@/src/hooks/useCallCenter";
 import { CallCenterHeader } from "@/src/components/call-center";
 import { CallHistoryTable } from "@/src/components/call-center/CallHistoryTable";
 import { CallDetailModal } from "@/src/components/call-center/CallDetailModal";
 import { CallLog, CallDirection, CallStatus } from "@/src/types/voice";
-import { Card, Input, Button, Select } from "@/src/components/ui";
+import { Input, Button } from "@/src/components/ui";
+import { MultiSelect } from "@/src/components/ui/MultiSelect";
 
 const PAGE_SIZE = 20;
 
 export default function CallHistoryPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filters
   const [phoneSearch, setPhoneSearch] = useState("");
-  const [directionFilter, setDirectionFilter] = useState<CallDirection | "">("");
-  const [statusFilter, setStatusFilter] = useState<CallStatus | "">("");
+  const [searchInput, setSearchInput] = useState("");
+  const [directionFilter, setDirectionFilter] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+
+  // Use persistent entity selection (shared with header)
+  const { selectedEntityId } = useCallCenterEntity();
 
   // Build filters object
   const filters = {
+    entity_id: selectedEntityId,
     phone_number: phoneSearch || undefined,
-    direction: directionFilter || undefined,
-    status: statusFilter || undefined,
-    skip: (currentPage - 1) * PAGE_SIZE,
+    direction: directionFilter.length > 0 ? directionFilter.join(",") : undefined,
+    status: statusFilter.length > 0 ? statusFilter.join(",") : undefined,
+    skip: currentPage * PAGE_SIZE,
     limit: PAGE_SIZE,
   };
 
   // Fetch call logs
-  const { data: callLogsResponse, isLoading, refetch } = useCallLogs(filters);
+  const { data: callLogsResponse, isLoading, error, refetch } = useCallLogs(filters);
 
   // Handle call selection
   const handleSelectCall = useCallback((call: CallLog) => {
@@ -49,19 +55,23 @@ export default function CallHistoryPage() {
     setCurrentPage(page);
   }, []);
 
-  // Handle filter changes
+  // Handle search
   const handleSearch = useCallback(() => {
-    setCurrentPage(1);
-    refetch();
-  }, [refetch]);
+    setPhoneSearch(searchInput);
+    setCurrentPage(0);
+  }, [searchInput]);
 
   // Clear filters
   const handleClearFilters = useCallback(() => {
     setPhoneSearch("");
-    setDirectionFilter("");
-    setStatusFilter("");
-    setCurrentPage(1);
+    setSearchInput("");
+    setDirectionFilter([]);
+    setStatusFilter([]);
+    setCurrentPage(0);
   }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = phoneSearch || directionFilter.length > 0 || statusFilter.length > 0;
 
   return (
     <div className="space-y-6">
@@ -69,71 +79,159 @@ export default function CallHistoryPage() {
       <CallCenterHeader description="View and search call logs and recordings" />
 
       {/* Filters */}
-      <Card variant="bordered" padding="md" className="mb-6">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              label="Search Phone Number"
-              placeholder="+254..."
-              value={phoneSearch}
-              onChange={(e) => setPhoneSearch(e.target.value)}
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              }
-            />
-          </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Direction</label>
-            <Select
-              value={directionFilter}
-              onChange={(e) => setDirectionFilter(e.target.value as CallDirection | "")}
-            >
-              <option value="">All</option>
-              <option value={CallDirection.INBOUND}>Inbound</option>
-              <option value={CallDirection.OUTBOUND}>Outbound</option>
-            </Select>
-          </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Status</label>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as CallStatus | "")}
-            >
-              <option value="">All</option>
-              <option value={CallStatus.COMPLETED}>Completed</option>
-              <option value={CallStatus.MISSED}>Missed</option>
-              <option value={CallStatus.BUSY}>Busy</option>
-              <option value={CallStatus.NO_ANSWER}>No Answer</option>
-              <option value={CallStatus.FAILED}>Failed</option>
-            </Select>
-          </div>
-          <Button variant="primary" size="sm" onClick={handleSearch}>
-            Search
-          </Button>
-          {(phoneSearch || directionFilter || statusFilter) && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-              Clear
-            </Button>
-          )}
+      <div className="bg-white rounded-lg shadow-medium p-4 sm:p-6">
+        {/* Search Row */}
+        <div className="flex gap-2 mb-4">
+          <Input
+            placeholder="Search phone number..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="flex-1"
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            }
+          />
+          <Button onClick={handleSearch}>Search</Button>
         </div>
-      </Card>
+
+        {/* Filter Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <MultiSelect
+            label="Direction"
+            placeholder="All Directions"
+            options={[
+              { value: CallDirection.INBOUND, label: "Inbound" },
+              { value: CallDirection.OUTBOUND, label: "Outbound" },
+            ]}
+            value={directionFilter}
+            onChange={(values) => {
+              setDirectionFilter(values);
+              setCurrentPage(0);
+            }}
+            size="sm"
+          />
+          <MultiSelect
+            label="Status"
+            placeholder="All Statuses"
+            options={[
+              { value: CallStatus.COMPLETED, label: "Completed" },
+              { value: CallStatus.MISSED, label: "Missed" },
+              { value: CallStatus.BUSY, label: "Busy" },
+              { value: CallStatus.NO_ANSWER, label: "No Answer" },
+              { value: CallStatus.FAILED, label: "Failed" },
+            ]}
+            value={statusFilter}
+            onChange={(values) => {
+              setStatusFilter(values);
+              setCurrentPage(0);
+            }}
+            size="sm"
+          />
+        </div>
+
+        {/* Active Filters */}
+        {hasActiveFilters && (
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                Active Filters:
+              </span>
+              {phoneSearch && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                  Phone: {phoneSearch}
+                  <button
+                    onClick={() => {
+                      setPhoneSearch("");
+                      setSearchInput("");
+                      setCurrentPage(0);
+                    }}
+                    className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {directionFilter.map((direction) => {
+                const label =
+                  {
+                    [CallDirection.INBOUND]: "Inbound",
+                    [CallDirection.OUTBOUND]: "Outbound",
+                  }[direction] || direction;
+                return (
+                  <span
+                    key={`direction-${direction}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                  >
+                    Direction: {label}
+                    <button
+                      onClick={() => {
+                        setDirectionFilter(directionFilter.filter((d) => d !== direction));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              {statusFilter.map((status) => {
+                const label =
+                  {
+                    [CallStatus.COMPLETED]: "Completed",
+                    [CallStatus.MISSED]: "Missed",
+                    [CallStatus.BUSY]: "Busy",
+                    [CallStatus.NO_ANSWER]: "No Answer",
+                    [CallStatus.FAILED]: "Failed",
+                  }[status] || status;
+                return (
+                  <span
+                    key={`status-${status}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+                  >
+                    Status: {label}
+                    <button
+                      onClick={() => {
+                        setStatusFilter(statusFilter.filter((s) => s !== status));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-orange-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              <button
+                onClick={handleClearFilters}
+                className="text-xs text-status-error hover:text-status-error/80 font-medium ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Call History Table */}
       <CallHistoryTable
         calls={callLogsResponse?.items || []}
         isLoading={isLoading}
+        error={error as Error | null}
         totalCount={callLogsResponse?.total || 0}
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
         onSelectCall={handleSelectCall}
+        onRetry={refetch}
       />
 
       {/* Call Detail Modal */}
