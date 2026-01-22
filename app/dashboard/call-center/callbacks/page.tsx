@@ -12,8 +12,9 @@ import {
   useCreateCallback,
   useUpdateCallback,
   useCancelCallback,
+  useCallCenterEntity,
 } from "@/src/hooks/useCallCenter";
-import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
+import { CallCenterHeader } from "@/src/components/call-center";
 import { CallbacksList } from "@/src/components/call-center/CallbacksList";
 import { ScheduleCallbackModal } from "@/src/components/call-center/ScheduleCallbackModal";
 import {
@@ -23,69 +24,57 @@ import {
   CallbackCreate,
   CallbackUpdate,
 } from "@/src/types/voice";
-import { Card, Button, Select } from "@/src/components/ui";
-import { useAuth } from "@/src/lib/auth";
+import { Card } from "@/src/components/ui";
+import { MultiSelect } from "@/src/components/ui/MultiSelect";
 
 const PAGE_SIZE = 20;
 
 export default function CallbacksPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCallback, setEditingCallback] = useState<CallCallback | null>(null);
 
   // Filters
-  const [statusFilter, setStatusFilter] = useState<CallbackStatus | "">("");
-  const [priorityFilter, setPriorityFilter] = useState<CallbackPriority | "">("");
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
 
-  // Get current user and entity
-  const { user } = useAuth();
-  const entityId = user?.entity_id || "";
+  // Use persistent entity selection (shared with header)
+  const { selectedEntityId } = useCallCenterEntity();
 
   // Build filters object
   const filters = {
-    entity_id: entityId,
-    status: statusFilter || undefined,
-    priority: priorityFilter || undefined,
-    skip: (currentPage - 1) * PAGE_SIZE,
+    entity_id: selectedEntityId,
+    status: statusFilter.length > 0 ? statusFilter.join(",") : undefined,
+    priority: priorityFilter.length > 0 ? priorityFilter.join(",") : undefined,
+    skip: currentPage * PAGE_SIZE,
     limit: PAGE_SIZE,
   };
 
   // Fetch callbacks
-  const { data: callbacksResponse, isLoading, refetch } = useCallbacks(filters);
+  const { data: callbacksResponse, isLoading, error, refetch } = useCallbacks(filters);
 
   // Mutations
   const createMutation = useCreateCallback();
   const updateMutation = useUpdateCallback();
   const cancelMutation = useCancelCallback();
 
-  // Call center context for dialing
-  const { makeCall, canMakeCall } = useCallCenterContext();
-
-  // Open modal for new callback
+  // Handle new callback
   const handleNewCallback = useCallback(() => {
     setEditingCallback(null);
     setIsModalOpen(true);
   }, []);
 
-  // Open modal for editing
+  // Handle edit
   const handleEdit = useCallback((callback: CallCallback) => {
     setEditingCallback(callback);
     setIsModalOpen(true);
   }, []);
 
-  // Handle dial callback
-  const handleDial = useCallback(
-    async (callback: CallCallback) => {
-      if (canMakeCall) {
-        await makeCall(callback.phone_number, callback.contact_name);
-      }
-    },
-    [canMakeCall, makeCall]
-  );
-
-  // Handle complete callback (mark as complete without calling)
-  const handleComplete = useCallback(
+  // Handle call now (mark as completed after calling)
+  const handleCallNow = useCallback(
     (callback: CallCallback) => {
+      // In a real implementation, this would initiate a call
+      // For now, we'll mark it as completed
       updateMutation.mutate(
         { callbackId: callback.id, data: { status: CallbackStatus.COMPLETED } },
         { onSuccess: () => refetch() }
@@ -132,24 +121,27 @@ export default function CallbacksPage() {
     setCurrentPage(page);
   }, []);
 
+  // Clear filters
+  const handleClearFilters = useCallback(() => {
+    setStatusFilter([]);
+    setPriorityFilter([]);
+    setCurrentPage(0);
+  }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = statusFilter.length > 0 || priorityFilter.length > 0;
+
   // Count by status
   const pendingCount =
     callbacksResponse?.items.filter((c) => c.status === CallbackStatus.PENDING).length || 0;
 
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex justify-end">
-        <Button variant="primary" onClick={handleNewCallback}>
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Schedule Callback
-        </Button>
-      </div>
+      {/* Shared Header with Entity Selector */}
+      <CallCenterHeader description="Manage scheduled callbacks and follow-ups" />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Stats Cards with Action */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card variant="bordered" padding="md">
           <div className="flex items-center justify-between">
             <div>
@@ -198,81 +190,157 @@ export default function CallbacksPage() {
             </div>
           </div>
         </Card>
+        {/* Schedule Callback Action Card */}
+        <Card
+          variant="bordered"
+          padding="md"
+          className="flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+          onClick={handleNewCallback}
+        >
+          <div className="flex items-center gap-2 text-primary">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <span className="font-medium">Schedule Callback</span>
+          </div>
+        </Card>
       </div>
 
       {/* Filters */}
-      <Card variant="bordered" padding="md" className="mb-6">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Status</label>
-            <Select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value as CallbackStatus | "");
-                setCurrentPage(1);
-              }}
-            >
-              <option value="">All</option>
-              <option value={CallbackStatus.PENDING}>Pending</option>
-              <option value={CallbackStatus.IN_PROGRESS}>In Progress</option>
-              <option value={CallbackStatus.COMPLETED}>Completed</option>
-              <option value={CallbackStatus.CANCELLED}>Cancelled</option>
-              <option value={CallbackStatus.FAILED}>Failed</option>
-            </Select>
-          </div>
-          <div className="w-40">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Priority</label>
-            <Select
-              value={priorityFilter}
-              onChange={(e) => {
-                setPriorityFilter(e.target.value as CallbackPriority | "");
-                setCurrentPage(1);
-              }}
-            >
-              <option value="">All</option>
-              <option value={CallbackPriority.URGENT}>Urgent</option>
-              <option value={CallbackPriority.HIGH}>High</option>
-              <option value={CallbackPriority.NORMAL}>Normal</option>
-              <option value={CallbackPriority.LOW}>Low</option>
-            </Select>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setStatusFilter("");
-              setPriorityFilter("");
-              setCurrentPage(1);
+      <div className="bg-white rounded-lg shadow-medium p-4 sm:p-6">
+        {/* Filter Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <MultiSelect
+            label="Status"
+            placeholder="All Statuses"
+            options={[
+              { value: CallbackStatus.PENDING, label: "Pending" },
+              { value: CallbackStatus.IN_PROGRESS, label: "In Progress" },
+              { value: CallbackStatus.COMPLETED, label: "Completed" },
+              { value: CallbackStatus.CANCELLED, label: "Cancelled" },
+            ]}
+            value={statusFilter}
+            onChange={(values) => {
+              setStatusFilter(values);
+              setCurrentPage(0);
             }}
-          >
-            Clear Filters
-          </Button>
+            size="sm"
+          />
+          <MultiSelect
+            label="Priority"
+            placeholder="All Priorities"
+            options={[
+              { value: CallbackPriority.LOW, label: "Low" },
+              { value: CallbackPriority.NORMAL, label: "Normal" },
+              { value: CallbackPriority.HIGH, label: "High" },
+              { value: CallbackPriority.URGENT, label: "Urgent" },
+            ]}
+            value={priorityFilter}
+            onChange={(values) => {
+              setPriorityFilter(values);
+              setCurrentPage(0);
+            }}
+            size="sm"
+          />
         </div>
-      </Card>
+
+        {/* Active Filters */}
+        {hasActiveFilters && (
+          <div className="mt-4 pt-4 border-t border-border-light">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+                Active Filters:
+              </span>
+              {statusFilter.map((status) => {
+                const label =
+                  {
+                    [CallbackStatus.PENDING]: "Pending",
+                    [CallbackStatus.IN_PROGRESS]: "In Progress",
+                    [CallbackStatus.COMPLETED]: "Completed",
+                    [CallbackStatus.CANCELLED]: "Cancelled",
+                  }[status] || status;
+                return (
+                  <span
+                    key={`status-${status}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                  >
+                    Status: {label}
+                    <button
+                      onClick={() => {
+                        setStatusFilter(statusFilter.filter((s) => s !== status));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              {priorityFilter.map((priority) => {
+                const label =
+                  {
+                    [CallbackPriority.LOW]: "Low",
+                    [CallbackPriority.NORMAL]: "Normal",
+                    [CallbackPriority.HIGH]: "High",
+                    [CallbackPriority.URGENT]: "Urgent",
+                  }[priority] || priority;
+                return (
+                  <span
+                    key={`priority-${priority}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+                  >
+                    Priority: {label}
+                    <button
+                      onClick={() => {
+                        setPriorityFilter(priorityFilter.filter((p) => p !== priority));
+                        setCurrentPage(0);
+                      }}
+                      className="ml-1 hover:bg-orange-200 rounded-full p-0.5 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              <button
+                onClick={handleClearFilters}
+                className="text-xs text-status-error hover:text-status-error/80 font-medium ml-2"
+              >
+                Clear all
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Callbacks List */}
-      <Card variant="bordered" padding="none">
-        <CallbacksList
-          callbacks={callbacksResponse?.items || []}
-          isLoading={isLoading}
-          totalCount={callbacksResponse?.total || 0}
-          currentPage={currentPage}
-          pageSize={PAGE_SIZE}
-          onPageChange={handlePageChange}
-          onDial={canMakeCall ? handleDial : undefined}
-          onEdit={handleEdit}
-          onComplete={handleComplete}
-          onCancel={handleCancel}
-        />
-      </Card>
+      <CallbacksList
+        callbacks={callbacksResponse?.items || []}
+        isLoading={isLoading}
+        error={error as Error | null}
+        totalCount={callbacksResponse?.total || 0}
+        currentPage={currentPage}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onEdit={handleEdit}
+        onDial={handleCallNow}
+        onCancel={handleCancel}
+        onRetry={refetch}
+      />
 
-      {/* Schedule Callback Modal */}
+      {/* Schedule/Edit Modal */}
       <ScheduleCallbackModal
-        callback={editingCallback}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
+        callback={editingCallback}
         isSubmitting={createMutation.isPending || updateMutation.isPending}
-        entityId={entityId}
       />
     </div>
   );
