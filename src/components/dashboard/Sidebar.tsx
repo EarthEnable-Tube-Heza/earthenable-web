@@ -3,216 +3,211 @@
 /**
  * Dashboard Sidebar
  *
- * Responsive navigation sidebar with collapsible functionality.
+ * Responsive navigation sidebar with:
+ * - Modular, permission-aware navigation
+ * - Collapsible module groups with flyout menus when collapsed
  * - Desktop: Collapsible sidebar (full width or icon-only)
- * - Mobile: Overlay sidebar with hamburger menu
+ * - Smaller screens: Always visible in collapsed/icon-only mode
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useIsAdmin } from "@/src/lib/auth";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useSidebar } from "@/src/contexts/SidebarContext";
+import { useFilteredNavigation } from "@/src/lib/auth";
 import { cn } from "@/src/lib/theme";
-import { useEffect } from "react";
-import { EntitySelector } from "./EntitySelector";
+import { NavGroup } from "./NavGroup";
+import { UserMenu } from "./UserMenu";
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: string;
-  adminOnly?: boolean;
+/**
+ * Hook to track if screen matches lg breakpoint (1024px+)
+ */
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  return isDesktop;
 }
 
-const navItems: NavItem[] = [
-  {
-    href: "/dashboard",
-    label: "Home",
-    icon: "🏠",
-  },
-  {
-    href: "/dashboard/expenses",
-    label: "Expenses",
-    icon: "💰",
-  },
-  {
-    href: "/dashboard/users",
-    label: "Users",
-    icon: "👥",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/tasks",
-    label: "Tasks",
-    icon: "📋",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/analytics",
-    label: "Analytics",
-    icon: "📊",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/monitoring",
-    label: "Monitoring",
-    icon: "📡",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/sync",
-    label: "Sync",
-    icon: "🔄",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/notifications",
-    label: "Notifications",
-    icon: "🔔",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/sms",
-    label: "SMS",
-    icon: "📱",
-    adminOnly: true,
-  },
-  {
-    href: "/dashboard/call-center",
-    label: "Call Center",
-    icon: "📞",
-  },
-  {
-    href: "/dashboard/components",
-    label: "Components",
-    icon: "🎨",
-    adminOnly: true,
-  },
-];
+/**
+ * Storage key for persisting expanded module state
+ */
+const EXPANDED_MODULES_KEY = "earthenable_nav_expanded";
+
+/**
+ * Get initial expanded state from localStorage or use defaults
+ */
+function getInitialExpandedState(): Record<string, boolean> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const stored = localStorage.getItem(EXPANDED_MODULES_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Invalid JSON, use defaults
+  }
+
+  return {};
+}
 
 export function Sidebar() {
   const pathname = usePathname();
-  const isAdmin = useIsAdmin();
-  const { isCollapsed, isMobileOpen, toggleCollapsed, closeMobileMenu } = useSidebar();
+  const { isCollapsed, toggleCollapsed } = useSidebar();
+  const { modules, isLoading } = useFilteredNavigation();
+  const isDesktop = useIsDesktop();
 
-  // Close mobile menu on route change
+  // Small screens: default to collapsed but allow user to expand
+  const [smallScreenCollapsed, setSmallScreenCollapsed] = useState(true);
+  const prevIsDesktop = useRef(isDesktop);
+
+  // Auto-collapse when transitioning to a smaller screen
   useEffect(() => {
-    closeMobileMenu();
-  }, [pathname, closeMobileMenu]);
-
-  // Filter nav items based on user role
-  const filteredNavItems = navItems.filter((item) => {
-    if (item.adminOnly) {
-      return isAdmin;
+    if (prevIsDesktop.current && !isDesktop) {
+      setSmallScreenCollapsed(true);
     }
-    return true;
-  });
+    prevIsDesktop.current = isDesktop;
+  }, [isDesktop]);
+
+  // Desktop: use persisted context state; small screen: use local state
+  const effectiveCollapsed = isDesktop ? isCollapsed : smallScreenCollapsed;
+
+  // Toggle that works on both screen sizes
+  const handleToggle = useCallback(() => {
+    if (isDesktop) {
+      toggleCollapsed();
+    } else {
+      setSmallScreenCollapsed((prev) => !prev);
+    }
+  }, [isDesktop, toggleCollapsed]);
+
+  // Track expanded state for each module
+  const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({});
+
+  // Initialize expanded state from localStorage and module defaults
+  useEffect(() => {
+    const stored = getInitialExpandedState();
+
+    // Merge with defaults from modules
+    const initial: Record<string, boolean> = {};
+    modules.forEach((module) => {
+      // Use stored state if available, otherwise use module default
+      initial[module.id] =
+        stored[module.id] !== undefined ? stored[module.id] : (module.defaultExpanded ?? false);
+    });
+
+    setExpandedModules(initial);
+  }, [modules]);
+
+  // Toggle expanded state for a module
+  const handleToggleExpanded = useCallback((moduleId: string) => {
+    setExpandedModules((prev) => {
+      const next = { ...prev, [moduleId]: !prev[moduleId] };
+
+      // Persist to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem(EXPANDED_MODULES_KEY, JSON.stringify(next));
+      }
+
+      return next;
+    });
+  }, []);
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={closeMobileMenu}
-          aria-label="Close menu"
-        />
+    <aside
+      className={cn(
+        "bg-white border-r border-border-light h-screen flex flex-col",
+        "transition-all duration-300 ease-in-out",
+        "sticky top-0 z-40",
+        effectiveCollapsed ? "w-20 overflow-visible" : "w-64"
       )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          // Base styles
-          "bg-white border-r border-border-light h-screen flex flex-col",
-          "transition-all duration-300 ease-in-out",
-
-          // Mobile: fixed overlay (slides in from left)
-          "fixed inset-y-0 left-0 z-50 w-64",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-
-          // Desktop: sticky positioning, always visible, responsive width
-          "lg:sticky lg:top-0",
-          isCollapsed ? "lg:w-20" : "lg:w-64"
-        )}
-      >
-        {/* Logo */}
-        <div className={cn("p-6 border-b border-border-light", isCollapsed && "px-4")}>
-          <Link href="/dashboard" className="block">
-            {isCollapsed ? (
-              // Collapsed: Show vertical/square icon
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/icon.png" alt="EarthEnable Hub" className="w-12 h-12 mx-auto" />
-            ) : (
-              // Expanded: Show full horizontal logo
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/logo.svg" alt="EarthEnable Hub" className="w-full max-w-[180px] h-auto" />
-            )}
-          </Link>
-        </div>
-
-        {/* Toggle Button (Desktop only) */}
-        <button
-          onClick={toggleCollapsed}
-          className={cn(
-            "hidden lg:flex absolute -right-3 top-24 z-10",
-            "w-6 h-6 rounded-full bg-white border-2 border-border-light",
-            "items-center justify-center",
-            "hover:bg-background-light transition-colors",
-            "focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      {/* Logo */}
+      <div className={cn("p-6 border-b border-border-light", effectiveCollapsed && "px-4")}>
+        <Link href="/dashboard" className="block">
+          {effectiveCollapsed ? (
+            // Collapsed: Show vertical/square icon
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/icon.png" alt="EarthEnable Hub" className="w-12 h-12 mx-auto" />
+          ) : (
+            // Expanded: Show full horizontal logo
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/logo.svg" alt="EarthEnable Hub" className="w-full max-w-[180px] h-auto" />
           )}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        </Link>
+      </div>
+
+      {/* Toggle Button */}
+      <button
+        onClick={handleToggle}
+        className={cn(
+          "flex absolute -right-3 top-12 z-10",
+          "w-6 h-6 rounded-full bg-white border-2 border-border-light",
+          "items-center justify-center",
+          "hover:bg-background-light transition-colors",
+          "focus:outline-none focus:ring-2 focus:ring-primary"
+        )}
+        aria-label={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <svg
+          className={cn(
+            "w-3 h-3 text-text-secondary transition-transform",
+            effectiveCollapsed && "rotate-180"
+          )}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            className={cn(
-              "w-3 h-3 text-text-secondary transition-transform",
-              isCollapsed && "rotate-180"
-            )}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <ul className="space-y-2">
-            {filteredNavItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg font-body transition-colors",
-                      "focus:outline-none focus:ring-2 focus:ring-primary",
-                      isActive
-                        ? "bg-primary text-white"
-                        : "text-text-primary hover:bg-background-light",
-                      isCollapsed && "justify-center px-2"
-                    )}
-                    title={isCollapsed ? item.label : undefined}
-                  >
-                    <span className="text-xl flex-shrink-0">{item.icon}</span>
-                    {!isCollapsed && <span className="font-medium">{item.label}</span>}
-                  </Link>
-                </li>
-              );
-            })}
+      {/* Navigation */}
+      <nav
+        className={cn("flex-1 p-4", effectiveCollapsed ? "overflow-visible" : "overflow-y-auto")}
+      >
+        {isLoading ? (
+          // Loading skeleton
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className={cn(
+                  "h-10 bg-background-light rounded-lg animate-pulse",
+                  effectiveCollapsed && "w-10 mx-auto"
+                )}
+              />
+            ))}
+          </div>
+        ) : (
+          <ul className="space-y-1">
+            {modules.map((module) => (
+              <NavGroup
+                key={module.id}
+                module={module}
+                isCollapsed={effectiveCollapsed}
+                isExpanded={expandedModules[module.id] ?? module.defaultExpanded ?? false}
+                onToggleExpanded={handleToggleExpanded}
+                pathname={pathname}
+              />
+            ))}
           </ul>
-        </nav>
+        )}
+      </nav>
 
-        {/* Entity Selector - Shows entity badge when collapsed, full info when expanded */}
-        <EntitySelector isCollapsed={isCollapsed} />
-      </aside>
-    </>
+      {/* User Menu - Shows avatar when collapsed, full user info when expanded */}
+      <UserMenu isCollapsed={effectiveCollapsed} />
+    </aside>
   );
 }

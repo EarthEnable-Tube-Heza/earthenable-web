@@ -25,7 +25,7 @@ import {
   getDueDateLabel,
   dueTimeFilterOptions,
 } from "@/src/types/task";
-import { cn } from "@/src/lib/theme";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { Badge } from "@/src/components/ui/Badge";
 import { Select } from "@/src/components/ui/Select";
 import { MultiSelect } from "@/src/components/ui/MultiSelect";
@@ -378,7 +378,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Statistics Overview */}
       {!statsLoading && stats && (
         <div className="space-y-4">

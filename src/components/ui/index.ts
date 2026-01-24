@@ -58,9 +58,6 @@ export type { PersonCardProps } from "./PersonCard";
 export { Breadcrumbs } from "./Breadcrumbs";
 export type { BreadcrumbsProps, BreadcrumbItem } from "./Breadcrumbs";
 
-export { PageHeader } from "./PageHeader";
-export type { PageHeaderProps } from "./PageHeader";
-
 export { TabNavigation } from "./TabNavigation";
 export type { TabNavigationProps, TabItem } from "./TabNavigation";
 

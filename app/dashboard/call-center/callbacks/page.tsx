@@ -12,8 +12,11 @@ import {
   useCreateCallback,
   useUpdateCallback,
   useCancelCallback,
-  useCallCenterEntity,
 } from "@/src/hooks/useCallCenter";
+import { useAuth } from "@/src/lib/auth";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { CallCenterHeader } from "@/src/components/call-center";
 import { CallbacksList } from "@/src/components/call-center/CallbacksList";
 import { ScheduleCallbackModal } from "@/src/components/call-center/ScheduleCallbackModal";
@@ -38,8 +41,9 @@ export default function CallbacksPage() {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
 
-  // Use persistent entity selection (shared with header)
-  const { selectedEntityId } = useCallCenterEntity();
+  // Use global entity selection from auth context
+  const { selectedEntityId: rawEntityId } = useAuth();
+  const selectedEntityId = rawEntityId || "";
 
   // Build filters object
   const filters = {
@@ -135,10 +139,18 @@ export default function CallbacksPage() {
   const pendingCount =
     callbacksResponse?.items.filter((c) => c.status === CallbackStatus.PENDING).length || 0;
 
+  useSetPageHeader({
+    title: "Callbacks",
+    pathLabels: { "call-center": "Call Center", callbacks: "Callbacks" },
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Shared Header with Entity Selector */}
-      <CallCenterHeader description="Manage scheduled callbacks and follow-ups" />
+    <div className={PAGE_SPACING}>
+      {/* Page Title */}
+      <PageTitle title="Callbacks" description="Manage scheduled callbacks and follow-ups" />
+
+      {/* Shared Header */}
+      <CallCenterHeader />
 
       {/* Stats Cards with Action */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

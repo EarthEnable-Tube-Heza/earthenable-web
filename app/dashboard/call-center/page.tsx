@@ -8,13 +8,18 @@
  */
 
 import { useMemo } from "react";
-import { useVoiceSettings, useMyQueues, useCallCenterEntity } from "@/src/hooks/useCallCenter";
+import { useVoiceSettings, useMyQueues } from "@/src/hooks/useCallCenter";
+import { useAuth } from "@/src/lib/auth";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { WorkspaceView, CallCenterHeader } from "@/src/components/call-center";
-import { Card } from "@/src/components/ui";
+import { Button, Card, Tooltip } from "@/src/components/ui";
 
 export default function CallCenterPage() {
-  // Use persistent entity selection (shared with header)
-  const { selectedEntityId } = useCallCenterEntity();
+  // Use global entity selection from auth context
+  const { selectedEntityId: rawEntityId } = useAuth();
+  const selectedEntityId = rawEntityId || "";
 
   // Fetch data for queue warning
   const { data: voiceSettings } = useVoiceSettings(selectedEntityId);
@@ -34,10 +39,48 @@ export default function CallCenterPage() {
   // Check if user is assigned to any queue
   const isAssignedToQueue = myQueues && myQueues.length > 0;
 
+  useSetPageHeader({
+    title: "Call Center",
+    pathLabels: { "call-center": "Call Center" },
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Shared Header with Entity Selector, Stats, Settings Summary, and Tabs */}
-      <CallCenterHeader description="Manage calls, view statistics, and access softphone" />
+    <div className={PAGE_SPACING}>
+      {/* Page Title + CTA */}
+      <PageTitle
+        title="Call Center"
+        description="Manage calls, view statistics, and access softphone"
+        actions={
+          <Tooltip
+            content={
+              !selectedEntityId
+                ? "Please select an entity first"
+                : !configStatus.isConfigured
+                  ? "Voice is not configured. Go to Settings tab to configure."
+                  : !isAssignedToQueue
+                    ? "You are not assigned to any call queue."
+                    : null
+            }
+            position="bottom"
+          >
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!selectedEntityId || !configStatus.isConfigured || !isAssignedToQueue}
+              onClick={() => {
+                document
+                  .getElementById("softphone-section")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Open Softphone
+            </Button>
+          </Tooltip>
+        }
+      />
+
+      {/* Shared Header with Stats, Settings Summary, and Tabs */}
+      <CallCenterHeader />
 
       {/* Agent Queue Assignment Warning */}
       {selectedEntityId && configStatus.isConfigured && !isAssignedToQueue && (

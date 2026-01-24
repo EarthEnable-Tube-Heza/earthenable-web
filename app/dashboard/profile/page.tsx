@@ -8,10 +8,18 @@
 
 import { useAuth } from "@/src/lib/auth";
 import { formatRoleLabel } from "@/src/types/user";
-import { Card, Badge, PageHeader } from "@/src/components/ui";
+import { Card, Badge } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
+
+  useSetPageHeader({
+    title: "My Profile",
+    pathLabels: { profile: "Profile" },
+  });
 
   if (isLoading) {
     return (
@@ -42,13 +50,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <PageHeader
-        title="My Profile"
-        description="View and manage your account information"
-        pathLabels={{ profile: "Profile" }}
-      />
+    <div className={PAGE_SPACING}>
+      <PageTitle title="My Profile" description="View and manage your account information" />
 
       {/* Profile Overview Card */}
       <Card variant="elevated" padding="lg">
