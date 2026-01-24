@@ -16,4 +16,3 @@ export { CallbacksList } from "./CallbacksList";
 export { ScheduleCallbackModal } from "./ScheduleCallbackModal";
 export { VoiceSettingsForm } from "./VoiceSettingsForm";
 export { CallCenterHeader } from "./CallCenterHeader";
-export type { CallCenterHeaderProps } from "./CallCenterHeader";

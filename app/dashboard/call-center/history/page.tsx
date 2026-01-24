@@ -7,7 +7,11 @@
  */
 
 import { useState, useCallback } from "react";
-import { useCallLogs, useCallCenterEntity } from "@/src/hooks/useCallCenter";
+import { useCallLogs } from "@/src/hooks/useCallCenter";
+import { useAuth } from "@/src/lib/auth";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { CallCenterHeader } from "@/src/components/call-center";
 import { CallHistoryTable } from "@/src/components/call-center/CallHistoryTable";
 import { CallDetailModal } from "@/src/components/call-center/CallDetailModal";
@@ -28,8 +32,9 @@ export default function CallHistoryPage() {
   const [directionFilter, setDirectionFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
 
-  // Use persistent entity selection (shared with header)
-  const { selectedEntityId } = useCallCenterEntity();
+  // Use global entity selection from auth context
+  const { selectedEntityId: rawEntityId } = useAuth();
+  const selectedEntityId = rawEntityId || "";
 
   // Build filters object
   const filters = {
@@ -73,10 +78,16 @@ export default function CallHistoryPage() {
   // Check if any filters are active
   const hasActiveFilters = phoneSearch || directionFilter.length > 0 || statusFilter.length > 0;
 
+  useSetPageHeader({
+    title: "Call History",
+    pathLabels: { "call-center": "Call Center", history: "History" },
+  });
+
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
+      <PageTitle title="Call History" description="View and search call logs and recordings" />
       {/* Shared Header with Entity Selector */}
-      <CallCenterHeader description="View and search call logs and recordings" />
+      <CallCenterHeader />
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-medium p-4 sm:p-6">

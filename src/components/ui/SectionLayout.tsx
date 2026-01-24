@@ -4,8 +4,7 @@
  * SectionLayout Component
  *
  * Standardized layout for dashboard sections with:
- * - Breadcrumbs
- * - Page header (title + description)
+ * - Page header data (set via context to unified header)
  * - Optional tab navigation
  * - Content area
  *
@@ -13,11 +12,23 @@
  */
 
 import { ReactNode } from "react";
-import { PageHeader, PageHeaderProps } from "./PageHeader";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
 import { TabNavigation, TabItem } from "./TabNavigation";
-import { cn } from "@/src/lib/theme";
+import { BreadcrumbItem } from "./Breadcrumbs";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 
-export interface SectionLayoutProps extends Omit<PageHeaderProps, "children"> {
+export interface SectionLayoutProps {
+  /** Section title (shown in unified header) */
+  title: string;
+  /** Section description (shown in unified header) */
+  description?: string;
+  /** Custom breadcrumb items */
+  breadcrumbs?: BreadcrumbItem[];
+  /** Custom labels for auto-generated breadcrumb path segments */
+  pathLabels?: Record<string, string>;
+  /** Action buttons/elements to display in unified header */
+  actions?: ReactNode;
   /** Tab items for horizontal navigation */
   tabs?: TabItem[];
   /** Aria label for tab navigation */
@@ -28,15 +39,16 @@ export interface SectionLayoutProps extends Omit<PageHeaderProps, "children"> {
   className?: string;
   /** Custom class name for the content area */
   contentClassName?: string;
-  /** Whether to add spacing between header/tabs and content */
+  /** Whether to add spacing between tabs and content */
   contentSpacing?: "none" | "sm" | "md" | "lg";
+  /** @deprecated No longer used - breadcrumbs are auto-generated in header */
+  showBreadcrumbs?: boolean;
 }
 
 export function SectionLayout({
   title,
   description,
   breadcrumbs,
-  showBreadcrumbs = true,
   pathLabels,
   actions,
   tabs,
@@ -53,17 +65,18 @@ export function SectionLayout({
     lg: "mt-8",
   };
 
+  useSetPageHeader({
+    title,
+    description,
+    actions,
+    breadcrumbs,
+    pathLabels,
+  });
+
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Page Header */}
-      <PageHeader
-        title={title}
-        description={description}
-        breadcrumbs={breadcrumbs}
-        showBreadcrumbs={showBreadcrumbs}
-        pathLabels={pathLabels}
-        actions={actions}
-      />
+    <div className={cn(PAGE_SPACING, className)}>
+      {/* Page Title + Description + Actions */}
+      <PageTitle title={title} description={description} actions={actions} />
 
       {/* Tab Navigation */}
       {tabs && tabs.length > 0 && (

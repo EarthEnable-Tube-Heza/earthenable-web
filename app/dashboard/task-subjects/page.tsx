@@ -11,12 +11,15 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
 import { TaskSubject, TaskSubjectForm } from "@/src/types/form";
-import { cn } from "@/src/lib/theme";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { EditFormMappingModal } from "@/src/components/EditFormMappingModal";
 import { CreateTaskSubjectModal } from "@/src/components/CreateTaskSubjectModal";
 import { CreateFormMappingModal } from "@/src/components/CreateFormMappingModal";
 import { Select } from "@/src/components/ui/Select";
+import { Button } from "@/src/components/ui/Button";
 import { EARTHENABLE_COUNTRIES } from "@/src/lib/constants";
 
 // Combined view of task subject with its mappings
@@ -26,6 +29,11 @@ interface TaskSubjectWithMappings {
 }
 
 export default function TaskSubjectsPage() {
+  useSetPageHeader({
+    title: "Task Subjects",
+    pathLabels: { "task-subjects": "Task Subjects" },
+  });
+
   const [countryFilter, setCountryFilter] = useState<string>("");
   const [selectedMapping, setSelectedMapping] = useState<TaskSubjectForm | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,30 +107,22 @@ export default function TaskSubjectsPage() {
   const countryOptions = EARTHENABLE_COUNTRIES.map((c) => c.code);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-text-primary">Task Subjects</h1>
-          <p className="text-text-secondary mt-2">
-            Manage task subjects and their FormYoula form mappings
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setIsCreateSubjectModalOpen(true)}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium text-sm whitespace-nowrap"
-          >
-            + New Task Subject
-          </button>
-          <button
-            onClick={() => setIsCreateMappingModalOpen(true)}
-            className="px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-colors font-medium text-sm whitespace-nowrap"
-          >
-            + New Form Mapping
-          </button>
-        </div>
-      </div>
+    <div className={PAGE_SPACING}>
+      {/* Page Title */}
+      <PageTitle
+        title="Task Subjects"
+        description="Manage task subjects and their FormYoula form mappings"
+        actions={
+          <div className="flex gap-3">
+            <Button variant="primary" size="sm" onClick={() => setIsCreateSubjectModalOpen(true)}>
+              + New Task Subject
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsCreateMappingModalOpen(true)}>
+              + New Form Mapping
+            </Button>
+          </div>
+        }
+      />
 
       {/* Info Card */}
       <div className="bg-status-info/10 border border-status-info rounded-lg p-4">

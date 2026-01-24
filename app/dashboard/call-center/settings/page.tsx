@@ -12,9 +12,11 @@ import {
   useVoiceSettings,
   useCreateVoiceSettings,
   useUpdateVoiceSettings,
-  useCallCenterEntity,
   voiceQueryKeys,
 } from "@/src/hooks/useCallCenter";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { apiClient } from "@/src/lib/api";
 import { VoiceSettingsForm, CallCenterHeader } from "@/src/components/call-center";
 import { VoiceSettingsCreate, VoiceSettingsUpdate } from "@/src/types/voice";
@@ -97,10 +99,10 @@ function StatusCheckItem({
 }
 
 export default function CallCenterSettingsPage() {
-  const { user } = useAuth();
-  // Use persistent entity selection (shared with header)
-  const { selectedEntityId, entities } = useCallCenterEntity();
-  const selectedEntity = entities.find((e) => e.id === selectedEntityId);
+  const { user, selectedEntityId: rawEntityId, entityInfo } = useAuth();
+  // Use global entity selection from auth context
+  const selectedEntityId = rawEntityId || "";
+  const selectedEntity = entityInfo?.accessible_entities.find((e) => e.id === selectedEntityId);
 
   // Fetch voice settings
   const {
@@ -108,7 +110,7 @@ export default function CallCenterSettingsPage() {
     isLoading: isSettingsLoading,
     error: settingsError,
     refetch,
-  } = useVoiceSettings(selectedEntityId ?? undefined);
+  } = useVoiceSettings(selectedEntityId);
 
   // Fetch agent status (no polling for settings page)
   const {
@@ -284,6 +286,11 @@ export default function CallCenterSettingsPage() {
     ]
   );
 
+  useSetPageHeader({
+    title: "Call Center Settings",
+    pathLabels: { "call-center": "Call Center", settings: "Settings" },
+  });
+
   // Early return for non-admin users (after all hooks)
   if (!isAdmin) {
     return (
@@ -305,9 +312,13 @@ export default function CallCenterSettingsPage() {
     checks.webrtcConfig.status === "success";
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
+      <PageTitle
+        title="Call Center Settings"
+        description="Configure voice service and Africa's Talking integration"
+      />
       {/* Shared Header with Entity Selector */}
-      <CallCenterHeader description="Configure voice service and Africa's Talking integration" />
+      <CallCenterHeader />
 
       {/* Debug Status Panel */}
       <Card variant="bordered" padding="md">
@@ -382,7 +393,7 @@ export default function CallCenterSettingsPage() {
                         code: selectedEntity.code,
                       }
                     : null,
-                  availableEntities: entities.map((e) => ({
+                  availableEntities: (entityInfo?.accessible_entities || []).map((e) => ({
                     id: e.id,
                     name: e.name,
                   })),

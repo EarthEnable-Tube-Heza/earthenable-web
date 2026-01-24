@@ -12,8 +12,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/src/lib/api";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
 import { KnownRoles, formatRoleLabel } from "@/src/types/user";
-import { cn } from "@/src/lib/theme";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { LabeledSelect, MultiSelect } from "@/src/components/ui";
 
 export default function UsersPage() {
@@ -85,6 +86,11 @@ export default function UsersPage() {
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / limit);
 
+  useSetPageHeader({
+    title: "Users",
+    pathLabels: { users: "Users" },
+  });
+
   // Handle search submission
   const handleSearch = () => {
     setSearchQuery(searchInput);
@@ -109,7 +115,7 @@ export default function UsersPage() {
   const hasUnsearchedInput = searchInput !== searchQuery;
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-medium p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

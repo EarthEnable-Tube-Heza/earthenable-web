@@ -12,15 +12,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Card,
-  Badge,
-  Spinner,
-  Button,
-  Input,
-  LabeledSelect,
-  PageHeader,
-} from "@/src/components/ui";
+import { Card, Badge, Spinner, Button, Input, LabeledSelect } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { useNotificationsByUser, useNotificationStats } from "@/src/hooks/useNotifications";
 import {
   SendNotificationModal,
@@ -90,24 +85,19 @@ export default function NotificationsPage() {
     setSelectedUser(null);
   };
 
+  useSetPageHeader({
+    title: "Notifications",
+    pathLabels: { notifications: "Notifications" },
+  });
+
   return (
-    <div className="container mx-auto max-w-7xl">
-      {/* Page Header */}
-      <PageHeader
+    <div className={`container mx-auto max-w-7xl ${PAGE_SPACING}`}>
+      {/* Page Title + CTA */}
+      <PageTitle
         title="Notifications"
         description="View and manage push notifications sent to mobile app users"
-        pathLabels={{ notifications: "Notifications" }}
-        className="mb-6"
         actions={
-          <Button variant="primary" onClick={() => setIsSendModalOpen(true)}>
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
+          <Button variant="primary" size="sm" onClick={() => setIsSendModalOpen(true)}>
             Send Notification
           </Button>
         }

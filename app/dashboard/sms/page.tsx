@@ -14,8 +14,10 @@ import {
   useSmsStats,
   useEvaluationSmsConfigs,
 } from "@/src/hooks/useSms";
-import { useEntities } from "@/src/hooks/useExpenses";
-import { Badge, Button, Card, Select, Spinner, Tooltip, PageHeader } from "@/src/components/ui";
+import { useAuth } from "@/src/lib/auth";
+import { Badge, Button, Card, Spinner, Tooltip } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
 import {
   getSmsStatusLabel,
   getSmsStatusColors,
@@ -23,7 +25,7 @@ import {
   getCategoryLabel,
   getRecipientTypeLabel,
 } from "@/src/types/sms";
-import { cn } from "@/src/lib/theme";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { SmsSettingsModal } from "@/src/components/sms/SmsSettingsModal";
 import { SmsTemplateModal } from "@/src/components/sms/SmsTemplateModal";
 import { SmsLogDetailModal } from "@/src/components/sms/SmsLogDetailModal";
@@ -34,7 +36,6 @@ type TabType = "messages" | "templates" | "automations" | "logs" | "settings";
 
 export default function SmsManagementPage() {
   const [activeTab, setActiveTab] = useState<TabType>("messages");
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
   const [page, setPage] = useState(0);
   const limit = 20;
 
@@ -48,28 +49,23 @@ export default function SmsManagementPage() {
   const [isEvalConfigModalOpen, setIsEvalConfigModalOpen] = useState(false);
   const [selectedEvalConfigId, setSelectedEvalConfigId] = useState<string | null>(null);
 
-  // Fetch entities
-  const { data: entitiesData } = useEntities();
-  const entities = entitiesData?.entities || [];
-
-  // Set default entity if not selected
-  if (!selectedEntityId && entities.length > 0) {
-    setSelectedEntityId(entities[0].id);
-  }
+  // Use global entity selection from auth context
+  const { selectedEntityId } = useAuth();
 
   // Fetch data based on selected entity
-  const { data: smsSettings, isLoading: isLoadingSettings } = useSmsSettings(selectedEntityId);
-  const { data: smsStats } = useSmsStats(selectedEntityId);
+  const entityId = selectedEntityId || "";
+  const { data: smsSettings, isLoading: isLoadingSettings } = useSmsSettings(entityId);
+  const { data: smsStats } = useSmsStats(entityId);
   const { data: templates, isLoading: isLoadingTemplates } = useSmsTemplates(
-    selectedEntityId ? { entity_id: selectedEntityId } : undefined
+    entityId ? { entity_id: entityId } : undefined
   );
   const { data: logsData, isLoading: isLoadingLogs } = useSmsLogs({
-    entity_id: selectedEntityId,
+    entity_id: entityId,
     skip: page * limit,
     limit,
   });
   const { data: evalConfigs, isLoading: isLoadingEvalConfigs } = useEvaluationSmsConfigs({
-    entity_id: selectedEntityId,
+    entity_id: entityId,
   });
 
   const logs = logsData?.items || [];
@@ -101,54 +97,42 @@ export default function SmsManagementPage() {
     setIsEvalConfigModalOpen(true);
   };
 
+  useSetPageHeader({
+    title: "SMS Management",
+    pathLabels: { sms: "SMS" },
+  });
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Page Header */}
-      <PageHeader
+    <div className={PAGE_SPACING}>
+      {/* Page Title + CTA */}
+      <PageTitle
         title="SMS Management"
         description="Manage SMS settings, templates, and view delivery logs"
-        pathLabels={{ sms: "SMS" }}
         actions={
-          <div className="flex items-center gap-3">
-            <Select
-              value={selectedEntityId}
-              onChange={(e) => {
-                setSelectedEntityId(e.target.value);
-                setPage(0);
-              }}
-              className="w-48"
+          <Tooltip
+            content={
+              !entityId
+                ? "Please select an entity first"
+                : !smsSettings?.is_configured
+                  ? "SMS is not configured. Go to Settings tab to configure API credentials."
+                  : null
+            }
+            position="bottom"
+          >
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsSendSmsOpen(true)}
+              disabled={!entityId || !smsSettings?.is_configured}
             >
-              <option value="">Select Entity</option>
-              {entities.map((entity) => (
-                <option key={entity.id} value={entity.id}>
-                  {entity.name} ({entity.code})
-                </option>
-              ))}
-            </Select>
-            <Tooltip
-              content={
-                !selectedEntityId
-                  ? "Please select an entity first"
-                  : !smsSettings?.is_configured
-                    ? "SMS is not configured. Go to Settings tab to configure API credentials."
-                    : null
-              }
-              position="bottom"
-            >
-              <Button
-                variant="primary"
-                onClick={() => setIsSendSmsOpen(true)}
-                disabled={!selectedEntityId || !smsSettings?.is_configured}
-              >
-                Send SMS
-              </Button>
-            </Tooltip>
-          </div>
+              Send SMS
+            </Button>
+          </Tooltip>
         }
       />
 
       {/* Stats Cards */}
-      {selectedEntityId && smsStats && (
+      {entityId && smsStats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card padding="md">
             <div className="text-sm text-text-secondary">Total Sent ({smsStats.period_days}d)</div>
@@ -178,7 +162,7 @@ export default function SmsManagementPage() {
       )}
 
       {/* Settings Summary Card */}
-      {selectedEntityId && (
+      {entityId && (
         <Card padding="md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-wrap">
@@ -271,10 +255,6 @@ export default function SmsManagementPage() {
       {/* Tab Content */}
       {activeTab === "messages" && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-text-primary">Recent Messages</h2>
-          </div>
-
           {isLoadingLogs ? (
             <div className="flex items-center justify-center py-12">
               <Spinner size="lg" />
@@ -283,7 +263,7 @@ export default function SmsManagementPage() {
             <Card padding="lg" className="text-center">
               <p className="text-text-secondary">No messages sent yet.</p>
               <p className="text-sm text-text-secondary mt-1">
-                Send your first SMS using the &quot;Send SMS&quot; button above.
+                Send your first SMS using the &quot;Send SMS&quot; button.
               </p>
             </Card>
           ) : (
@@ -915,13 +895,13 @@ export default function SmsManagementPage() {
 
       {/* Modals */}
       <SmsSettingsModal
-        entityId={selectedEntityId}
+        entityId={entityId}
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
       />
 
       <SmsTemplateModal
-        entityId={selectedEntityId}
+        entityId={entityId}
         templateId={selectedTemplateId}
         isOpen={isTemplateModalOpen}
         onClose={() => {
@@ -940,13 +920,13 @@ export default function SmsManagementPage() {
       />
 
       <SendSmsModal
-        entityId={selectedEntityId}
+        entityId={entityId}
         isOpen={isSendSmsOpen}
         onClose={() => setIsSendSmsOpen(false)}
       />
 
       <EvaluationConfigModal
-        entityId={selectedEntityId}
+        entityId={entityId}
         configId={selectedEvalConfigId}
         isOpen={isEvalConfigModalOpen}
         onClose={() => {

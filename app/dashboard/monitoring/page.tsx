@@ -7,8 +7,11 @@
  * user activity, and system resources.
  */
 
-import { useRequireAdmin } from "@/src/lib/auth";
-import { Button, PageHeader } from "@/src/components/ui";
+import { Button } from "@/src/components/ui";
+import { PagePermissionGuard } from "@/src/components/auth";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { useRefreshMonitoring } from "@/src/hooks/useMonitoring";
 import {
   ServerHealthCard,
@@ -22,25 +25,31 @@ import {
 } from "@/src/components/monitoring";
 
 export default function MonitoringPage() {
-  // Require admin role to access this page
-  const { isLoading: isAuthLoading } = useRequireAdmin();
+  return (
+    <PagePermissionGuard
+      permissions={["system.monitoring", "system.admin"]}
+      pageTitle="Server Monitoring"
+      showUnauthorizedPage
+    >
+      <MonitoringContent />
+    </PagePermissionGuard>
+  );
+}
+
+function MonitoringContent() {
   const { refreshAll } = useRefreshMonitoring();
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  useSetPageHeader({
+    title: "Server Monitoring",
+    pathLabels: { monitoring: "Monitoring" },
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <PageHeader
+    <div className={PAGE_SPACING}>
+      {/* Page Title + CTA */}
+      <PageTitle
         title="Server Monitoring"
         description="Real-time server health, sync status, and resource utilization"
-        pathLabels={{ monitoring: "Monitoring" }}
         actions={
           <Button variant="outline" size="sm" onClick={refreshAll}>
             Refresh All

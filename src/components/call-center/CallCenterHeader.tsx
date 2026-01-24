@@ -16,23 +16,9 @@
  */
 
 import { useMemo } from "react";
-import {
-  useVoiceSettings,
-  useMyQueues,
-  useCallCenterStats,
-  useCallCenterEntity,
-} from "@/src/hooks/useCallCenter";
-import {
-  PageHeader,
-  TabNavigation,
-  TabItem,
-  Select,
-  Button,
-  Tooltip,
-  Card,
-  Badge,
-  Spinner,
-} from "@/src/components/ui";
+import { useVoiceSettings, useMyQueues, useCallCenterStats } from "@/src/hooks/useCallCenter";
+import { useAuth } from "@/src/lib/auth";
+import { TabNavigation, TabItem, Button, Card, Badge, Spinner } from "@/src/components/ui";
 import Link from "next/link";
 
 // Tab configuration for call center section
@@ -43,16 +29,10 @@ const callCenterTabs: TabItem[] = [
   { label: "Settings", href: "/dashboard/call-center/settings" },
 ];
 
-export interface CallCenterHeaderProps {
-  /** Page-specific description */
-  description?: string;
-}
-
-export function CallCenterHeader({
-  description = "Manage calls, callbacks, and voice service settings",
-}: CallCenterHeaderProps) {
-  // Use persistent entity selection (survives page navigation)
-  const { selectedEntityId, setSelectedEntityId, entities } = useCallCenterEntity();
+export function CallCenterHeader() {
+  // Use global entity selection from auth context
+  const { selectedEntityId: rawEntityId } = useAuth();
+  const selectedEntityId = rawEntityId || "";
 
   // Fetch voice settings, stats, and queue assignment
   const { data: voiceSettings, isLoading: isLoadingSettings } = useVoiceSettings(selectedEntityId);
@@ -91,59 +71,7 @@ export function CallCenterHeader({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header with Entity Selector & Actions */}
-      <PageHeader
-        title="Call Center"
-        description={description}
-        showBreadcrumbs={false}
-        actions={
-          <div className="flex items-center gap-3">
-            <Select
-              value={selectedEntityId}
-              onChange={(e) => setSelectedEntityId(e.target.value)}
-              className="w-48"
-            >
-              <option value="">Select Entity</option>
-              {entities.map((entity) => (
-                <option key={entity.id} value={entity.id}>
-                  {entity.name} ({entity.code})
-                </option>
-              ))}
-            </Select>
-            <Tooltip
-              content={
-                !selectedEntityId
-                  ? "Please select an entity first"
-                  : !configStatus.isConfigured
-                    ? "Voice is not configured. Go to Settings tab to configure."
-                    : !isAssignedToQueue
-                      ? "You are not assigned to any call queue."
-                      : null
-              }
-              position="bottom"
-            >
-              <Button
-                variant="primary"
-                disabled={!selectedEntityId || !configStatus.isConfigured || !isAssignedToQueue}
-                onClick={() => {
-                  // Navigate to workspace and scroll to softphone
-                  if (window.location.pathname !== "/dashboard/call-center") {
-                    window.location.href = "/dashboard/call-center#softphone-section";
-                  } else {
-                    document
-                      .getElementById("softphone-section")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }
-                }}
-              >
-                Open Softphone
-              </Button>
-            </Tooltip>
-          </div>
-        }
-      />
-
+    <div className="space-y-4">
       {/* Stats Cards - Always visible */}
       {selectedEntityId && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -265,7 +193,9 @@ export function CallCenterHeader({
               d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
             />
           </svg>
-          <p className="text-text-secondary">Select an entity to view call center</p>
+          <p className="text-text-secondary">
+            Select an entity from the header to view call center
+          </p>
         </Card>
       )}
 

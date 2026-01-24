@@ -9,6 +9,8 @@
 
 import { useState } from "react";
 import { Button, Input, Select, Card, Badge, Spinner, Alert, Toast } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
 
 export default function ComponentsPage() {
   const [inputValue, setInputValue] = useState("");
@@ -16,18 +18,17 @@ export default function ComponentsPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info">("success");
 
+  useSetPageHeader({
+    title: "Component Library",
+    pathLabels: { components: "Components" },
+  });
+
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">
-          Component Library
-        </h1>
-        <p className="text-text-secondary">
-          Reusable UI components following the EarthEnable design system. All components use theme
-          constants for consistent styling.
-        </p>
-      </div>
+      <PageTitle
+        title="Component Library"
+        description="Reusable UI components following the EarthEnable design system"
+      />
 
       <div className="space-y-12">
         {/* Button Component */}
