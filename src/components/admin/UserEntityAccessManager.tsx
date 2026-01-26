@@ -8,8 +8,9 @@
  * actions to grant/revoke access.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { apiClient } from "@/src/lib/api/apiClient";
 import { UserWithEntityAccess, EntityListResponse } from "@/src/types";
 import {
@@ -25,12 +26,17 @@ import {
 import { GrantEntityAccessModal } from "./GrantEntityAccessModal";
 import { formatRoleLabel } from "@/src/types/user";
 
+const PAGE_SIZE = 20;
+
 export function UserEntityAccessManager() {
   const [users, setUsers] = useState<UserWithEntityAccess[]>([]);
   const [entities, setEntities] = useState<EntityListResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const prevSearchRef = useRef(searchQuery);
   const [selectedUser, setSelectedUser] = useState<UserWithEntityAccess | null>(null);
   const [showGrantModal, setShowGrantModal] = useState(false);
   const [revokeConfirm, setRevokeConfirm] = useState<{ userId: string; entityId: string } | null>(
@@ -46,22 +52,35 @@ export function UserEntityAccessManager() {
     message: "",
   });
 
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
   // Fetch users with entity access
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      // Reset to page 1 when search changes
+      let page = currentPage;
+      if (prevSearchRef.current !== searchQuery) {
+        page = 1;
+        setCurrentPage(1);
+        prevSearchRef.current = searchQuery;
+      }
+      const skip = (page - 1) * PAGE_SIZE;
       const data = await apiClient.getUsersWithEntityAccess({
         search: searchQuery || undefined,
+        skip,
+        limit: PAGE_SIZE,
       });
-      setUsers(data);
+      setUsers(data.items);
+      setTotal(data.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load users");
       console.error("Error fetching users:", err);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, currentPage]);
 
   // Fetch available entities
   const fetchEntities = async () => {
@@ -286,6 +305,57 @@ export function UserEntityAccessManager() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border-light">
+            <p className="text-sm text-text-secondary">
+              Showing {(currentPage - 1) * PAGE_SIZE + 1} to{" "}
+              {Math.min(currentPage * PAGE_SIZE, total)} of {total} users
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                title="First page"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                title="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="px-3 text-sm text-text-primary">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                title="Next page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage >= totalPages}
+                title="Last page"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Grant Entity Access Modal */}
