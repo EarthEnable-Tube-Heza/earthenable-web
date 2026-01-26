@@ -31,6 +31,7 @@ import {
   UpdateFormMapping,
   EntityListResponse,
   UserWithEntityAccess,
+  PaginatedUserEntityAccessResponse,
   GrantEntityAccessRequest,
   BulkGrantEntityAccessRequest,
   EntityAccessResponse,
@@ -428,9 +429,17 @@ class APIClient {
 
   /**
    * Select entity (switch entity context)
+   * Returns new tokens with selected_entity_id embedded
    */
-  async selectEntity(entityId: string): Promise<void> {
-    await this.post("auth/select-entity", { entity_id: entityId });
+  async selectEntity(
+    entityId: string
+  ): Promise<{ access_token: string; refresh_token: string; expires_in: number }> {
+    const response = await this.post<{
+      access_token: string;
+      refresh_token: string;
+      expires_in: number;
+    }>("auth/select-entity", { entity_id: entityId });
+    return response;
   }
 
   // ============================================================================
@@ -606,8 +615,10 @@ class APIClient {
     search?: string;
     entity_id?: string;
     is_active?: boolean;
-  }): Promise<UserWithEntityAccess[]> {
-    return this.get<UserWithEntityAccess[]>("/admin/users/entity-access", { params });
+    skip?: number;
+    limit?: number;
+  }): Promise<PaginatedUserEntityAccessResponse> {
+    return this.get<PaginatedUserEntityAccessResponse>("/admin/users/entity-access", { params });
   }
 
   /**

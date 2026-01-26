@@ -71,6 +71,17 @@ export interface UserWithEntityAccess {
 }
 
 /**
+ * Paginated response for users with entity access
+ */
+export interface PaginatedUserEntityAccessResponse {
+  items: UserWithEntityAccess[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_more: boolean;
+}
+
+/**
  * Grant entity access request
  */
 export interface GrantEntityAccessRequest {
