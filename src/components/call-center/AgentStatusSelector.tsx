@@ -72,9 +72,9 @@ export function AgentStatusSelector({
   const config = AGENT_STATUS_CONFIG[currentStatus];
   const isDisabled = disabled || isLoading;
 
-  // Non-selectable statuses (system-controlled)
-  const isSystemStatus =
-    currentStatus === AgentStatusEnum.BUSY || currentStatus === AgentStatusEnum.OFFLINE;
+  // Non-selectable statuses (system-controlled) — only BUSY is locked
+  // OFFLINE agents need to be able to click to go Available
+  const isSystemStatus = currentStatus === AgentStatusEnum.BUSY;
 
   const sizeStyles = {
     sm: {
@@ -181,7 +181,7 @@ export function AgentStatusSelector({
           {/* System status indicator */}
           <div className="border-t border-border-light mt-1 pt-1 px-3 py-2">
             <p className="text-xs text-text-disabled">
-              {config.icon} Busy & Offline are auto-managed
+              {config.icon} Busy is auto-managed during calls
             </p>
           </div>
         </div>
