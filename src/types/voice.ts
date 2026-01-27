@@ -377,7 +377,18 @@ export interface WebRTCConfig {
 
 // ==================== Statistics ====================
 
+export interface QueueStatsResponse {
+  queue_id: string;
+  queue_name: string;
+  calls_waiting: number;
+  agents_available: number;
+  agents_busy: number;
+  average_wait_seconds: number;
+  longest_wait_seconds: number;
+}
+
 export interface CallCenterStats {
+  entity_id: string;
   period_days: number;
   total_calls: number;
   inbound_calls: number;
@@ -385,14 +396,18 @@ export interface CallCenterStats {
   completed_calls: number;
   missed_calls: number;
   failed_calls: number;
-  total_duration_seconds: number;
-  average_duration_seconds: number;
+  total_talk_time_seconds: number;
+  average_call_duration_seconds: number;
   average_wait_time_seconds: number;
   total_cost: number;
   currency: string;
-  calls_with_recording: number;
-  daily_remaining: number;
-  monthly_remaining: number;
+  total_agents: number;
+  agents_online: number;
+  agents_available: number;
+  agents_busy: number;
+  total_queues: number;
+  active_queues: number;
+  queue_stats: QueueStatsResponse[];
 }
 
 export interface QueueStats {
