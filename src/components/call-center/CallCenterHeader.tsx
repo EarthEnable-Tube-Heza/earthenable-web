@@ -64,7 +64,8 @@ export function CallCenterHeader() {
   const isAssignedToQueue = myQueues && myQueues.length > 0;
 
   // Format duration helper
-  const formatDuration = (seconds: number): string => {
+  const formatDuration = (seconds: number | undefined | null): string => {
+    if (seconds == null || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -99,7 +100,7 @@ export function CallCenterHeader() {
           <Card padding="md">
             <div className="text-sm text-text-secondary">Avg Duration</div>
             <div className="text-2xl font-bold text-text-primary">
-              {formatDuration(stats.average_duration_seconds)}
+              {formatDuration(stats.average_call_duration_seconds)}
             </div>
           </Card>
         </div>
