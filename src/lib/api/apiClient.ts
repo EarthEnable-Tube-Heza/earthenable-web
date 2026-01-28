@@ -160,6 +160,7 @@ class APIClient {
   private client: AxiosInstance;
   private isRefreshing = false;
   private refreshQueue: QueuedRequest[] = [];
+  private onSessionExpired: (() => void) | null = null;
 
   constructor() {
     // Create axios instance
@@ -174,6 +175,21 @@ class APIClient {
     // Setup interceptors
     this.setupRequestInterceptor();
     this.setupResponseInterceptor();
+  }
+
+  /**
+   * Register a callback for session expiry events.
+   * When registered, the apiClient will call this instead of doing a hard redirect.
+   */
+  registerSessionExpiredCallback(cb: () => void): void {
+    this.onSessionExpired = cb;
+  }
+
+  /**
+   * Unregister the session expiry callback.
+   */
+  unregisterSessionExpiredCallback(): void {
+    this.onSessionExpired = null;
   }
 
   /**
@@ -207,14 +223,8 @@ class APIClient {
 
         // Handle network errors (no response from server)
         if (!error.response) {
-          // Network error or server unreachable
-          if (typeof window !== "undefined" && !originalRequest._retry) {
-            const currentPath = window.location.pathname;
-            if (currentPath !== "/auth/signin") {
-              const redirectParam = `&redirect=${encodeURIComponent(currentPath)}`;
-              window.location.href = `/auth/signin?error=network${redirectParam}`;
-            }
-          }
+          // Network error or server unreachable — let components handle the error
+          // instead of redirecting, which can drop active calls and hang pages
           return Promise.reject(error);
         }
 
@@ -255,8 +265,10 @@ class APIClient {
             this.processQueue(refreshError, null);
             this.clearAuth();
 
-            // Redirect to sign in page with session expired indicator
-            if (typeof window !== "undefined") {
+            // Use callback if registered (session expiry modal), otherwise fall back to redirect
+            if (this.onSessionExpired) {
+              this.onSessionExpired();
+            } else if (typeof window !== "undefined") {
               const currentPath = window.location.pathname;
               const redirectParam =
                 currentPath !== "/auth/signin"
@@ -315,7 +327,8 @@ class APIClient {
   }
 
   /**
-   * Refresh access token using refresh token
+   * Refresh access token using refresh token.
+   * Used internally by the 401 interceptor.
    */
   private async refreshAccessToken(): Promise<string> {
     const refreshToken = this.getStoredRefreshToken();
@@ -340,6 +353,41 @@ class APIClient {
     }
 
     return access_token;
+  }
+
+  /**
+   * Proactively refresh the token before it expires.
+   * Unlike the private refreshAccessToken (used by 401 interceptor), this can be
+   * called by AuthContext to silently extend the session for active users.
+   *
+   * Returns the new token expiry timestamp, or throws on failure.
+   */
+  async forceRefreshToken(): Promise<{ accessToken: string; tokenExpiry: number }> {
+    const refreshToken = this.getStoredRefreshToken();
+
+    if (!refreshToken) {
+      throw new Error("No refresh token available");
+    }
+
+    const response = await axios.post<TokenResponse>(getAPIUrl("auth/refresh"), {
+      refresh_token: refreshToken,
+    });
+
+    const { access_token, refresh_token, expires_in } = response.data;
+    const expiry = calculateTokenExpiry(expires_in);
+
+    // Store new tokens
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, access_token);
+      localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, refresh_token);
+      localStorage.setItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY, expiry.toString());
+
+      // Update cookie for middleware
+      const expiryDate = new Date(expiry);
+      document.cookie = `earthenable_access_token=${access_token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
+    }
+
+    return { accessToken: access_token, tokenExpiry: expiry };
   }
 
   /**
@@ -405,7 +453,7 @@ class APIClient {
    * Authenticate with Google token
    */
   async authenticateWithGoogle(googleToken: string): Promise<ExtendedTokenResponse> {
-    const payload: GoogleAuthRequest = { token: googleToken };
+    const payload: GoogleAuthRequest = { token: googleToken, client_type: "web" };
     return this.post<ExtendedTokenResponse>("auth/google", payload);
   }
 

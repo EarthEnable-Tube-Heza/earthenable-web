@@ -7,14 +7,13 @@
  * Manages token storage, user state, and automatic token refresh.
  */
 
-import React, { createContext, useCallback, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useRef, useState } from "react";
 import {
   AuthContextValue,
   AuthState,
   User,
   TOKEN_STORAGE_KEYS,
   calculateTokenExpiry,
-  shouldRefreshToken,
   ExtendedTokenResponse,
   EntityInfo,
 } from "../../types";
@@ -34,6 +33,7 @@ const initialAuthState: AuthState = {
   error: null,
   entityInfo: null,
   selectedEntityId: null,
+  sessionExpired: false,
 };
 
 /**
@@ -62,22 +62,139 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Track last user activity for activity-aware token refresh.
+  // Active users get silent refresh; idle users see the expiry modal.
+  const lastActivityRef = useRef<number>(Date.now());
+  const isRefreshingRef = useRef(false);
+
+  // External activity sources (e.g., call center WebRTC client).
+  // If any source returns true, the user is considered active regardless
+  // of DOM interaction — they're waiting for calls, on a call, etc.
+  const activitySourcesRef = useRef<Set<() => boolean>>(new Set());
+
+  const registerActivitySource = useCallback((source: () => boolean) => {
+    activitySourcesRef.current.add(source);
+    return () => {
+      activitySourcesRef.current.delete(source);
+    };
+  }, []);
+
+  // Configurable session timing values (all stored in seconds in config, convert to ms).
+  const ACTIVITY_IDLE_THRESHOLD_MS = config.session.activityIdleThreshold * 1000;
+  const ACTIVITY_THROTTLE_MS = config.session.activityThrottleInterval * 1000;
+  const REFRESH_CHECK_INTERVAL_MS = config.session.refreshCheckInterval * 1000;
+
   /**
-   * Setup automatic token refresh check
+   * Track user activity via DOM events (throttled).
+   */
+  useEffect(() => {
+    let throttleTimer: NodeJS.Timeout | null = null;
+
+    const updateActivity = () => {
+      if (throttleTimer) return;
+      lastActivityRef.current = Date.now();
+      throttleTimer = setTimeout(() => {
+        throttleTimer = null;
+      }, ACTIVITY_THROTTLE_MS);
+    };
+
+    const events: (keyof WindowEventMap)[] = [
+      "mousedown",
+      "keydown",
+      "scroll",
+      "touchstart",
+      "mousemove",
+    ];
+
+    events.forEach((event) => window.addEventListener(event, updateActivity, { passive: true }));
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, updateActivity));
+      if (throttleTimer) clearTimeout(throttleTimer);
+    };
+  }, [ACTIVITY_THROTTLE_MS]);
+
+  /**
+   * Activity-aware automatic token refresh.
+   *
+   * Every 30 seconds, checks whether the token needs refreshing:
+   * - If user was recently active AND token is within the refresh threshold:
+   *   silently call forceRefreshToken() to extend the session. The user never
+   *   sees a modal. This means an active agent will stay signed in indefinitely.
+   * - If user is idle AND token enters the critical threshold:
+   *   the SessionExpiryModal (driven by tokenExpiry state) shows automatically.
+   * - If the refresh fails, sessionExpired is set and the modal handles it.
    */
   useEffect(() => {
     if (!state.isAuthenticated || !state.tokenExpiry) return;
 
-    // Check token expiry every minute
-    const interval = setInterval(() => {
-      if (shouldRefreshToken(state.tokenExpiry, config.token.refreshThreshold * 60 * 1000)) {
-        refreshAccessToken();
+    const checkAndRefresh = async () => {
+      if (isRefreshingRef.current) return;
+
+      const now = Date.now();
+      const timeUntilExpiry = state.tokenExpiry! - now;
+      const refreshThresholdMs = config.token.refreshThreshold * 60 * 1000;
+      const hadRecentInteraction = now - lastActivityRef.current < ACTIVITY_IDLE_THRESHOLD_MS;
+
+      // Check external activity sources — e.g., call center agent with
+      // WebRTC client connected (waiting for calls) or on an active call.
+      // These users are working even without mouse/keyboard interaction.
+      const hasActiveSource = Array.from(activitySourcesRef.current).some((source) => {
+        try {
+          return source();
+        } catch {
+          return false;
+        }
+      });
+
+      const isUserActive = hadRecentInteraction || hasActiveSource;
+
+      // Within refresh threshold and user is active → silently refresh
+      if (timeUntilExpiry <= refreshThresholdMs && timeUntilExpiry > 0 && isUserActive) {
+        isRefreshingRef.current = true;
+        try {
+          const result = await apiClient.forceRefreshToken();
+          setState((prev) => ({
+            ...prev,
+            accessToken: result.accessToken,
+            tokenExpiry: result.tokenExpiry,
+            sessionExpired: false,
+          }));
+        } catch {
+          // Refresh failed — let the modal handle it
+          setState((prev) => ({
+            ...prev,
+            sessionExpired: true,
+            isAuthenticated: false,
+          }));
+        } finally {
+          isRefreshingRef.current = false;
+        }
       }
-    }, 60 * 1000); // Check every minute
+      // If user is idle, we don't refresh proactively.
+      // The SessionExpiryModal watches tokenExpiry and shows the
+      // "expiring soon" warning when within critical threshold.
+    };
+
+    const interval = setInterval(checkAndRefresh, REFRESH_CHECK_INTERVAL_MS);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isAuthenticated, state.tokenExpiry]);
+
+  /**
+   * Register session expired callback with apiClient.
+   * When token refresh fails, apiClient calls this instead of hard-redirecting.
+   */
+  useEffect(() => {
+    apiClient.registerSessionExpiredCallback(() => {
+      setState((prev) => ({ ...prev, sessionExpired: true, isAuthenticated: false }));
+    });
+
+    return () => {
+      apiClient.unregisterSessionExpiredCallback();
+    };
+  }, []);
 
   /**
    * Load stored authentication from localStorage
@@ -111,9 +228,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Check if token is expired
         const isExpired = expiry ? expiry <= Date.now() : false;
 
-        if (isExpired) {
-          // Token expired, clear storage directly (don't call signOut to avoid circular dependency)
-          console.log("Stored token is expired, clearing auth");
+        if (isExpired && !refreshToken) {
+          // Token expired AND no refresh token — clear storage
+          console.log("Stored token is expired with no refresh token, clearing auth");
           localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
@@ -127,7 +244,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
 
         // Set cookie for middleware (only if token is not expired)
-        if (expiry) {
+        if (!isExpired && expiry) {
           const expiryDate = new Date(expiry);
           document.cookie = `earthenable_access_token=${accessToken}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Lax`;
         }
@@ -144,6 +261,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, finalSelectedEntityId);
         }
 
+        if (isExpired) {
+          // Token expired but refresh token exists — try to refresh.
+          // Keep isLoading: true so the UI shows a spinner instead of
+          // prematurely redirecting to the dashboard or sign-in page.
+          try {
+            const result = await apiClient.forceRefreshToken();
+            // Refresh succeeded — load user with the new token
+            const currentUser = await apiClient.getCurrentUser();
+            setState({
+              user: currentUser,
+              accessToken: result.accessToken,
+              refreshToken: localStorage.getItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN),
+              tokenExpiry: result.tokenExpiry,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+              entityInfo,
+              selectedEntityId: finalSelectedEntityId,
+              sessionExpired: false,
+            });
+          } catch {
+            // Refresh failed — session is expired
+            console.log("Token refresh failed during load, session expired");
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+            localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
+            document.cookie =
+              "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+            setState({
+              ...initialAuthState,
+              isLoading: false,
+            });
+          }
+          return;
+        }
+
+        // Token is not expired — set authenticated state
         setState({
           user,
           accessToken,
@@ -154,6 +311,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           error: null,
           entityInfo,
           selectedEntityId: finalSelectedEntityId,
+          sessionExpired: false,
         });
 
         // Verify token is still valid by fetching current user
@@ -165,7 +323,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isLoading: false,
           }));
         } catch {
-          // Token invalid, clear storage directly (don't call signOut to avoid circular dependency)
+          // Token invalid, clear storage
           console.log("Token verification failed, clearing auth");
           localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
@@ -175,11 +333,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
           document.cookie =
             "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-          // Reset to unauthenticated state with isLoading: false to show sign-in form
-          setState({
+          // Preserve sessionExpired if the interceptor callback already set it
+          setState((prev) => ({
             ...initialAuthState,
             isLoading: false,
-          });
+            sessionExpired: prev.sessionExpired,
+          }));
         }
       } else {
         setState((prev) => ({ ...prev, isLoading: false }));
@@ -248,6 +407,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         error: null,
         entityInfo: tokenResponse.entity_info,
         selectedEntityId,
+        sessionExpired: false,
       });
     } catch (err) {
       const error = err as { response?: { data?: { detail?: string } } };
@@ -291,25 +451,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   /**
-   * Refresh access token
+   * Refresh access token.
+   * Directly calls the refresh endpoint to get new tokens.
+   * Used by the "Stay Signed In" button and proactive refresh.
    */
   const refreshAccessToken = useCallback(async () => {
     try {
-      // The apiClient handles token refresh internally
-      // This method is mainly for manual refresh if needed
-      const currentUser = await apiClient.getCurrentUser();
+      const result = await apiClient.forceRefreshToken();
 
-      // Update user in state
+      // Also update the activity timestamp so proactive refresh continues
+      lastActivityRef.current = Date.now();
+
       setState((prev) => ({
         ...prev,
-        user: currentUser,
+        accessToken: result.accessToken,
+        tokenExpiry: result.tokenExpiry,
+        sessionExpired: false,
+        isAuthenticated: true,
       }));
     } catch (error) {
       console.error("Error refreshing token:", error);
-      // If refresh fails, sign out
-      await signOut();
+      // Set session expired — let the modal handle it
+      setState((prev) => ({
+        ...prev,
+        sessionExpired: true,
+        isAuthenticated: false,
+      }));
     }
-  }, [signOut]);
+  }, []);
+
+  /**
+   * Acknowledge session expired — clears storage and navigates to sign-in.
+   * Called when user clicks "Sign In" on the session expiry modal.
+   */
+  const acknowledgeSessionExpired = useCallback(() => {
+    // Clear localStorage
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.TOKEN_EXPIRY);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.USER);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.ENTITY_INFO);
+    localStorage.removeItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID);
+
+    // Clear cookie
+    document.cookie =
+      "earthenable_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+
+    // Reset state
+    setState({
+      ...initialAuthState,
+      isLoading: false,
+      sessionExpired: false,
+    });
+
+    // Navigate to sign-in
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/signin";
+    }
+  }, []);
 
   /**
    * Clear error state
@@ -320,14 +519,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * Select entity (switch entity context)
+   * This updates the JWT tokens to include the selected entity
    */
   const selectEntity = useCallback(async (entityId: string) => {
     try {
-      // Call API to switch entity context (backend will return new token with updated context)
-      await apiClient.selectEntity(entityId);
+      // Call API to switch entity context - returns new tokens with selected_entity_id
+      const tokenResponse = await apiClient.selectEntity(entityId);
 
-      // Update local state
+      // Store the new tokens (they have selected_entity_id embedded)
+      localStorage.setItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.access_token);
+      localStorage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refresh_token);
+      localStorage.setItem(
+        TOKEN_STORAGE_KEYS.TOKEN_EXPIRY,
+        calculateTokenExpiry(tokenResponse.expires_in).toString()
+      );
       localStorage.setItem(TOKEN_STORAGE_KEYS.SELECTED_ENTITY_ID, entityId);
+
+      // Update state
       setState((prev) => ({ ...prev, selectedEntityId: entityId }));
     } catch (error) {
       console.error("Failed to switch entity:", error);
@@ -342,6 +550,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshAccessToken,
     selectEntity,
     clearError,
+    acknowledgeSessionExpired,
+    registerActivitySource,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

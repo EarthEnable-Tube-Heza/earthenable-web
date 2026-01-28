@@ -15,10 +15,11 @@ import { Header } from "@/src/components/dashboard/Header";
 import { EntitySelectionModal } from "@/src/components/dashboard/EntitySelectionModal";
 import { CallCenterProvider } from "@/src/hooks/useAfricasTalkingClient";
 import { FloatingSoftphone } from "@/src/components/call-center";
+import { SessionExpiryModal } from "@/src/components/ui";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Protect dashboard routes - redirect to sign-in if not authenticated
-  const { isAuthenticated, isLoading } = useRequireAuth();
+  const { isAuthenticated, isLoading, sessionExpired } = useRequireAuth();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -32,8 +33,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  // Don't render dashboard if not authenticated (will redirect)
-  if (!isAuthenticated) {
+  // Don't render dashboard if not authenticated, UNLESS session just expired
+  // (keep the layout visible so the modal can display over it)
+  if (!isAuthenticated && !sessionExpired) {
     return null;
   }
 
@@ -59,6 +61,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Floating Softphone - Always accessible from dashboard */}
             <FloatingSoftphone />
+
+            {/* Session Expiry Modal - Shows when session is expiring or expired */}
+            <SessionExpiryModal />
           </div>
         </CallCenterProvider>
       </PageHeaderProvider>

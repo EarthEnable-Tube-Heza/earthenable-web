@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Authentication Hooks
@@ -6,10 +6,11 @@
  * Custom React hooks for authentication and authorization.
  */
 
-import { useContext, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthContext } from './AuthContext';
-import { UserRole } from '../../types';
+import { useContext, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AuthContext } from "./AuthContext";
+import { UserRole } from "../../types";
+import { config } from "../config";
 
 /**
  * Hook to access auth context
@@ -19,7 +20,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
 
   return context;
@@ -47,18 +48,19 @@ export function useIsAuthenticated() {
  * @param redirectTo - Path to redirect to after sign in (default: current path)
  */
 export function useRequireAuth(redirectTo?: string) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, sessionExpired } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    // Skip redirect when sessionExpired — the modal handles it
+    if (!isLoading && !isAuthenticated && !sessionExpired) {
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
       const redirect = redirectTo || currentPath;
       router.push(`/auth/signin?redirect=${encodeURIComponent(redirect)}`);
     }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
+  }, [isAuthenticated, isLoading, sessionExpired, router, redirectTo]);
 
-  return { isAuthenticated, isLoading };
+  return { isAuthenticated, isLoading, sessionExpired };
 }
 
 /**
@@ -99,7 +101,7 @@ export function useRequireAdmin() {
 
   useEffect(() => {
     if (!isLoading && user && !isAdmin) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, isAdmin, isLoading, router]);
 
@@ -116,7 +118,7 @@ export function useRequireManager() {
 
   useEffect(() => {
     if (!isLoading && user && !isManager) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, isManager, isLoading, router]);
 
@@ -134,7 +136,7 @@ export function useTokenExpiry() {
 
   const now = Date.now();
   const timeRemaining = tokenExpiry - now;
-  const isExpiring = timeRemaining <= 24 * 60 * 60 * 1000; // 24 hours
+  const isExpiring = timeRemaining <= config.token.criticalThreshold * 60 * 1000;
 
   return {
     isExpiring,

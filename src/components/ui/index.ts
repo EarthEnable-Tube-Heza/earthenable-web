@@ -47,6 +47,9 @@ export type { ToastProps, ToastType, ToastPosition } from "./Toast";
 export { ConfirmDialog } from "./ConfirmDialog";
 export type { ConfirmDialogProps } from "./ConfirmDialog";
 
+export { ResultModal } from "./ResultModal";
+export type { ResultModalProps, ResultModalVariant } from "./ResultModal";
+
 export { Tooltip } from "./Tooltip";
 export type { TooltipProps } from "./Tooltip";
 
@@ -63,3 +66,6 @@ export type { TabNavigationProps, TabItem } from "./TabNavigation";
 
 export { SectionLayout } from "./SectionLayout";
 export type { SectionLayoutProps } from "./SectionLayout";
+
+// Session management
+export { SessionExpiryModal } from "./SessionExpiryModal";
