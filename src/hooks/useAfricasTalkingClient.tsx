@@ -56,6 +56,8 @@ export interface UseAfricasTalkingClientOptions {
   onCallEnded?: (call: ActiveCallInfo, reason?: string) => void;
   /** Callback when error occurs */
   onError?: (error: Error) => void;
+  /** Callback when client disconnects (offline/closed events) */
+  onClientDisconnected?: () => void;
 }
 
 export interface UseAfricasTalkingClientReturn {
@@ -101,6 +103,7 @@ export function useAfricasTalkingClient(
     onCallConnected,
     onCallEnded,
     onError,
+    onClientDisconnected,
   } = options;
 
   // State
@@ -243,6 +246,7 @@ export function useAfricasTalkingClient(
         setIsInitialized(false);
         setCallState("idle");
         setError("Session expired. Please refresh to reconnect.");
+        onClientDisconnected?.();
       });
 
       // Event: closed - connection to AT servers broken
@@ -251,6 +255,7 @@ export function useAfricasTalkingClient(
         setIsReady(false);
         setCallState("error");
         setError("Connection lost. Check your internet connection.");
+        onClientDisconnected?.();
       });
 
       clientRef.current = atClient;
@@ -270,6 +275,7 @@ export function useAfricasTalkingClient(
     onCallConnected,
     onCallEnded,
     onError,
+    onClientDisconnected,
     startDurationTimer,
     stopDurationTimer,
   ]);
@@ -464,6 +470,7 @@ export function useAfricasTalkingClient(
 
 import { createContext, useContext, ReactNode } from "react";
 import { useAuth } from "@/src/lib/auth";
+import { config } from "@/src/lib/config";
 
 type CallCenterContextValue = UseAfricasTalkingClientReturn;
 
@@ -476,13 +483,60 @@ export function CallCenterProvider({
   children: ReactNode;
   options?: Omit<UseAfricasTalkingClientOptions, "entityId">;
 }) {
-  // Get entityId from auth context
-  const { selectedEntityId } = useAuth();
+  // Get entityId, accessToken, and activity source registration from auth context
+  const { selectedEntityId, accessToken, registerActivitySource } = useAuth();
+
+  // Send offline status to backend when WebRTC client disconnects or browser closes
+  const handleClientDisconnected = useCallback(() => {
+    if (!selectedEntityId || !accessToken) return;
+
+    const url = `${config.api.baseUrl}/api/${config.api.version}/voice/agent/status?entity_id=${selectedEntityId}`;
+    // Use fetch with keepalive to ensure request completes even during page unload
+    fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ status: "offline" }),
+      keepalive: true,
+    }).catch(() => {
+      // Best-effort — ignore errors during disconnect
+    });
+  }, [selectedEntityId, accessToken]);
+
+  // Set agent offline on browser close/navigate
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      handleClientDisconnected();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [handleClientDisconnected]);
 
   const value = useAfricasTalkingClient({
     ...options,
     entityId: selectedEntityId ?? undefined,
+    onClientDisconnected: handleClientDisconnected,
   });
+
+  // Register call center as an activity source for token refresh.
+  // When the WebRTC client is connected (agent waiting for calls) or
+  // a call is active, the agent should not be logged out due to inactivity.
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  useEffect(() => {
+    const unregister = registerActivitySource(() => {
+      // Agent is "active" if their WebRTC client is connected (ready to
+      // receive calls) OR they're currently on a call.
+      return valueRef.current.isReady || valueRef.current.isCallActive;
+    });
+    return unregister;
+  }, [registerActivitySource]);
 
   return <CallCenterContext.Provider value={value}>{children}</CallCenterContext.Provider>;
 }
