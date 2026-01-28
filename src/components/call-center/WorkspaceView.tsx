@@ -15,6 +15,7 @@ import {
   useMyAgentStatus,
   useUpdateMyAgentStatus,
   useMyCallbacks,
+  useCallCenterStats,
 } from "@/src/hooks/useCallCenter";
 import { AgentStatusEnum } from "@/src/types/voice";
 import { Dialpad } from "./Dialpad";
@@ -66,6 +67,10 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   // My callbacks
   const { data: myCallbacks } = useMyCallbacks(selectedEntityId ?? undefined);
   const pendingCallbacks = myCallbacks?.filter((cb) => cb.status === "pending") || [];
+
+  // Today's stats (1-day window)
+  const { data: todayStats } = useCallCenterStats(selectedEntityId ?? undefined, 1);
+  const completedCallbacks = myCallbacks?.filter((cb) => cb.status === "completed") || [];
 
   // Get current status (fallback to offline if no status)
   const currentStatus = agentStatus?.status ?? AgentStatusEnum.OFFLINE;
@@ -396,19 +401,34 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">--</p>
+              <p className="text-2xl font-heading font-bold text-text-primary">
+                {todayStats?.outbound_calls ?? "--"}
+              </p>
               <p className="text-xs text-text-secondary">Calls Made</p>
             </div>
             <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">--</p>
+              <p className="text-2xl font-heading font-bold text-text-primary">
+                {todayStats?.inbound_calls ?? "--"}
+              </p>
               <p className="text-xs text-text-secondary">Calls Received</p>
             </div>
             <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">--</p>
+              <p className="text-2xl font-heading font-bold text-text-primary">
+                {todayStats
+                  ? (() => {
+                      const s = todayStats.average_call_duration_seconds ?? 0;
+                      const mins = Math.floor(s / 60);
+                      const secs = Math.floor(s % 60);
+                      return `${mins}:${secs.toString().padStart(2, "0")}`;
+                    })()
+                  : "--"}
+              </p>
               <p className="text-xs text-text-secondary">Avg Duration</p>
             </div>
             <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">--</p>
+              <p className="text-2xl font-heading font-bold text-text-primary">
+                {completedCallbacks.length}
+              </p>
               <p className="text-xs text-text-secondary">Callbacks Done</p>
             </div>
           </div>
