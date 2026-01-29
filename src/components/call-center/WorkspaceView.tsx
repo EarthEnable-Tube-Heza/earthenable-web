@@ -13,9 +13,8 @@ import { useAuth } from "@/src/lib/auth";
 import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
 import {
   useMyAgentStatus,
-  useUpdateMyAgentStatus,
+  useAgentStatusWithAutoConnect,
   useMyCallbacks,
-  useCallCenterStats,
 } from "@/src/hooks/useCallCenter";
 import { AgentStatusEnum } from "@/src/types/voice";
 import { Dialpad } from "./Dialpad";
@@ -64,26 +63,22 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   const { data: agentStatus, isLoading: isStatusLoading } = useMyAgentStatus(
     selectedEntityId ?? undefined
   );
-  const updateStatusMutation = useUpdateMyAgentStatus(selectedEntityId ?? undefined);
+
+  // Unified status change handler with auto-connect
+  const {
+    handleStatusChange,
+    isPending: isStatusChangePending,
+    connectionFailureMessage,
+    dismissConnectionFailure,
+    acwCountdown,
+  } = useAgentStatusWithAutoConnect(selectedEntityId ?? undefined);
 
   // My callbacks
   const { data: myCallbacks } = useMyCallbacks(selectedEntityId ?? undefined);
   const pendingCallbacks = myCallbacks?.filter((cb) => cb.status === "pending") || [];
 
-  // Today's stats (1-day window)
-  const { data: todayStats } = useCallCenterStats(selectedEntityId ?? undefined, 1);
-  const completedCallbacks = myCallbacks?.filter((cb) => cb.status === "completed") || [];
-
   // Get current status (fallback to offline if no status)
   const currentStatus = agentStatus?.status ?? AgentStatusEnum.OFFLINE;
-
-  // Handle status change
-  const handleStatusChange = useCallback(
-    (newStatus: AgentStatusEnum) => {
-      updateStatusMutation.mutate(newStatus);
-    },
-    [updateStatusMutation]
-  );
 
   // Handle making a call
   const handleMakeCall = useCallback(async () => {
@@ -135,10 +130,50 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
             <AgentStatusSelector
               currentStatus={currentStatus}
               onStatusChange={handleStatusChange}
-              isLoading={isStatusLoading || updateStatusMutation.isPending}
+              isLoading={isStatusLoading || isStatusChangePending}
+              acwCountdown={acwCountdown}
               size="md"
             />
           </div>
+
+          {/* Connection Failure Alert */}
+          {connectionFailureMessage && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-800">
+                  Could not set status to Available
+                </p>
+                <p className="text-sm text-red-700 mt-0.5">{connectionFailureMessage}</p>
+              </div>
+              <button
+                onClick={dismissConnectionFailure}
+                className="text-red-500 hover:text-red-700 p-1"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
 
           {/* Initialize Button / Error State */}
           {(!isInitialized && callState === "idle") || callState === "error" ? (
@@ -329,32 +364,10 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
         </Card>
       </div>
 
-      {/* Column 2: Callbacks & Quick Actions */}
-      <div className="flex flex-col gap-6">
-        {/* Connection Status */}
-        <Card variant="bordered" padding="md">
-          <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
-            Connection Status
-          </h3>
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "w-3 h-3 rounded-full",
-                isReady
-                  ? "bg-status-success"
-                  : isInitialized
-                    ? "bg-status-warning"
-                    : "bg-text-disabled"
-              )}
-            />
-            <span className="text-sm text-text-primary">
-              {isReady ? "Connected" : isInitialized ? "Connecting..." : "Not connected"}
-            </span>
-          </div>
-        </Card>
-
+      {/* Column 2: Callbacks */}
+      <div className="flex flex-col">
         {/* Pending Callbacks */}
-        <Card variant="bordered" padding="md" className="flex-1 overflow-hidden">
+        <Card variant="bordered" padding="md" className="h-full overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-heading font-semibold text-text-secondary">My Callbacks</h3>
             {pendingCallbacks.length > 0 && (
@@ -416,46 +429,6 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
               ))}
             </div>
           )}
-        </Card>
-
-        {/* Quick Stats */}
-        <Card variant="bordered" padding="md">
-          <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
-            Today&apos;s Stats
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">
-                {todayStats?.outbound_calls ?? "--"}
-              </p>
-              <p className="text-xs text-text-secondary">Calls Made</p>
-            </div>
-            <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">
-                {todayStats?.inbound_calls ?? "--"}
-              </p>
-              <p className="text-xs text-text-secondary">Calls Received</p>
-            </div>
-            <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">
-                {todayStats
-                  ? (() => {
-                      const s = todayStats.average_call_duration_seconds ?? 0;
-                      const mins = Math.floor(s / 60);
-                      const secs = Math.floor(s % 60);
-                      return `${mins}:${secs.toString().padStart(2, "0")}`;
-                    })()
-                  : "--"}
-              </p>
-              <p className="text-xs text-text-secondary">Avg Duration</p>
-            </div>
-            <div>
-              <p className="text-2xl font-heading font-bold text-text-primary">
-                {completedCallbacks.length}
-              </p>
-              <p className="text-xs text-text-secondary">Callbacks Done</p>
-            </div>
-          </div>
         </Card>
       </div>
 

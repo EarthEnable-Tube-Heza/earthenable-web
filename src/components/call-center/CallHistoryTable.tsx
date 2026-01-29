@@ -54,35 +54,31 @@ export function CallHistoryTable({
 }: CallHistoryTableProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // Direction icon
+  // Direction icon - phone with arrow indicating in/out
   const DirectionIcon = ({ direction }: { direction: CallDirection }) =>
     direction === CallDirection.INBOUND ? (
-      <svg
-        className="w-4 h-4 text-status-info"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
         />
+        {/* Arrow pointing down-left (incoming) - arrowhead at bottom-left */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 3l-6 6" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 9h-6v-6" />
       </svg>
     ) : (
-      <svg
-        className="w-4 h-4 text-status-success"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M5 10l7-7m0 0l7 7m-7-7v18"
+          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
         />
+        {/* Arrow pointing up-right (outgoing) - arrowhead at top-right */}
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 11l7-7" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 11V4h-7" />
       </svg>
     );
 

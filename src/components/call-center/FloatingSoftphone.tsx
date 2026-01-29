@@ -12,7 +12,7 @@ import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/src/lib/theme";
 import { useAuth } from "@/src/lib/auth";
 import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
-import { useMyAgentStatus, useUpdateMyAgentStatus } from "@/src/hooks/useCallCenter";
+import { useMyAgentStatus, useAgentStatusWithAutoConnect } from "@/src/hooks/useCallCenter";
 import { AgentStatusEnum, AGENT_STATUS_CONFIG } from "@/src/types/voice";
 import { Dialpad } from "./Dialpad";
 import { CallControls } from "./CallControls";
@@ -59,19 +59,19 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
   const { data: agentStatus, isLoading: isStatusLoading } = useMyAgentStatus(
     selectedEntityId ?? undefined
   );
-  const updateStatusMutation = useUpdateMyAgentStatus(selectedEntityId ?? undefined);
+
+  // Unified status change handler with auto-connect
+  const {
+    handleStatusChange,
+    isPending: isStatusChangePending,
+    connectionFailureMessage,
+    dismissConnectionFailure,
+    acwCountdown,
+  } = useAgentStatusWithAutoConnect(selectedEntityId ?? undefined);
 
   // Get current status (fallback to offline if no status)
   const currentStatus = agentStatus?.status ?? AgentStatusEnum.OFFLINE;
   const statusConfig = AGENT_STATUS_CONFIG[currentStatus];
-
-  // Handle status change
-  const handleStatusChange = useCallback(
-    (newStatus: AgentStatusEnum) => {
-      updateStatusMutation.mutate(newStatus);
-    },
-    [updateStatusMutation]
-  );
 
   // Initialize client if not ready when expanded
   useEffect(() => {
@@ -135,14 +135,30 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
             hasIncomingCall && "ring-2 ring-status-warning ring-offset-2 animate-pulse"
           )}
         >
-          {/* Status indicator */}
+          {/* Status indicator - green when connected, yellow for incoming, otherwise agent status */}
           <span
-            className={cn("w-3 h-3 rounded-full", statusConfig.color.replace("text-", "bg-"))}
+            className={cn(
+              "w-3 h-3 rounded-full",
+              hasActiveCall && callState === "connected"
+                ? "bg-status-success"
+                : hasIncomingCall
+                  ? "bg-status-warning"
+                  : hasActiveCall && (callState === "dialing" || callState === "ringing")
+                    ? "bg-status-warning"
+                    : statusConfig?.dotColor || "bg-gray-400"
+            )}
           />
 
           {/* Phone icon */}
           <svg
-            className="w-5 h-5 text-text-primary"
+            className={cn(
+              "w-5 h-5",
+              hasActiveCall && callState === "connected"
+                ? "text-status-success"
+                : hasIncomingCall
+                  ? "text-status-warning"
+                  : "text-text-primary"
+            )}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -160,7 +176,13 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
             <span className="text-sm font-medium text-status-success">
               {activeCall?.duration
                 ? `${Math.floor(activeCall.duration / 60)}:${(activeCall.duration % 60).toString().padStart(2, "0")}`
-                : "Call"}
+                : callState === "connected"
+                  ? "Connected"
+                  : callState === "dialing"
+                    ? "Dialing..."
+                    : callState === "ringing"
+                      ? "Ringing..."
+                      : "Call"}
             </span>
           )}
 
@@ -203,7 +225,8 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
               <AgentStatusSelector
                 currentStatus={currentStatus}
                 onStatusChange={handleStatusChange}
-                isLoading={isStatusLoading || updateStatusMutation.isPending}
+                isLoading={isStatusLoading || isStatusChangePending}
+                acwCountdown={acwCountdown}
                 size="sm"
               />
 
@@ -232,6 +255,43 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
 
           {/* Content */}
           <div className="p-4">
+            {/* Connection Failure Alert */}
+            {connectionFailureMessage && (
+              <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <svg
+                  className="w-4 h-4 text-status-error flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-red-800">Could not set Available</p>
+                  <p className="text-xs text-red-700 truncate">{connectionFailureMessage}</p>
+                </div>
+                <button
+                  onClick={dismissConnectionFailure}
+                  className="text-red-500 hover:text-red-700 p-0.5 flex-shrink-0"
+                  title="Dismiss"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+
             {/* Error State - Show retry button */}
             {callState === "error" && (
               <div className="flex flex-col items-center justify-center py-8">
