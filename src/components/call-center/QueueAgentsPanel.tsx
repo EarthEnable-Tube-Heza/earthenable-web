@@ -119,16 +119,16 @@ export function QueueAgentsPanel({ entityId, onAgentClick, className }: QueueAge
 
   if (isLoading) {
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <Spinner size="sm" />
-        <span className="ml-2 text-sm text-text-secondary">Loading agents...</span>
+        <span className="mt-2 text-sm text-text-secondary">Loading agents...</span>
       </div>
     );
   }
 
   if (statusError) {
     return (
-      <div className={cn("text-center py-4", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <p className="text-sm text-status-error">Failed to load agents</p>
       </div>
     );
@@ -136,9 +136,9 @@ export function QueueAgentsPanel({ entityId, onAgentClick, className }: QueueAge
 
   if (!primaryQueue) {
     return (
-      <div className={cn("text-center py-6", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <svg
-          className="w-10 h-10 text-text-disabled mx-auto mb-2"
+          className="w-10 h-10 text-text-disabled mb-2"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -157,9 +157,9 @@ export function QueueAgentsPanel({ entityId, onAgentClick, className }: QueueAge
 
   if (agentsWithStatus.length === 0) {
     return (
-      <div className={cn("text-center py-6", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <svg
-          className="w-10 h-10 text-text-disabled mx-auto mb-2"
+          className="w-10 h-10 text-text-disabled mb-2"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

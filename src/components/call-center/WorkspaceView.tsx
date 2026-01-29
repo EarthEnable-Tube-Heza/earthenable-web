@@ -123,7 +123,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
     >
       {/* Column 1: Main Softphone Area */}
       <div className="md:col-span-1">
-        <Card variant="bordered" padding="lg" className="h-full">
+        <Card variant="bordered" padding="lg" className="h-full flex flex-col">
           {/* Header with Status */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-heading font-semibold text-text-primary">Softphone</h2>
@@ -177,7 +177,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
 
           {/* Initialize Button / Error State */}
           {(!isInitialized && callState === "idle") || callState === "error" ? (
-            <div className="flex flex-col items-center justify-center py-12">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
               <svg
                 className="w-16 h-16 text-text-disabled mb-4"
                 fill="none"
@@ -223,7 +223,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
 
           {/* Initializing State */}
           {callState === "initializing" && (
-            <div className="flex flex-col items-center justify-center py-12">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
               <Spinner size="lg" />
               <p className="mt-4 text-text-secondary">Connecting to phone service...</p>
             </div>

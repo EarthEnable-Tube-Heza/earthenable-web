@@ -112,16 +112,16 @@ export function RecentCallHistory({
 
   if (isLoading) {
     return (
-      <div className={cn("flex items-center justify-center py-8", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <Spinner size="sm" />
-        <span className="ml-2 text-sm text-text-secondary">Loading calls...</span>
+        <span className="mt-2 text-sm text-text-secondary">Loading calls...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={cn("text-center py-4", className)}>
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <p className="text-sm text-status-error">Failed to load call history</p>
       </div>
     );
@@ -129,9 +129,7 @@ export function RecentCallHistory({
 
   if (!calls || calls.length === 0) {
     return (
-      <div
-        className={cn("flex flex-col items-center justify-center h-full min-h-[120px]", className)}
-      >
+      <div className={cn("flex flex-col items-center justify-center min-h-[150px]", className)}>
         <svg
           className="w-10 h-10 text-text-disabled mb-2"
           fill="none"
