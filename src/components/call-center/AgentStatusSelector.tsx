@@ -23,6 +23,8 @@ interface AgentStatusSelectorProps {
   disabled?: boolean;
   /** Size variant */
   size?: "sm" | "md";
+  /** ACW countdown in seconds (null if not in ACW or no timeout configured) */
+  acwCountdown?: number | null;
   /** Additional class name */
   className?: string;
 }
@@ -34,12 +36,20 @@ const selectableStatuses: AgentStatusEnum[] = [
   AgentStatusEnum.AFTER_CALL_WORK,
 ];
 
+// Format seconds to MM:SS
+function formatCountdown(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
 export function AgentStatusSelector({
   currentStatus,
   onStatusChange,
   isLoading = false,
   disabled = false,
   size = "md",
+  acwCountdown,
   className,
 }: AgentStatusSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -111,9 +121,18 @@ export function AgentStatusSelector({
         {isLoading ? (
           <Spinner size="sm" />
         ) : (
-          <span className={cn("rounded-full", styles.icon, config.color.replace("text-", "bg-"))} />
+          <span className={cn("rounded-full", styles.icon, config.dotColor)} />
         )}
-        <span className={cn("font-medium", config.color)}>{config.label}</span>
+        <span className={cn("font-medium", config.color)}>
+          {config.label}
+          {/* Show ACW countdown */}
+          {currentStatus === AgentStatusEnum.AFTER_CALL_WORK &&
+            acwCountdown !== null &&
+            acwCountdown !== undefined &&
+            acwCountdown > 0 && (
+              <span className="ml-1 text-xs opacity-75">({formatCountdown(acwCountdown)})</span>
+            )}
+        </span>
         {!isSystemStatus && (
           <svg
             className={cn("w-4 h-4 transition-transform", config.color, isOpen && "rotate-180")}
@@ -152,12 +171,7 @@ export function AgentStatusSelector({
                   isSelected && "bg-background-light"
                 )}
               >
-                <span
-                  className={cn(
-                    "w-2.5 h-2.5 rounded-full",
-                    statusConfig.color.replace("text-", "bg-")
-                  )}
-                />
+                <span className={cn("w-2.5 h-2.5 rounded-full", statusConfig.dotColor)} />
                 <span className={cn("font-medium", statusConfig.color)}>{statusConfig.label}</span>
                 {isSelected && (
                   <svg

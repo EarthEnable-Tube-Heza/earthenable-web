@@ -6,7 +6,7 @@
  * Admin page for configuring voice/call center settings with debug information.
  */
 
-import { useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   useVoiceSettings,
@@ -142,17 +142,34 @@ export default function CallCenterSettingsPage() {
   const createMutation = useCreateVoiceSettings();
   const updateMutation = useUpdateVoiceSettings();
 
+  // Save state for result modal
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Reset save state (called when modal is dismissed)
+  const resetSaveState = useCallback(() => {
+    setSaveSuccess(false);
+    setSaveError(null);
+  }, []);
+
   // Handle save
   const handleSave = useCallback(
     (data: VoiceSettingsUpdate) => {
       if (!selectedEntityId) return;
+
+      // Reset previous state
+      resetSaveState();
 
       if (settings) {
         updateMutation.mutate(
           { entityId: selectedEntityId, data },
           {
             onSuccess: () => {
+              setSaveSuccess(true);
               refetch();
+            },
+            onError: (error) => {
+              setSaveError(error instanceof Error ? error.message : "Unknown error");
             },
           }
         );
@@ -164,12 +181,16 @@ export default function CallCenterSettingsPage() {
         };
         createMutation.mutate(createData, {
           onSuccess: () => {
+            setSaveSuccess(true);
             refetch();
+          },
+          onError: (error) => {
+            setSaveError(error instanceof Error ? error.message : "Unknown error");
           },
         });
       }
     },
-    [selectedEntityId, settings, updateMutation, createMutation, refetch]
+    [selectedEntityId, settings, updateMutation, createMutation, refetch, resetSaveState]
   );
 
   // Check if user is admin
@@ -435,19 +456,6 @@ export default function CallCenterSettingsPage() {
         </div>
       </Card>
 
-      {/* Success/Error Messages */}
-      {(updateMutation.isSuccess || createMutation.isSuccess) && (
-        <Alert variant="success" className="mb-6">
-          Settings saved successfully
-        </Alert>
-      )}
-      {(updateMutation.isError || createMutation.isError) && (
-        <Alert variant="error" className="mb-6">
-          Failed to save settings:{" "}
-          {((updateMutation.error || createMutation.error) as Error)?.message || "Unknown error"}
-        </Alert>
-      )}
-
       {/* No Entity Selected Warning */}
       {!selectedEntityId && (
         <Alert variant="warning" title="No Entity Selected">
@@ -463,6 +471,10 @@ export default function CallCenterSettingsPage() {
           isLoading={isSettingsLoading}
           onSave={handleSave}
           isSaving={updateMutation.isPending || createMutation.isPending}
+          isSaveSuccess={saveSuccess}
+          isSaveError={!!saveError}
+          saveError={saveError || undefined}
+          onResetSaveState={resetSaveState}
         />
       )}
     </div>

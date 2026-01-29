@@ -4,8 +4,10 @@
  * React Query hooks for call center management.
  */
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { useCallCenterContext } from "./useAfricasTalkingClient";
 import {
   VoiceSettingsCreate,
   VoiceSettingsUpdate,
@@ -308,9 +310,9 @@ export function useCallbacks(filters?: CallbackFilters) {
 }
 
 /**
- * Hook to get a specific callback
+ * Hook to get a specific callback by ID
  */
-export function useCallback(callbackId: string | undefined) {
+export function useCallbackById(callbackId: string | undefined) {
   return useQuery({
     queryKey: voiceQueryKeys.callback(callbackId || ""),
     queryFn: () => apiClient.getCallback(callbackId!),
@@ -468,6 +470,184 @@ export function useUpdateMyAgentStatus(entityId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.agentStatuses() });
     },
   });
+}
+
+/**
+ * Unified hook for agent status changes with auto-connect behavior.
+ *
+ * This hook ensures consistent behavior across all components that change agent status:
+ * - CallCenterHeader
+ * - WorkspaceView (softphone)
+ * - FloatingSoftphone
+ *
+ * Features:
+ * - When status is set to Available and phone is not connected, auto-initializes the WebRTC client.
+ * - If the connection fails, the status is reverted to Unavailable and an error message is shown.
+ * - When status is set to After Call Work (ACW) and timeout is configured, auto-transitions to Available.
+ */
+export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
+  const updateStatusMutation = useUpdateMyAgentStatus(entityId);
+  const {
+    isInitialized,
+    isReady,
+    callState,
+    initialize,
+    error: connectionError,
+  } = useCallCenterContext();
+
+  // Get current agent status and voice settings for ACW timeout
+  const { data: agentStatus } = useMyAgentStatus(entityId);
+  const { data: voiceSettings } = useVoiceSettings(entityId || "");
+  const acwTimeoutSeconds = voiceSettings?.acw_timeout_seconds ?? 0;
+
+  // Track if we're attempting to connect for Available status
+  const isAttemptingAvailableConnect = useRef(false);
+  const previousCallState = useRef(callState);
+
+  // Connection failure message to display to the user
+  const [connectionFailureMessage, setConnectionFailureMessage] = useState<string | null>(null);
+
+  // Watch for connection failures after attempting to set Available
+  useEffect(() => {
+    // Detect transition to error state
+    if (
+      isAttemptingAvailableConnect.current &&
+      previousCallState.current === "initializing" &&
+      callState === "error"
+    ) {
+      // Connection failed while trying to become Available
+      // Revert status to Unavailable
+      updateStatusMutation.mutate(AgentStatusEnum.UNAVAILABLE);
+      setConnectionFailureMessage(
+        connectionError || "Phone connection failed. Status reverted to Unavailable."
+      );
+      isAttemptingAvailableConnect.current = false;
+    }
+
+    // Clear the attempting flag if connection succeeded
+    if (isAttemptingAvailableConnect.current && callState === "ready") {
+      isAttemptingAvailableConnect.current = false;
+      setConnectionFailureMessage(null);
+    }
+
+    // Clear attempting flag if we're no longer initializing (for any other reason)
+    if (
+      isAttemptingAvailableConnect.current &&
+      previousCallState.current === "initializing" &&
+      callState !== "initializing" &&
+      callState !== "error" &&
+      callState !== "ready"
+    ) {
+      isAttemptingAvailableConnect.current = false;
+    }
+
+    previousCallState.current = callState;
+  }, [callState, connectionError, updateStatusMutation]);
+
+  // Clear the failure message after a timeout
+  useEffect(() => {
+    if (connectionFailureMessage) {
+      const timer = setTimeout(() => {
+        setConnectionFailureMessage(null);
+      }, 8000); // Clear after 8 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [connectionFailureMessage]);
+
+  // ACW timeout state
+  const [acwCountdown, setAcwCountdown] = useState<number | null>(null);
+  const acwTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const acwCountdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ACW auto-transition to Available
+  useEffect(() => {
+    const currentStatus = agentStatus?.status;
+
+    // If agent is in ACW status and timeout is configured
+    if (currentStatus === AgentStatusEnum.AFTER_CALL_WORK && acwTimeoutSeconds > 0) {
+      // Start countdown display
+      setAcwCountdown(acwTimeoutSeconds);
+
+      // Update countdown every second
+      acwCountdownRef.current = setInterval(() => {
+        setAcwCountdown((prev) => {
+          if (prev === null || prev <= 1) return null;
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Set timer to auto-transition to Available
+      acwTimerRef.current = setTimeout(() => {
+        updateStatusMutation.mutate(AgentStatusEnum.AVAILABLE);
+        setAcwCountdown(null);
+      }, acwTimeoutSeconds * 1000);
+
+      return () => {
+        if (acwTimerRef.current) {
+          clearTimeout(acwTimerRef.current);
+          acwTimerRef.current = null;
+        }
+        if (acwCountdownRef.current) {
+          clearInterval(acwCountdownRef.current);
+          acwCountdownRef.current = null;
+        }
+        setAcwCountdown(null);
+      };
+    } else {
+      // Clear timers if status changed away from ACW
+      if (acwTimerRef.current) {
+        clearTimeout(acwTimerRef.current);
+        acwTimerRef.current = null;
+      }
+      if (acwCountdownRef.current) {
+        clearInterval(acwCountdownRef.current);
+        acwCountdownRef.current = null;
+      }
+      setAcwCountdown(null);
+    }
+  }, [agentStatus?.status, acwTimeoutSeconds, updateStatusMutation]);
+
+  const handleStatusChange = useCallback(
+    (newStatus: AgentStatusEnum) => {
+      // Clear any previous failure message
+      setConnectionFailureMessage(null);
+
+      // Auto-connect phone when setting status to Available
+      if (
+        newStatus === AgentStatusEnum.AVAILABLE &&
+        !isInitialized &&
+        callState !== "initializing"
+      ) {
+        // Mark that we're attempting to connect for Available status
+        isAttemptingAvailableConnect.current = true;
+        initialize();
+      }
+
+      // Update status via API
+      updateStatusMutation.mutate(newStatus);
+    },
+    [updateStatusMutation, isInitialized, callState, initialize]
+  );
+
+  // Dismiss the connection failure message
+  const dismissConnectionFailure = useCallback(() => {
+    setConnectionFailureMessage(null);
+  }, []);
+
+  return {
+    handleStatusChange,
+    isPending: updateStatusMutation.isPending,
+    isError: updateStatusMutation.isError,
+    error: updateStatusMutation.error,
+    // Connection state
+    isConnecting: callState === "initializing" && isAttemptingAvailableConnect.current,
+    isConnected: isReady,
+    connectionFailureMessage,
+    dismissConnectionFailure,
+    // ACW timeout state
+    acwCountdown,
+    acwTimeoutSeconds,
+  };
 }
 
 /**

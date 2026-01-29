@@ -82,6 +82,8 @@ export interface VoiceSettings {
   is_configured: boolean;
   daily_remaining: number;
   monthly_remaining: number;
+  /** ACW timeout in seconds - 0 means no auto-transition */
+  acw_timeout_seconds: number;
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +104,8 @@ export interface VoiceSettingsCreate {
   monthly_call_limit?: number;
   cost_per_minute?: number;
   currency?: string;
+  /** ACW timeout in seconds - 0 means no auto-transition */
+  acw_timeout_seconds?: number;
 }
 
 export interface VoiceSettingsUpdate {
@@ -118,6 +122,8 @@ export interface VoiceSettingsUpdate {
   monthly_call_limit?: number;
   cost_per_minute?: number;
   currency?: string;
+  /** ACW timeout in seconds - 0 means no auto-transition */
+  acw_timeout_seconds?: number;
 }
 
 // ==================== Call Queues ====================
@@ -441,36 +447,41 @@ export interface AgentStats {
 
 export const AGENT_STATUS_CONFIG: Record<
   AgentStatusEnum,
-  { label: string; color: string; bgColor: string; icon: string }
+  { label: string; color: string; bgColor: string; dotColor: string; icon: string }
 > = {
   [AgentStatusEnum.AVAILABLE]: {
     label: "Available",
     color: "text-green-700",
     bgColor: "bg-green-100",
+    dotColor: "bg-green-500",
     icon: "🟢",
   },
   [AgentStatusEnum.BUSY]: {
     label: "Busy",
     color: "text-red-700",
     bgColor: "bg-red-100",
+    dotColor: "bg-red-500",
     icon: "🔴",
   },
   [AgentStatusEnum.AFTER_CALL_WORK]: {
     label: "After Call Work",
     color: "text-yellow-700",
     bgColor: "bg-yellow-100",
+    dotColor: "bg-yellow-500",
     icon: "🟡",
   },
   [AgentStatusEnum.UNAVAILABLE]: {
     label: "Unavailable",
     color: "text-gray-700",
     bgColor: "bg-gray-100",
+    dotColor: "bg-gray-500",
     icon: "⚫",
   },
   [AgentStatusEnum.OFFLINE]: {
     label: "Offline",
     color: "text-gray-500",
     bgColor: "bg-gray-50",
+    dotColor: "bg-gray-400",
     icon: "⚪",
   },
 };
