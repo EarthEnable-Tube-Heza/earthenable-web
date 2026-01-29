@@ -72,6 +72,7 @@ export interface UseAfricasTalkingClientReturn {
 
   // Call control methods
   initialize: () => Promise<void>;
+  disconnect: () => void;
   makeCall: (phoneNumber: string, contactName?: string) => Promise<void>;
   answerCall: () => void;
   rejectCall: () => void;
@@ -300,6 +301,25 @@ export function useAfricasTalkingClient(
     };
   }, [stopDurationTimer]);
 
+  // ==================== Disconnect ====================
+
+  const disconnect = useCallback(() => {
+    stopDurationTimer();
+    if (clientRef.current) {
+      // @ts-expect-error - client disconnect method
+      clientRef.current.disconnect?.();
+      clientRef.current = null;
+    }
+    setClient(null);
+    setIsInitialized(false);
+    setIsReady(false);
+    setCallState("idle");
+    setActiveCall(null);
+    setIncomingCall(null);
+    setError(null);
+    onClientDisconnected?.();
+  }, [stopDurationTimer, onClientDisconnected]);
+
   // ==================== Call Control Methods ====================
 
   const makeCall = useCallback(
@@ -446,6 +466,7 @@ export function useAfricasTalkingClient(
 
     // Call control methods
     initialize,
+    disconnect,
     makeCall,
     answerCall,
     rejectCall,
