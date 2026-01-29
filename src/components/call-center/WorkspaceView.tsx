@@ -21,6 +21,7 @@ import { Dialpad } from "./Dialpad";
 import { CallControls } from "./CallControls";
 import { ActiveCallDisplay } from "./ActiveCallDisplay";
 import { AgentStatusSelector } from "./AgentStatusSelector";
+import { ACWCountdown } from "./ACWCountdown";
 import { RecentCallHistory } from "./RecentCallHistory";
 import { QueueAgentsPanel } from "./QueueAgentsPanel";
 import { Card, Spinner, Badge } from "@/src/components/ui";
@@ -70,7 +71,9 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
     isPending: isStatusChangePending,
     connectionFailureMessage,
     dismissConnectionFailure,
-    acwCountdown,
+    showAcwCountdown,
+    acwTimeoutSeconds,
+    handleAcwComplete,
   } = useAgentStatusWithAutoConnect(selectedEntityId ?? undefined);
 
   // My callbacks
@@ -127,13 +130,22 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
           {/* Header with Status */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-heading font-semibold text-text-primary">Softphone</h2>
-            <AgentStatusSelector
-              currentStatus={currentStatus}
-              onStatusChange={handleStatusChange}
-              isLoading={isStatusLoading || isStatusChangePending}
-              acwCountdown={acwCountdown}
-              size="md"
-            />
+            <div className="flex items-center gap-3">
+              {/* ACW Countdown - separate component for independent re-renders */}
+              {showAcwCountdown && (
+                <ACWCountdown
+                  timeoutSeconds={acwTimeoutSeconds}
+                  onComplete={handleAcwComplete}
+                  size="md"
+                />
+              )}
+              <AgentStatusSelector
+                currentStatus={currentStatus}
+                onStatusChange={handleStatusChange}
+                isLoading={isStatusLoading || isStatusChangePending}
+                size="md"
+              />
+            </div>
           </div>
 
           {/* Connection Failure Alert */}

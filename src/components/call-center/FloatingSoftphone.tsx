@@ -18,6 +18,7 @@ import { Dialpad } from "./Dialpad";
 import { CallControls } from "./CallControls";
 import { ActiveCallDisplay } from "./ActiveCallDisplay";
 import { AgentStatusSelector } from "./AgentStatusSelector";
+import { ACWCountdown } from "./ACWCountdown";
 import { Spinner } from "@/src/components/ui";
 
 interface FloatingSoftphoneProps {
@@ -66,7 +67,9 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
     isPending: isStatusChangePending,
     connectionFailureMessage,
     dismissConnectionFailure,
-    acwCountdown,
+    showAcwCountdown,
+    acwTimeoutSeconds,
+    handleAcwComplete,
   } = useAgentStatusWithAutoConnect(selectedEntityId ?? undefined);
 
   // Get current status (fallback to offline if no status)
@@ -221,12 +224,20 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* ACW Countdown - separate component for independent re-renders */}
+              {showAcwCountdown && (
+                <ACWCountdown
+                  timeoutSeconds={acwTimeoutSeconds}
+                  onComplete={handleAcwComplete}
+                  size="sm"
+                />
+              )}
+
               {/* Agent Status Selector */}
               <AgentStatusSelector
                 currentStatus={currentStatus}
                 onStatusChange={handleStatusChange}
                 isLoading={isStatusLoading || isStatusChangePending}
-                acwCountdown={acwCountdown}
                 size="sm"
               />
 
