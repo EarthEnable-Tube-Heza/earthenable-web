@@ -1576,6 +1576,17 @@ class APIClient {
     return this.delete<void>(`/admin/voice/queues/${queueId}/agents/${userId}`);
   }
 
+  /**
+   * Update an agent's settings in a queue
+   */
+  async updateQueueAgent(
+    queueId: string,
+    userId: string,
+    data: { priority_in_queue?: number; is_active?: boolean; max_concurrent_calls?: number }
+  ): Promise<QueueAgent> {
+    return this.put<QueueAgent>(`/admin/voice/queues/${queueId}/agents/${userId}`, data);
+  }
+
   // ==================== Call Logs (Admin) ====================
 
   /**

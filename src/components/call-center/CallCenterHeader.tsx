@@ -26,6 +26,7 @@ const callCenterTabs: TabItem[] = [
   { label: "Workspace", href: "/dashboard/call-center", exact: true },
   { label: "Callbacks", href: "/dashboard/call-center/callbacks" },
   { label: "History", href: "/dashboard/call-center/history" },
+  { label: "Queues", href: "/dashboard/call-center/queues" },
   { label: "Settings", href: "/dashboard/call-center/settings" },
 ];
 

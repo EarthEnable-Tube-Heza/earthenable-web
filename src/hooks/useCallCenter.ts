@@ -222,6 +222,28 @@ export function useRemoveQueueAgent() {
   });
 }
 
+/**
+ * Hook to update an agent's settings in a queue
+ */
+export function useUpdateQueueAgent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      queueId,
+      userId,
+      data,
+    }: {
+      queueId: string;
+      userId: string;
+      data: { priority_in_queue?: number; is_active?: boolean; max_concurrent_calls?: number };
+    }) => apiClient.updateQueueAgent(queueId, userId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.queueAgents(variables.queueId) });
+    },
+  });
+}
+
 // ==================== Call Log Hooks ====================
 
 /**
