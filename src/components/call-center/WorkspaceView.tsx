@@ -367,7 +367,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
       {/* Column 2: Callbacks */}
       <div className="flex flex-col">
         {/* Pending Callbacks */}
-        <Card variant="bordered" padding="md" className="h-full overflow-hidden">
+        <Card variant="bordered" padding="md" className="h-full overflow-hidden flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-heading font-semibold text-text-secondary">My Callbacks</h3>
             {pendingCallbacks.length > 0 && (
@@ -378,9 +378,9 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
           </div>
 
           {pendingCallbacks.length === 0 ? (
-            <div className="text-center py-6">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[200px] py-6">
               <svg
-                className="w-10 h-10 text-text-disabled mx-auto mb-2"
+                className="w-10 h-10 text-text-disabled mb-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
