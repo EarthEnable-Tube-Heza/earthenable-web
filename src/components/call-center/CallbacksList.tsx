@@ -137,12 +137,12 @@ export function CallbacksList({
   return (
     <div className={cn("bg-white rounded-lg shadow-medium overflow-hidden", className)}>
       {isLoading ? (
-        <div className="p-8 text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           <p className="text-text-secondary mt-2">Loading callbacks...</p>
         </div>
       ) : error ? (
-        <div className="p-8 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <p className="text-status-error">Error loading callbacks. Please try again.</p>
           {onRetry && (
             <Button onClick={onRetry} className="mt-4">
@@ -151,9 +151,9 @@ export function CallbacksList({
           )}
         </div>
       ) : callbacks.length === 0 ? (
-        <div className="p-8 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <svg
-            className="w-16 h-16 text-text-disabled mx-auto mb-4"
+            className="w-16 h-16 text-text-disabled mb-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
