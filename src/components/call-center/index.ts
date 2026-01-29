@@ -9,6 +9,7 @@ export { Dialpad } from "./Dialpad";
 export { CallControls } from "./CallControls";
 export { ActiveCallDisplay } from "./ActiveCallDisplay";
 export { AgentStatusSelector } from "./AgentStatusSelector";
+export { ACWCountdown } from "./ACWCountdown";
 export { WorkspaceView } from "./WorkspaceView";
 export { CallHistoryTable } from "./CallHistoryTable";
 export { CallDetailModal } from "./CallDetailModal";

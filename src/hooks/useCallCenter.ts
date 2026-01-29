@@ -483,7 +483,10 @@ export function useUpdateMyAgentStatus(entityId: string | undefined) {
  * Features:
  * - When status is set to Available and phone is not connected, auto-initializes the WebRTC client.
  * - If the connection fails, the status is reverted to Unavailable and an error message is shown.
- * - When status is set to After Call Work (ACW) and timeout is configured, auto-transitions to Available.
+ * - Exposes ACW timeout settings for the ACWCountdown component to handle.
+ *
+ * NOTE: ACW countdown is handled by a separate ACWCountdown component that manages its own
+ * state and re-renders. This hook only provides the timeout setting and status change handler.
  */
 export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
   const updateStatusMutation = useUpdateMyAgentStatus(entityId);
@@ -554,59 +557,6 @@ export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
     }
   }, [connectionFailureMessage]);
 
-  // ACW timeout state
-  const [acwCountdown, setAcwCountdown] = useState<number | null>(null);
-  const acwTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const acwCountdownRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ACW auto-transition to Available
-  useEffect(() => {
-    const currentStatus = agentStatus?.status;
-
-    // If agent is in ACW status and timeout is configured
-    if (currentStatus === AgentStatusEnum.AFTER_CALL_WORK && acwTimeoutSeconds > 0) {
-      // Start countdown display
-      setAcwCountdown(acwTimeoutSeconds);
-
-      // Update countdown every second
-      acwCountdownRef.current = setInterval(() => {
-        setAcwCountdown((prev) => {
-          if (prev === null || prev <= 1) return null;
-          return prev - 1;
-        });
-      }, 1000);
-
-      // Set timer to auto-transition to Available
-      acwTimerRef.current = setTimeout(() => {
-        updateStatusMutation.mutate(AgentStatusEnum.AVAILABLE);
-        setAcwCountdown(null);
-      }, acwTimeoutSeconds * 1000);
-
-      return () => {
-        if (acwTimerRef.current) {
-          clearTimeout(acwTimerRef.current);
-          acwTimerRef.current = null;
-        }
-        if (acwCountdownRef.current) {
-          clearInterval(acwCountdownRef.current);
-          acwCountdownRef.current = null;
-        }
-        setAcwCountdown(null);
-      };
-    } else {
-      // Clear timers if status changed away from ACW
-      if (acwTimerRef.current) {
-        clearTimeout(acwTimerRef.current);
-        acwTimerRef.current = null;
-      }
-      if (acwCountdownRef.current) {
-        clearInterval(acwCountdownRef.current);
-        acwCountdownRef.current = null;
-      }
-      setAcwCountdown(null);
-    }
-  }, [agentStatus?.status, acwTimeoutSeconds, updateStatusMutation]);
-
   const handleStatusChange = useCallback(
     (newStatus: AgentStatusEnum) => {
       // Clear any previous failure message
@@ -634,6 +584,16 @@ export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
     setConnectionFailureMessage(null);
   }, []);
 
+  // Check if ACW countdown should be shown
+  const currentStatus = agentStatus?.status;
+  const showAcwCountdown =
+    currentStatus === AgentStatusEnum.AFTER_CALL_WORK && acwTimeoutSeconds > 0;
+
+  // Handler for when ACW countdown completes - transitions to Available
+  const handleAcwComplete = useCallback(() => {
+    updateStatusMutation.mutate(AgentStatusEnum.AVAILABLE);
+  }, [updateStatusMutation]);
+
   return {
     handleStatusChange,
     isPending: updateStatusMutation.isPending,
@@ -644,9 +604,10 @@ export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
     isConnected: isReady,
     connectionFailureMessage,
     dismissConnectionFailure,
-    // ACW timeout state
-    acwCountdown,
+    // ACW timeout state - the countdown is managed by ACWCountdown component
     acwTimeoutSeconds,
+    showAcwCountdown,
+    handleAcwComplete,
   };
 }
 

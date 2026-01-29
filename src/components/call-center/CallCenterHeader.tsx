@@ -26,6 +26,7 @@ import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
 import { useAuth } from "@/src/lib/auth";
 import { TabNavigation, TabItem, Button, Card, Badge, Spinner, Select } from "@/src/components/ui";
 import { AgentStatusSelector } from "./AgentStatusSelector";
+import { ACWCountdown } from "./ACWCountdown";
 import { AgentStatusEnum } from "@/src/types/voice";
 import Link from "next/link";
 
@@ -84,7 +85,9 @@ export function CallCenterHeader() {
     isPending: isStatusChangePending,
     connectionFailureMessage,
     dismissConnectionFailure,
-    acwCountdown,
+    showAcwCountdown,
+    acwTimeoutSeconds,
+    handleAcwComplete,
   } = useAgentStatusWithAutoConnect(selectedEntityId || undefined);
 
   // Determine configuration status
@@ -219,13 +222,22 @@ export function CallCenterHeader() {
               {isAgentStatusLoading ? (
                 <Spinner size="sm" />
               ) : (
-                <AgentStatusSelector
-                  currentStatus={currentStatus}
-                  onStatusChange={handleStatusChange}
-                  isLoading={isStatusChangePending}
-                  acwCountdown={acwCountdown}
-                  size="md"
-                />
+                <div className="flex items-center gap-2">
+                  {/* ACW Countdown - separate component for independent re-renders */}
+                  {showAcwCountdown && (
+                    <ACWCountdown
+                      timeoutSeconds={acwTimeoutSeconds}
+                      onComplete={handleAcwComplete}
+                      size="md"
+                    />
+                  )}
+                  <AgentStatusSelector
+                    currentStatus={currentStatus}
+                    onStatusChange={handleStatusChange}
+                    isLoading={isStatusChangePending}
+                    size="md"
+                  />
+                </div>
               )}
 
               {/* Divider */}
