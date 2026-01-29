@@ -16,3 +16,8 @@ export { CallbacksList } from "./CallbacksList";
 export { ScheduleCallbackModal } from "./ScheduleCallbackModal";
 export { VoiceSettingsForm } from "./VoiceSettingsForm";
 export { CallCenterHeader } from "./CallCenterHeader";
+export { QueueTable } from "./QueueTable";
+export { QueueFormModal } from "./QueueFormModal";
+export { QueueAgentsModal } from "./QueueAgentsModal";
+export { RecentCallHistory } from "./RecentCallHistory";
+export { QueueAgentsPanel } from "./QueueAgentsPanel";

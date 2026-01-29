@@ -22,6 +22,8 @@ import { Dialpad } from "./Dialpad";
 import { CallControls } from "./CallControls";
 import { ActiveCallDisplay } from "./ActiveCallDisplay";
 import { AgentStatusSelector } from "./AgentStatusSelector";
+import { RecentCallHistory } from "./RecentCallHistory";
+import { QueueAgentsPanel } from "./QueueAgentsPanel";
 import { Card, Spinner, Badge } from "@/src/components/ui";
 
 interface WorkspaceViewProps {
@@ -116,9 +118,16 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   const hasIncomingCall = !!incomingCall;
 
   return (
-    <div className={cn("h-full flex gap-6", className)}>
-      {/* Main Softphone Area */}
-      <div className="flex-1 max-w-md">
+    <div
+      className={cn(
+        "h-full grid gap-6",
+        // Responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop
+        "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
+        className
+      )}
+    >
+      {/* Column 1: Main Softphone Area */}
+      <div className="md:col-span-1">
         <Card variant="bordered" padding="lg" className="h-full">
           {/* Header with Status */}
           <div className="flex items-center justify-between mb-6">
@@ -320,8 +329,8 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
         </Card>
       </div>
 
-      {/* Sidebar - Callbacks & Quick Actions */}
-      <div className="w-80 flex flex-col gap-6">
+      {/* Column 2: Callbacks & Quick Actions */}
+      <div className="flex flex-col gap-6">
         {/* Connection Status */}
         <Card variant="bordered" padding="md">
           <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
@@ -356,7 +365,22 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
           </div>
 
           {pendingCallbacks.length === 0 ? (
-            <p className="text-sm text-text-disabled text-center py-4">No pending callbacks</p>
+            <div className="text-center py-6">
+              <svg
+                className="w-10 h-10 text-text-disabled mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-sm text-text-disabled">No pending callbacks</p>
+            </div>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {pendingCallbacks.slice(0, 5).map((callback) => (
@@ -432,6 +456,44 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
               <p className="text-xs text-text-secondary">Callbacks Done</p>
             </div>
           </div>
+        </Card>
+      </div>
+
+      {/* Column 3: Queue Agents & Recent Calls */}
+      <div className="flex flex-col gap-6 md:col-span-2 xl:col-span-1">
+        {/* Queue Agents for Transfer */}
+        <Card variant="bordered" padding="md">
+          <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
+            Queue Agents
+          </h3>
+          <QueueAgentsPanel
+            entityId={selectedEntityId ?? undefined}
+            onAgentClick={(agent) => {
+              // In a real implementation, this would initiate a transfer
+              // For now, just log to console
+              console.log("Transfer to agent:", agent.user_name, agent.user_id);
+            }}
+          />
+        </Card>
+
+        {/* Recent Call History */}
+        <Card variant="bordered" padding="md" className="flex-1 flex flex-col">
+          <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
+            Recent Calls
+          </h3>
+          <RecentCallHistory
+            entityId={selectedEntityId ?? undefined}
+            limit={5}
+            onCallClick={(call) => {
+              // Quick dial the number from call history
+              if (canMakeCall) {
+                const number =
+                  call.direction === "inbound" ? call.caller_number : call.callee_number;
+                setPhoneNumber(number);
+              }
+            }}
+            className="flex-1"
+          />
         </Card>
       </div>
     </div>
