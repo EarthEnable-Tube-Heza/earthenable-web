@@ -7,19 +7,11 @@
  */
 
 import { useState } from "react";
-import {
-  Input,
-  Button,
-  LabeledSelect,
-  Card,
-  Spinner,
-  Badge,
-  Select,
-  Toast,
-} from "@/src/components/ui";
+import { Input, Button, LabeledSelect, Card, Spinner, Badge, Toast } from "@/src/components/ui";
 import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Info, Briefcase } from "@/src/lib/icons";
-import { useJobRoles, useCreateJobRole, useEntities } from "@/src/hooks/useExpenses";
+import { useJobRoles, useCreateJobRole } from "@/src/hooks/useExpenses";
+import { useAuth } from "@/src/lib/auth";
 
 const LEVEL_OPTIONS = [
   { value: "intern", label: "Intern" },
@@ -44,7 +36,7 @@ const getLevelBadgeVariant = (level: string): "info" | "success" | "warning" | "
 };
 
 export function JobRolesTab() {
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
+  const { selectedEntityId } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
@@ -55,17 +47,10 @@ export function JobRolesTab() {
     isActive: true,
   });
 
-  const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
-  const { data, isLoading } = useJobRoles(selectedEntityId);
-  const createJobRole = useCreateJobRole(selectedEntityId);
+  const { data, isLoading } = useJobRoles(selectedEntityId || undefined);
+  const createJobRole = useCreateJobRole(selectedEntityId || undefined);
 
-  const entities = entitiesData?.entities || [];
   const jobRoles = data?.job_roles || [];
-
-  // Auto-select first entity if none selected
-  if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
-    setSelectedEntityId(entities[0].id);
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,28 +91,6 @@ export function JobRolesTab() {
         message={toast.message}
         onDismiss={() => setToast({ ...toast, visible: false })}
       />
-
-      {/* Entity Selection */}
-      <Card variant="bordered" padding="md">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-text-primary whitespace-nowrap">
-            Select Entity:
-          </label>
-          <Select
-            value={selectedEntityId}
-            onChange={(e) => setSelectedEntityId(e.target.value)}
-            disabled={entitiesLoading || entities.length === 0}
-            className="flex-1 max-w-md"
-          >
-            <option value="">Select an entity...</option>
-            {entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>
-                {entity.name} ({entity.code})
-              </option>
-            ))}
-          </Select>
-        </div>
-      </Card>
 
       {/* Header Actions */}
       <div className="flex items-center justify-between">
@@ -263,7 +226,7 @@ export function JobRolesTab() {
           <div className="text-center py-8">
             <Briefcase className="w-12 h-12 text-text-tertiary mx-auto mb-3" />
             <p className="text-text-secondary">
-              Please select an entity to view and manage job roles
+              Please select an entity from the header to view and manage job roles
             </p>
           </div>
         </Card>

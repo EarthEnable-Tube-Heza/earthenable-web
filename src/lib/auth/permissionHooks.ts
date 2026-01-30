@@ -6,12 +6,16 @@
  * Custom React hooks for permission-based access control.
  * These hooks integrate with the navigation configuration and auth context
  * to provide granular permission checking throughout the application.
+ *
+ * Supports both database-driven permissions (via /auth/me/permissions API)
+ * and fallback role-based permissions for backward compatibility.
  */
 
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useAuth } from "./hooks";
 import { navigationModules, getPermissionsForRole, Permissions } from "../../config/navigation";
 import type { Permission } from "../../types";
+import { apiClient } from "../api";
 
 /**
  * Local storage key for caching permissions
@@ -19,10 +23,19 @@ import type { Permission } from "../../types";
 const PERMISSIONS_CACHE_KEY = "earthenable_user_permissions";
 
 /**
+ * Cache duration for permissions (5 minutes)
+ */
+const PERMISSIONS_CACHE_DURATION = 5 * 60 * 1000;
+
+/**
  * Hook to manage user permissions
  *
  * Returns the current user's permissions as a Set for efficient lookups,
  * along with helper methods for checking permissions.
+ *
+ * Now fetches permissions from the backend API which supports:
+ * - Database-driven permission roles (when user has custom roles assigned)
+ * - Fallback to role-based permissions (backward compatibility)
  *
  * @example
  * const { permissions, hasPermission, hasAnyPermission } = usePermissions();
@@ -32,27 +45,79 @@ const PERMISSIONS_CACHE_KEY = "earthenable_user_permissions";
 export function usePermissions() {
   const { user, isLoading: authLoading } = useAuth();
   const [backendPermissions, setBackendPermissions] = useState<string[] | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_isLoadingPermissions, setIsLoadingPermissions] = useState(false);
+  const [permissionMap, setPermissionMap] = useState<Record<string, string> | null>(null);
+  const [hasCustomRoles, setHasCustomRoles] = useState(false);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
 
-  // Try to load cached permissions on mount
+  // Fetch permissions from backend when user changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem(PERMISSIONS_CACHE_KEY);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          if (parsed.userId === user?.id && parsed.permissions) {
-            setBackendPermissions(parsed.permissions);
+    const fetchPermissions = async () => {
+      if (!user?.id) {
+        setBackendPermissions(null);
+        setPermissionMap(null);
+        setHasCustomRoles(false);
+        return;
+      }
+
+      // Check cache first
+      if (typeof window !== "undefined") {
+        const cached = localStorage.getItem(PERMISSIONS_CACHE_KEY);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (
+              parsed.userId === user.id &&
+              parsed.permissions &&
+              parsed.timestamp &&
+              Date.now() - parsed.timestamp < PERMISSIONS_CACHE_DURATION
+            ) {
+              setBackendPermissions(parsed.permissions);
+              setPermissionMap(parsed.permissionMap || null);
+              setHasCustomRoles(parsed.hasCustomRoles || false);
+              return;
+            }
+          } catch {
+            // Invalid cache, continue to fetch
           }
-        } catch {
-          // Invalid cache, ignore
         }
       }
-    }
+
+      // Fetch from API
+      setIsLoadingPermissions(true);
+      try {
+        const response = await apiClient.getMyPermissions();
+        setBackendPermissions(response.permissions);
+        setPermissionMap(response.permission_map || null);
+        setHasCustomRoles(response.has_custom_roles);
+
+        // Cache the result
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            PERMISSIONS_CACHE_KEY,
+            JSON.stringify({
+              userId: user.id,
+              permissions: response.permissions,
+              permissionMap: response.permission_map,
+              hasCustomRoles: response.has_custom_roles,
+              timestamp: Date.now(),
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch permissions:", error);
+        // Fall back to role-based permissions
+        setBackendPermissions(null);
+        setPermissionMap(null);
+        setHasCustomRoles(false);
+      } finally {
+        setIsLoadingPermissions(false);
+      }
+    };
+
+    fetchPermissions();
   }, [user?.id]);
 
-  // Compute permissions from role (fallback) or backend
+  // Compute permissions from API response or role (fallback)
   const permissions = useMemo(() => {
     // If we have backend permissions, use those
     if (backendPermissions) {
@@ -160,11 +225,23 @@ export function usePermissions() {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    isLoading: authLoading || _isLoadingPermissions,
+    isLoading: authLoading || isLoadingPermissions,
     setPermissionsFromBackend,
     clearPermissions,
     // Expose the Permissions constants for convenience
     Permissions,
+    // Database-driven permission info
+    permissionMap,
+    hasCustomRoles,
+    // Refresh permissions from API
+    refreshPermissions: async () => {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(PERMISSIONS_CACHE_KEY);
+      }
+      setBackendPermissions(null);
+      setPermissionMap(null);
+      setHasCustomRoles(false);
+    },
   };
 }
 

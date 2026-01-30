@@ -10,13 +10,12 @@ import { useAuth } from "@/src/lib/auth";
  * Hook to fetch expense summary statistics
  */
 export function useExpenseSummary() {
-  const { user } = useAuth();
-  const entityId = user?.entity_id || "";
+  const { selectedEntityId } = useAuth();
 
   return useQuery({
-    queryKey: ["expense-summary", entityId],
-    queryFn: () => expenseAPI.getExpenseSummary(entityId),
-    enabled: !!entityId,
+    queryKey: ["expense-summary", selectedEntityId],
+    queryFn: () => expenseAPI.getExpenseSummary(selectedEntityId || ""),
+    enabled: !!selectedEntityId,
   });
 }
 
@@ -28,19 +27,18 @@ export function useExpenses(params: {
   departmentId?: string;
   submitterId?: string;
 }) {
-  const { user } = useAuth();
-  const entityId = user?.entity_id || "";
+  const { user, selectedEntityId } = useAuth();
 
   return useQuery({
-    queryKey: ["expenses", entityId, params],
+    queryKey: ["expenses", selectedEntityId, params],
     queryFn: () =>
       expenseAPI.listExpenses({
-        entityId,
+        entityId: selectedEntityId || "",
         submitterId: params.submitterId || user?.id,
         statusFilter: params.statusFilter === "all" ? undefined : params.statusFilter,
         departmentId: params.departmentId,
       }),
-    enabled: !!entityId,
+    enabled: !!selectedEntityId,
   });
 }
 
@@ -126,12 +124,12 @@ export function useSubmitExpense() {
  * Hook to calculate per diem
  */
 export function useCalculatePerDiem() {
-  const { user } = useAuth();
+  const { selectedEntityId } = useAuth();
 
   return useMutation({
     mutationFn: (data: { designation: string; days: number; calculationDate?: string }) =>
       expenseAPI.calculatePerDiem({
-        entityId: user?.entity_id || "",
+        entityId: selectedEntityId || "",
         ...data,
       }),
   });
@@ -141,13 +139,13 @@ export function useCalculatePerDiem() {
  * Hook to get departments
  */
 export function useDepartments(entityId?: string) {
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useQuery({
-    queryKey: ["departments", selectedEntityId],
-    queryFn: () => expenseAPI.getDepartments(selectedEntityId),
-    enabled: !!selectedEntityId,
+    queryKey: ["departments", finalEntityId],
+    queryFn: () => expenseAPI.getDepartments(finalEntityId),
+    enabled: !!finalEntityId,
   });
 }
 
@@ -155,13 +153,13 @@ export function useDepartments(entityId?: string) {
  * Hook to get expense categories
  */
 export function useExpenseCategories(entityId?: string) {
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useQuery({
-    queryKey: ["expense-categories", selectedEntityId],
-    queryFn: () => expenseAPI.getExpenseCategories(selectedEntityId),
-    enabled: !!selectedEntityId,
+    queryKey: ["expense-categories", finalEntityId],
+    queryFn: () => expenseAPI.getExpenseCategories(finalEntityId),
+    enabled: !!finalEntityId,
   });
 }
 
@@ -169,13 +167,12 @@ export function useExpenseCategories(entityId?: string) {
  * Hook to get budgets
  */
 export function useBudgets() {
-  const { user } = useAuth();
-  const entityId = user?.entity_id || "";
+  const { selectedEntityId } = useAuth();
 
   return useQuery({
-    queryKey: ["budgets", entityId],
-    queryFn: () => expenseAPI.getBudgets(entityId),
-    enabled: !!entityId,
+    queryKey: ["budgets", selectedEntityId],
+    queryFn: () => expenseAPI.getBudgets(selectedEntityId || ""),
+    enabled: !!selectedEntityId,
   });
 }
 
@@ -183,13 +180,13 @@ export function useBudgets() {
  * Hook to get per diem rates
  */
 export function usePerDiemRates(entityId?: string) {
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useQuery({
-    queryKey: ["per-diem-rates", selectedEntityId],
-    queryFn: () => expenseAPI.getPerDiemRates(selectedEntityId),
-    enabled: !!selectedEntityId,
+    queryKey: ["per-diem-rates", finalEntityId],
+    queryFn: () => expenseAPI.getPerDiemRates(finalEntityId),
+    enabled: !!finalEntityId,
   });
 }
 
@@ -198,12 +195,12 @@ export function usePerDiemRates(entityId?: string) {
  */
 export function useCreatePerDiemRate(entityId?: string) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useMutation({
     mutationFn: (data: Parameters<typeof expenseAPI.createPerDiemRate>[1]) =>
-      expenseAPI.createPerDiemRate(selectedEntityId, data),
+      expenseAPI.createPerDiemRate(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["per-diem-rates"] });
     },
@@ -214,13 +211,13 @@ export function useCreatePerDiemRate(entityId?: string) {
  * Hook to get job roles
  */
 export function useJobRoles(entityId?: string) {
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useQuery({
-    queryKey: ["job-roles", selectedEntityId],
-    queryFn: () => expenseAPI.getJobRoles(selectedEntityId),
-    enabled: !!selectedEntityId,
+    queryKey: ["job-roles", finalEntityId],
+    queryFn: () => expenseAPI.getJobRoles(finalEntityId),
+    enabled: !!finalEntityId,
   });
 }
 
@@ -229,12 +226,12 @@ export function useJobRoles(entityId?: string) {
  */
 export function useCreateJobRole(entityId?: string) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useMutation({
     mutationFn: (data: Parameters<typeof expenseAPI.createJobRole>[1]) =>
-      expenseAPI.createJobRole(selectedEntityId, data),
+      expenseAPI.createJobRole(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-roles"] });
     },
@@ -290,12 +287,12 @@ export function useUpdateEntity() {
  */
 export function useCreateDepartment(entityId?: string) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useMutation({
     mutationFn: (data: Parameters<typeof expenseAPI.createDepartment>[1]) =>
-      expenseAPI.createDepartment(selectedEntityId, data),
+      expenseAPI.createDepartment(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
@@ -306,13 +303,13 @@ export function useCreateDepartment(entityId?: string) {
  * Hook to get branches
  */
 export function useBranches(entityId?: string) {
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useQuery({
-    queryKey: ["branches", selectedEntityId],
-    queryFn: () => expenseAPI.getBranches(selectedEntityId),
-    enabled: !!selectedEntityId,
+    queryKey: ["branches", finalEntityId],
+    queryFn: () => expenseAPI.getBranches(finalEntityId),
+    enabled: !!finalEntityId,
   });
 }
 
@@ -321,12 +318,12 @@ export function useBranches(entityId?: string) {
  */
 export function useCreateBranch(entityId?: string) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useMutation({
     mutationFn: (data: Parameters<typeof expenseAPI.createBranch>[1]) =>
-      expenseAPI.createBranch(selectedEntityId, data),
+      expenseAPI.createBranch(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branches"] });
     },
@@ -338,14 +335,78 @@ export function useCreateBranch(entityId?: string) {
  */
 export function useCreateExpenseCategory(entityId?: string) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const selectedEntityId = entityId || user?.entity_id || "";
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
 
   return useMutation({
     mutationFn: (data: Parameters<typeof expenseAPI.createExpenseCategory>[1]) =>
-      expenseAPI.createExpenseCategory(selectedEntityId, data),
+      expenseAPI.createExpenseCategory(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expense-categories"] });
+    },
+  });
+}
+
+// ==================== Approval Hooks ====================
+
+/**
+ * Hook to get expense with full approval chain
+ */
+export function useExpenseWithApprovals(expenseId: string) {
+  return useQuery({
+    queryKey: ["expense-with-approvals", expenseId],
+    queryFn: () => expenseAPI.getExpenseWithApprovals(expenseId),
+    enabled: !!expenseId,
+  });
+}
+
+/**
+ * Hook to get pending approvals for current user
+ */
+export function usePendingApprovals(entityId?: string) {
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || undefined;
+
+  return useQuery({
+    queryKey: ["pending-approvals", finalEntityId],
+    queryFn: () => expenseAPI.getPendingApprovals(finalEntityId),
+  });
+}
+
+/**
+ * Hook to approve an expense
+ */
+export function useApproveExpense() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ expenseId, comments }: { expenseId: string; comments?: string }) =>
+      expenseAPI.approveExpense(expenseId, comments),
+    onSuccess: (_, variables) => {
+      // Invalidate all relevant queries
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-with-approvals", variables.expenseId] });
+    },
+  });
+}
+
+/**
+ * Hook to reject an expense
+ */
+export function useRejectExpense() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ expenseId, reason }: { expenseId: string; reason: string }) =>
+      expenseAPI.rejectExpense(expenseId, reason),
+    onSuccess: (_, variables) => {
+      // Invalidate all relevant queries
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      queryClient.invalidateQueries({ queryKey: ["expense-with-approvals", variables.expenseId] });
     },
   });
 }

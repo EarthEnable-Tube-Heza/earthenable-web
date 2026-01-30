@@ -11,7 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/src/lib/theme";
 import { LucideIcon } from "lucide-react";
-import { useAuth } from "@/src/lib/auth";
+import { useAuth, usePermissions } from "@/src/lib/auth";
 import { UserRole } from "@/src/types";
 
 export interface TabItem {
@@ -52,6 +52,7 @@ export function TabNavigation({
 }: TabNavigationProps) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { hasAnyPermission } = usePermissions();
 
   // Filter tabs based on permissions
   const visibleTabs = tabs.filter((tab) => {
@@ -62,11 +63,12 @@ export function TabNavigation({
       }
     }
 
-    // TODO: Check permission-based access when permission system is implemented
-    // if (tab.requiredPermissions && tab.requiredPermissions.length > 0) {
-    //   const hasPermission = tab.requiredPermissions.some(p => userPermissions.includes(p));
-    //   if (!hasPermission) return false;
-    // }
+    // Check permission-based access
+    if (tab.requiredPermissions && tab.requiredPermissions.length > 0) {
+      if (!hasAnyPermission(tab.requiredPermissions)) {
+        return false;
+      }
+    }
 
     return true;
   });
