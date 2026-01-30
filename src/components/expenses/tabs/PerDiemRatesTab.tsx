@@ -7,45 +7,30 @@
  */
 
 import { useState } from "react";
-import {
-  Input,
-  Button,
-  LabeledSelect,
-  Card,
-  Spinner,
-  Badge,
-  Select,
-  Toast,
-} from "@/src/components/ui";
+import { Input, Button, LabeledSelect, Card, Spinner, Badge, Toast } from "@/src/components/ui";
 import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Target, User, Edit, Info, CheckCircle } from "@/src/lib/icons";
-import { usePerDiemRates, useCreatePerDiemRate, useEntities } from "@/src/hooks/useExpenses";
+import { usePerDiemRates, useCreatePerDiemRate } from "@/src/hooks/useExpenses";
+import { useAuth } from "@/src/lib/auth";
 import { CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 export function PerDiemRatesTab() {
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
+  const { selectedEntityId } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
     designation: "",
     ratePerDay: "",
     currency: "RWF",
-    dayNight: "day",
-    effectiveDate: new Date().toISOString().split("T")[0],
+    effectiveFrom: new Date().toISOString().split("T")[0],
+    effectiveTo: "",
     isActive: true,
   });
 
-  const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
-  const { data, isLoading } = usePerDiemRates(selectedEntityId);
-  const createPerDiemRate = useCreatePerDiemRate(selectedEntityId);
+  const { data, isLoading } = usePerDiemRates(selectedEntityId || undefined);
+  const createPerDiemRate = useCreatePerDiemRate(selectedEntityId || undefined);
 
-  const entities = entitiesData?.entities || [];
   const rates = data?.rates || [];
-
-  // Auto-select first entity if none selected
-  if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
-    setSelectedEntityId(entities[0].id);
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +40,8 @@ export function PerDiemRatesTab() {
         designation: formData.designation,
         ratePerDay: parseFloat(formData.ratePerDay),
         currency: formData.currency,
-        dayNight: formData.dayNight,
-        effectiveDate: formData.effectiveDate,
+        effectiveFrom: formData.effectiveFrom,
+        effectiveTo: formData.effectiveTo || null,
         isActive: formData.isActive,
       });
 
@@ -66,8 +51,8 @@ export function PerDiemRatesTab() {
         designation: "",
         ratePerDay: "",
         currency: "RWF",
-        dayNight: "day",
-        effectiveDate: new Date().toISOString().split("T")[0],
+        effectiveFrom: new Date().toISOString().split("T")[0],
+        effectiveTo: "",
         isActive: true,
       });
     } catch (error) {
@@ -100,28 +85,6 @@ export function PerDiemRatesTab() {
         message={toast.message}
         onDismiss={() => setToast({ ...toast, visible: false })}
       />
-
-      {/* Entity Selection */}
-      <Card variant="bordered" padding="md">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-text-primary whitespace-nowrap">
-            Select Entity:
-          </label>
-          <Select
-            value={selectedEntityId}
-            onChange={(e) => setSelectedEntityId(e.target.value)}
-            disabled={entitiesLoading || entities.length === 0}
-            className="flex-1 max-w-md"
-          >
-            <option value="">Select an entity...</option>
-            {entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>
-                {entity.name} ({entity.code})
-              </option>
-            ))}
-          </Select>
-        </div>
-      </Card>
 
       {/* Header Actions */}
       <div className="flex items-center justify-between">
@@ -200,23 +163,19 @@ export function PerDiemRatesTab() {
                 required
               />
 
-              <LabeledSelect
-                label="Day/Night Rate"
-                value={formData.dayNight}
-                onChange={(e) => setFormData({ ...formData, dayNight: e.target.value })}
-                options={[
-                  { value: "day", label: "Day Rate" },
-                  { value: "night", label: "Night Rate" },
-                ]}
+              <Input
+                label="Effective From"
+                type="date"
+                value={formData.effectiveFrom}
+                onChange={(e) => setFormData({ ...formData, effectiveFrom: e.target.value })}
                 required
               />
 
               <Input
-                label="Effective Date"
+                label="Effective To (Optional)"
                 type="date"
-                value={formData.effectiveDate}
-                onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
-                required
+                value={formData.effectiveTo}
+                onChange={(e) => setFormData({ ...formData, effectiveTo: e.target.value })}
               />
             </div>
 
@@ -238,9 +197,9 @@ export function PerDiemRatesTab() {
         <Card variant="bordered">
           <div className="text-center py-12">
             <Info className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">Select an entity</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">No entity selected</h3>
             <p className="text-text-secondary">
-              Please select an entity from the dropdown above to view and manage per diem rates.
+              Please select an entity from the header to view and manage per diem rates.
             </p>
           </div>
         </Card>
@@ -293,7 +252,7 @@ export function PerDiemRatesTab() {
                   .sort(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (a: any, b: any) =>
-                      new Date(b.effective_date).getTime() - new Date(a.effective_date).getTime()
+                      new Date(b.effective_from).getTime() - new Date(a.effective_from).getTime()
                   )
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .map((rate: any, index: number) => (
@@ -316,7 +275,9 @@ export function PerDiemRatesTab() {
                           )}
                         </div>
                         <div className="text-sm text-text-secondary">
-                          Effective from: {new Date(rate.effective_date).toLocaleDateString()}
+                          Effective from: {new Date(rate.effective_from).toLocaleDateString()}
+                          {rate.effective_to &&
+                            ` to ${new Date(rate.effective_to).toLocaleDateString()}`}
                         </div>
                         {rate.created_at && (
                           <div className="text-xs text-text-tertiary mt-1">

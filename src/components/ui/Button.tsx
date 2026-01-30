@@ -63,13 +63,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Variant styles using theme constants
     const variantStyles = {
       primary: cn(
-        "bg-primary text-text-inverse border-primary",
+        "bg-primary text-white border-primary",
         "hover:bg-primary/90 hover:border-primary/90",
         "active:bg-primary/80",
         "disabled:bg-primary/50 disabled:border-primary/50"
       ),
       secondary: cn(
-        "bg-secondary text-text-inverse border-secondary",
+        "bg-secondary text-white border-secondary",
         "hover:bg-secondary/90 hover:border-secondary/90",
         "active:bg-secondary/80",
         "disabled:bg-secondary/50 disabled:border-secondary/50"
@@ -87,7 +87,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "disabled:text-text-disabled"
       ),
       danger: cn(
-        "bg-status-error text-text-inverse border-status-error",
+        "bg-status-error text-white border-status-error",
         "hover:bg-status-error/90 hover:border-status-error/90",
         "active:bg-status-error/80",
         "disabled:bg-status-error/50 disabled:border-status-error/50"

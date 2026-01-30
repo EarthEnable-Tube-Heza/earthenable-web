@@ -55,6 +55,19 @@ import {
   CreateRolePermissionMappingRequest,
   UpdateRolePermissionMappingRequest,
   PermissionTiersResponse,
+  // Granular Permission Role types
+  PermissionDefinitionsResponse,
+  PermissionRole,
+  PermissionRoleDetail,
+  PermissionRoleListResponse,
+  CreatePermissionRoleRequest,
+  UpdatePermissionRoleRequest,
+  SetRolePermissionsRequest,
+  UserRolesResponse,
+  AssignRoleToUserRequest,
+  UserPermissionRoleAssignment,
+  UserEffectivePermissionsResponse,
+  EnhancedUserPermissionsResponse,
   EmployeeDetail,
   CreateEmployeeRequest,
   UpdateEmployeeRequest,
@@ -995,6 +1008,131 @@ class APIClient {
    */
   async deleteRolePermissionMapping(mappingId: string): Promise<void> {
     return this.delete<void>(`/admin/role-permissions/${mappingId}`);
+  }
+
+  // ============================================================================
+  // GRANULAR PERMISSION ROLE MANAGEMENT (Admin only)
+  // ============================================================================
+
+  /**
+   * Get permission definitions (hierarchical tree)
+   */
+  async getPermissionDefinitions(): Promise<PermissionDefinitionsResponse> {
+    return this.get<PermissionDefinitionsResponse>("/admin/permissions/definitions");
+  }
+
+  /**
+   * Get all permission roles
+   */
+  async getPermissionRoles(params?: {
+    entity_id?: string;
+    include_global?: boolean;
+    active_only?: boolean;
+  }): Promise<PermissionRoleListResponse> {
+    return this.get<PermissionRoleListResponse>("/admin/permissions/roles", { params });
+  }
+
+  /**
+   * Get a permission role by ID with permissions
+   */
+  async getPermissionRole(roleId: string): Promise<PermissionRoleDetail> {
+    return this.get<PermissionRoleDetail>(`/admin/permissions/roles/${roleId}`);
+  }
+
+  /**
+   * Create a new permission role
+   */
+  async createPermissionRole(data: CreatePermissionRoleRequest): Promise<PermissionRoleDetail> {
+    return this.post<PermissionRoleDetail>("/admin/permissions/roles", data);
+  }
+
+  /**
+   * Update a permission role
+   */
+  async updatePermissionRole(
+    roleId: string,
+    data: UpdatePermissionRoleRequest
+  ): Promise<PermissionRole> {
+    return this.patch<PermissionRole>(`/admin/permissions/roles/${roleId}`, data);
+  }
+
+  /**
+   * Delete a permission role
+   */
+  async deletePermissionRole(roleId: string): Promise<void> {
+    return this.delete<void>(`/admin/permissions/roles/${roleId}`);
+  }
+
+  /**
+   * Set permissions for a role (replaces existing)
+   */
+  async setRolePermissions(
+    roleId: string,
+    data: SetRolePermissionsRequest
+  ): Promise<PermissionRoleDetail> {
+    return this.put<PermissionRoleDetail>(`/admin/permissions/roles/${roleId}/permissions`, data);
+  }
+
+  /**
+   * Get a user's assigned permission roles
+   */
+  async getUserPermissionRoles(userId: string, entityId?: string): Promise<UserRolesResponse> {
+    return this.get<UserRolesResponse>(`/admin/permissions/users/${userId}/roles`, {
+      params: entityId ? { entity_id: entityId } : undefined,
+    });
+  }
+
+  /**
+   * Assign a permission role to a user
+   */
+  async assignPermissionRoleToUser(
+    userId: string,
+    data: AssignRoleToUserRequest
+  ): Promise<UserPermissionRoleAssignment> {
+    return this.post<UserPermissionRoleAssignment>(
+      `/admin/permissions/users/${userId}/roles`,
+      data
+    );
+  }
+
+  /**
+   * Remove a permission role from a user
+   */
+  async removePermissionRoleFromUser(
+    userId: string,
+    roleId: string,
+    entityId?: string
+  ): Promise<void> {
+    return this.delete<void>(`/admin/permissions/users/${userId}/roles/${roleId}`, {
+      params: entityId ? { entity_id: entityId } : undefined,
+    });
+  }
+
+  /**
+   * Get a user's effective permissions (combined from all roles)
+   */
+  async getUserEffectivePermissions(
+    userId: string,
+    entityId?: string
+  ): Promise<UserEffectivePermissionsResponse> {
+    return this.get<UserEffectivePermissionsResponse>(
+      `/admin/permissions/users/${userId}/effective-permissions`,
+      { params: entityId ? { entity_id: entityId } : undefined }
+    );
+  }
+
+  /**
+   * Seed default permission roles (admin only)
+   */
+  async seedDefaultPermissionRoles(): Promise<PermissionRoleListResponse> {
+    return this.post<PermissionRoleListResponse>("/admin/permissions/seed-defaults");
+  }
+
+  /**
+   * Get current user's permissions (enhanced with database-driven support)
+   */
+  async getMyPermissions(): Promise<EnhancedUserPermissionsResponse> {
+    return this.get<EnhancedUserPermissionsResponse>("/auth/me/permissions");
   }
 
   // ============================================================================

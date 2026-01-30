@@ -28,11 +28,15 @@ import {
   FileText,
   UserCog,
   Activity,
+  Shield,
 } from "lucide-react";
 import type { NavModule, NavigationConfig } from "../types/navigation";
 
 /**
  * Permission constants for type safety and reusability
+ *
+ * These keys MUST match the backend permission definitions in:
+ * earthenable-api/src/core/permission_definitions.py
  */
 export const Permissions = {
   // Task permissions
@@ -48,9 +52,20 @@ export const Permissions = {
   EXPENSE_CREATE: "expense.create",
   EXPENSE_APPROVE: "expense.approve",
 
-  // Call center permissions
-  CALL_CENTER_VIEW: "call_center.view",
-  CALL_CENTER_MANAGE: "call_center.manage",
+  // Call center permissions (match backend permission_definitions.py)
+  CALL_CENTER: "call_center",
+  CALL_CENTER_WORKSPACE: "call_center.workspace",
+  CALL_CENTER_CALLS: "call_center.calls",
+  CALL_CENTER_CALLS_VIEW: "call_center.calls.view",
+  CALL_CENTER_CALLS_VIEW_ALL: "call_center.calls.view_all",
+  CALL_CENTER_CALLS_MAKE: "call_center.calls.make",
+  CALL_CENTER_CALLS_RECEIVE: "call_center.calls.receive",
+  CALL_CENTER_RECORDINGS: "call_center.recordings",
+  CALL_CENTER_CALLBACKS: "call_center.callbacks",
+  CALL_CENTER_QUEUES: "call_center.queues",
+  CALL_CENTER_AGENTS: "call_center.agents",
+  CALL_CENTER_STATS: "call_center.stats",
+  CALL_CENTER_SETTINGS: "call_center.settings",
 
   // User management permissions
   USERS_VIEW: "users.view",
@@ -122,8 +137,10 @@ export const navigationModules: NavModule[] = [
     label: "Call Center",
     icon: Phone,
     modulePermissions: [
-      Permissions.CALL_CENTER_VIEW,
-      Permissions.CALL_CENTER_MANAGE,
+      Permissions.CALL_CENTER,
+      Permissions.CALL_CENTER_WORKSPACE,
+      Permissions.CALL_CENTER_CALLS,
+      Permissions.CALL_CENTER_CALLS_VIEW,
       Permissions.SYSTEM_SMS,
     ],
     defaultExpanded: true,
@@ -133,14 +150,19 @@ export const navigationModules: NavModule[] = [
         label: "Calls",
         href: "/dashboard/call-center",
         icon: Phone,
-        permissions: [Permissions.CALL_CENTER_VIEW, Permissions.CALL_CENTER_MANAGE],
+        permissions: [
+          Permissions.CALL_CENTER,
+          Permissions.CALL_CENTER_WORKSPACE,
+          Permissions.CALL_CENTER_CALLS,
+          Permissions.CALL_CENTER_CALLS_VIEW,
+        ],
       },
       {
         id: "sms",
         label: "SMS",
         href: "/dashboard/sms",
         icon: MessageSquare,
-        permissions: [Permissions.SYSTEM_SMS, Permissions.CALL_CENTER_MANAGE],
+        permissions: [Permissions.SYSTEM_SMS, Permissions.CALL_CENTER_SETTINGS],
       },
     ],
   },
@@ -239,6 +261,13 @@ export const navigationModules: NavModule[] = [
         permissions: [Permissions.SYSTEM_NOTIFICATIONS, Permissions.SYSTEM_ADMIN],
       },
       {
+        id: "permissions",
+        label: "Permissions",
+        href: "/dashboard/permissions",
+        icon: Shield,
+        permissions: [Permissions.SYSTEM_ADMIN],
+      },
+      {
         id: "components",
         label: "Components",
         href: "/dashboard/components",
@@ -269,8 +298,12 @@ export const rolePermissions: Record<string, string[]> = {
     Permissions.EXPENSE_VIEW_ALL,
     Permissions.EXPENSE_CREATE,
     Permissions.EXPENSE_APPROVE,
-    Permissions.CALL_CENTER_VIEW,
-    Permissions.CALL_CENTER_MANAGE,
+    Permissions.CALL_CENTER,
+    Permissions.CALL_CENTER_WORKSPACE,
+    Permissions.CALL_CENTER_CALLS,
+    Permissions.CALL_CENTER_CALLS_VIEW,
+    Permissions.CALL_CENTER_CALLS_VIEW_ALL,
+    Permissions.CALL_CENTER_SETTINGS,
     Permissions.USERS_VIEW,
     Permissions.USERS_MANAGE,
     Permissions.ANALYTICS_VIEW,
@@ -288,8 +321,11 @@ export const rolePermissions: Record<string, string[]> = {
     Permissions.EXPENSE_VIEW_TEAM,
     Permissions.EXPENSE_CREATE,
     Permissions.EXPENSE_APPROVE,
-    Permissions.CALL_CENTER_VIEW,
-    Permissions.CALL_CENTER_MANAGE,
+    Permissions.CALL_CENTER,
+    Permissions.CALL_CENTER_WORKSPACE,
+    Permissions.CALL_CENTER_CALLS,
+    Permissions.CALL_CENTER_CALLS_VIEW,
+    Permissions.CALL_CENTER_STATS,
     Permissions.USERS_VIEW,
     Permissions.ANALYTICS_VIEW,
   ],
@@ -298,7 +334,9 @@ export const rolePermissions: Record<string, string[]> = {
     Permissions.TASKS_VIEW_OWN,
     Permissions.EXPENSE_VIEW_OWN,
     Permissions.EXPENSE_CREATE,
-    Permissions.CALL_CENTER_VIEW,
+    Permissions.CALL_CENTER,
+    Permissions.CALL_CENTER_WORKSPACE,
+    Permissions.CALL_CENTER_CALLS_VIEW,
   ],
   // Default permissions for unknown roles
   default: [Permissions.EXPENSE_VIEW_OWN, Permissions.EXPENSE_CREATE],
@@ -326,7 +364,12 @@ export const routePermissions: Record<string, string[]> = {
   "/dashboard/sync": [Permissions.SYSTEM_SYNC, Permissions.SYSTEM_ADMIN],
   "/dashboard/notifications": [Permissions.SYSTEM_NOTIFICATIONS, Permissions.SYSTEM_ADMIN],
   "/dashboard/sms": [Permissions.SYSTEM_SMS, Permissions.SYSTEM_ADMIN],
-  "/dashboard/call-center": [Permissions.CALL_CENTER_VIEW, Permissions.CALL_CENTER_MANAGE],
+  "/dashboard/call-center": [
+    Permissions.CALL_CENTER,
+    Permissions.CALL_CENTER_WORKSPACE,
+    Permissions.CALL_CENTER_CALLS,
+    Permissions.CALL_CENTER_CALLS_VIEW,
+  ],
   "/dashboard/components": [Permissions.SYSTEM_ADMIN],
   "/dashboard/expenses": [
     Permissions.EXPENSE_VIEW_OWN,

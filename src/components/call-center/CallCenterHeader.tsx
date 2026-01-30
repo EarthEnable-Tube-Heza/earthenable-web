@@ -28,6 +28,7 @@ import { TabNavigation, TabItem, Button, Card, Badge, Spinner, Select } from "@/
 import { AgentStatusSelector } from "./AgentStatusSelector";
 import { ACWCountdown } from "./ACWCountdown";
 import { AgentStatusEnum } from "@/src/types/voice";
+import { Permissions } from "@/src/config/navigation";
 import Link from "next/link";
 
 // Stats period filter options
@@ -40,13 +41,37 @@ const STATS_PERIOD_OPTIONS: { value: StatsPeriod; label: string; days: number }[
   { value: "30days", label: "Last 30 Days", days: 30 },
 ];
 
-// Tab configuration for call center section
+// Tab configuration for call center section with permission requirements
 const callCenterTabs: TabItem[] = [
-  { label: "Workspace", href: "/dashboard/call-center", exact: true },
-  { label: "Callbacks", href: "/dashboard/call-center/callbacks" },
-  { label: "History", href: "/dashboard/call-center/history" },
-  { label: "Queues", href: "/dashboard/call-center/queues" },
-  { label: "Settings", href: "/dashboard/call-center/settings" },
+  {
+    label: "Workspace",
+    href: "/dashboard/call-center",
+    exact: true,
+    requiredPermissions: [Permissions.CALL_CENTER_WORKSPACE, Permissions.CALL_CENTER],
+  },
+  {
+    label: "Callbacks",
+    href: "/dashboard/call-center/callbacks",
+    requiredPermissions: [Permissions.CALL_CENTER_CALLBACKS],
+  },
+  {
+    label: "History",
+    href: "/dashboard/call-center/history",
+    requiredPermissions: [
+      Permissions.CALL_CENTER_CALLS_VIEW,
+      Permissions.CALL_CENTER_CALLS_VIEW_ALL,
+    ],
+  },
+  {
+    label: "Queues",
+    href: "/dashboard/call-center/queues",
+    requiredPermissions: [Permissions.CALL_CENTER_QUEUES],
+  },
+  {
+    label: "Settings",
+    href: "/dashboard/call-center/settings",
+    requiredPermissions: [Permissions.CALL_CENTER_SETTINGS],
+  },
 ];
 
 export function CallCenterHeader() {

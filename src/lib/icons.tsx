@@ -13,6 +13,8 @@ export {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  ChevronsLeft,
+  ChevronsRight,
   Search,
   Filter,
   MoreHorizontal,
@@ -67,6 +69,7 @@ export {
   Phone,
   MessageSquare,
   Send,
+  Bell,
 
   // Settings
   Settings,

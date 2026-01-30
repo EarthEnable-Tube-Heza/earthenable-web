@@ -7,14 +7,15 @@
  */
 
 import { useState } from "react";
-import { Input, Button, Card, Spinner, Badge, Select, Toast } from "@/src/components/ui";
+import { Input, Button, Card, Spinner, Badge, Toast } from "@/src/components/ui";
 import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Users, Edit, Info } from "@/src/lib/icons";
-import { useDepartments, useCreateDepartment, useEntities } from "@/src/hooks/useExpenses";
+import { useDepartments, useCreateDepartment } from "@/src/hooks/useExpenses";
+import { useAuth } from "@/src/lib/auth";
 import type { Department } from "@/src/lib/api/expenseClient";
 
 export function DepartmentsTab() {
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
+  const { selectedEntityId } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [toast, setToast] = useState({ visible: false, type: "success" as ToastType, message: "" });
   const [formData, setFormData] = useState({
@@ -26,17 +27,10 @@ export function DepartmentsTab() {
     glClassId: "",
   });
 
-  const { data: entitiesData, isLoading: entitiesLoading } = useEntities();
-  const { data, isLoading } = useDepartments(selectedEntityId);
-  const createDepartment = useCreateDepartment(selectedEntityId);
+  const { data, isLoading } = useDepartments(selectedEntityId || undefined);
+  const createDepartment = useCreateDepartment(selectedEntityId || undefined);
 
-  const entities = entitiesData?.entities || [];
   const departments = data?.departments || [];
-
-  // Auto-select first entity if none selected
-  if (!selectedEntityId && entities.length > 0 && !entitiesLoading) {
-    setSelectedEntityId(entities[0].id);
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,28 +73,6 @@ export function DepartmentsTab() {
         message={toast.message}
         onDismiss={() => setToast({ ...toast, visible: false })}
       />
-
-      {/* Entity Selection */}
-      <Card variant="bordered" padding="md">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-text-primary whitespace-nowrap">
-            Select Entity:
-          </label>
-          <Select
-            value={selectedEntityId}
-            onChange={(e) => setSelectedEntityId(e.target.value)}
-            disabled={entitiesLoading || entities.length === 0}
-            className="flex-1 max-w-md"
-          >
-            <option value="">Select an entity...</option>
-            {entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>
-                {entity.name} ({entity.code})
-              </option>
-            ))}
-          </Select>
-        </div>
-      </Card>
 
       {/* Header Actions */}
       <div className="flex items-center justify-between">
@@ -232,9 +204,9 @@ export function DepartmentsTab() {
         <Card variant="bordered">
           <div className="text-center py-12">
             <Info className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">Select an entity</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-2">No entity selected</h3>
             <p className="text-text-secondary">
-              Please select an entity from the dropdown above to view and manage departments.
+              Please select an entity from the header to view and manage departments.
             </p>
           </div>
         </Card>
