@@ -80,8 +80,7 @@ export function CallCenterHeader() {
   const selectedEntityId = rawEntityId || "";
   const pathname = usePathname();
 
-  // Determine if we're on the workspace page (agent view) vs settings (manager view)
-  const isWorkspacePage = pathname === "/dashboard/call-center";
+  // Determine if we're on the settings page (manager view)
   const isSettingsPage = pathname === "/dashboard/call-center/settings";
 
   // Stats period filter state
@@ -218,7 +217,7 @@ export function CallCenterHeader() {
       )}
 
       {/* Context-aware info card */}
-      {selectedEntityId && isWorkspacePage && (
+      {selectedEntityId && !isSettingsPage && (
         /* Agent Info Card - Shown on Workspace page */
         <Card padding="md" className="!overflow-visible">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -372,8 +371,8 @@ export function CallCenterHeader() {
         </Card>
       )}
 
-      {/* Settings Summary Card - Shown on Settings page and other management pages */}
-      {selectedEntityId && !isWorkspacePage && (
+      {/* Settings Summary Card - Shown only on Settings page */}
+      {selectedEntityId && isSettingsPage && (
         <Card padding="md">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">

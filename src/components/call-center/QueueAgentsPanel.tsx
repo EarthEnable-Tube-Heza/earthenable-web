@@ -19,11 +19,21 @@ interface QueueAgentsPanelProps {
   entityId?: string;
   /** Callback when an agent is clicked (e.g., to transfer call) */
   onAgentClick?: (agent: AgentStatus) => void;
+  /** Callback to call an agent directly (agent-to-agent call) */
+  onCallAgent?: (agent: AgentStatus) => void;
+  /** Whether calling agents is enabled (e.g., WebRTC connected and available) */
+  canCallAgent?: boolean;
   /** Additional class name */
   className?: string;
 }
 
-export function QueueAgentsPanel({ entityId, onAgentClick, className }: QueueAgentsPanelProps) {
+export function QueueAgentsPanel({
+  entityId,
+  onAgentClick,
+  onCallAgent,
+  canCallAgent = false,
+  className,
+}: QueueAgentsPanelProps) {
   const { user } = useAuth();
 
   // Fetch all agent statuses for the entity
@@ -232,21 +242,64 @@ export function QueueAgentsPanel({ entityId, onAgentClick, className }: QueueAge
                 </div>
               </div>
 
-              {/* Transfer button for available agents */}
-              {isAvailable && onAgentClick && (
-                <button
-                  className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                  title="Transfer call"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                    />
-                  </svg>
-                </button>
+              {/* Action buttons for available agents */}
+              {isAvailable && (onAgentClick || onCallAgent) && (
+                <div className="flex items-center gap-1.5">
+                  {/* Call agent button */}
+                  {onCallAgent && canCallAgent && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (agent.status) {
+                          onCallAgent(agent.status);
+                        }
+                      }}
+                      className="p-1.5 rounded-lg bg-status-success/10 text-status-success hover:bg-status-success/20 transition-colors"
+                      title="Call agent"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                  {/* Transfer call button */}
+                  {onAgentClick && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (agent.status) {
+                          onAgentClick(agent.status);
+                        }
+                      }}
+                      className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      title="Transfer call"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           );

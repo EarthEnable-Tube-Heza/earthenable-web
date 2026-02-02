@@ -15,6 +15,7 @@ import {
   useMyAgentStatus,
   useAgentStatusWithAutoConnect,
   useMyCallbacks,
+  useVoiceSettings,
 } from "@/src/hooks/useCallCenter";
 import { AgentStatusEnum } from "@/src/types/voice";
 import { Dialpad } from "./Dialpad";
@@ -80,6 +81,9 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   const { data: myCallbacks } = useMyCallbacks(selectedEntityId ?? undefined);
   const pendingCallbacks = myCallbacks?.filter((cb) => cb.status === "pending") || [];
 
+  // Voice settings (for AT username)
+  const { data: voiceSettings } = useVoiceSettings(selectedEntityId ?? undefined);
+
   // Get current status (fallback to offline if no status)
   const currentStatus = agentStatus?.status ?? AgentStatusEnum.OFFLINE;
 
@@ -109,6 +113,25 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
       }
     },
     [canMakeCall]
+  );
+
+  // Call another agent directly (agent-to-agent call via AT)
+  const handleCallAgent = useCallback(
+    async (agent: { user_id: string; user_name?: string; user_email?: string }) => {
+      if (!canMakeCall || !voiceSettings?.api_username) return;
+
+      // For Africa's Talking, agent-to-agent calls use the format:
+      // {api_username}.agent_{user_id}
+      // e.g., "earthenable.agent_6512429d40fd4302"
+      const agentPhoneNumber = `${voiceSettings.api_username}.agent_${agent.user_id}`;
+
+      try {
+        await makeCall(agentPhoneNumber, agent.user_name);
+      } catch (err) {
+        console.error("Failed to call agent:", err);
+      }
+    },
+    [canMakeCall, makeCall, voiceSettings?.api_username]
   );
 
   // Determine display state
@@ -458,6 +481,12 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
               // For now, just log to console
               console.log("Transfer to agent:", agent.user_name, agent.user_id);
             }}
+            onCallAgent={handleCallAgent}
+            canCallAgent={
+              canMakeCall &&
+              currentStatus === AgentStatusEnum.AVAILABLE &&
+              !!voiceSettings?.api_username
+            }
           />
         </Card>
 
