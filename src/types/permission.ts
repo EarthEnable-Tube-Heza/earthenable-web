@@ -233,6 +233,30 @@ export interface AssignRoleToUserRequest {
   expires_at?: string;
 }
 
+// Bulk assign role to users request
+export interface BulkAssignRoleRequest {
+  user_ids: string[];
+  role_id: string;
+  entity_id?: string;
+  expires_at?: string;
+}
+
+// Bulk assign result item
+export interface BulkAssignRoleResultItem {
+  user_id: string;
+  success: boolean;
+  error?: string;
+}
+
+// Bulk assign role response
+export interface BulkAssignRoleResponse {
+  role_id: string;
+  total: number;
+  successful: number;
+  failed: number;
+  results: BulkAssignRoleResultItem[];
+}
+
 // User effective permissions response
 export interface UserEffectivePermissionsResponse {
   user_id: string;

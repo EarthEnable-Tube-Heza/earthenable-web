@@ -65,6 +65,8 @@ import {
   SetRolePermissionsRequest,
   UserRolesResponse,
   AssignRoleToUserRequest,
+  BulkAssignRoleRequest,
+  BulkAssignRoleResponse,
   UserPermissionRoleAssignment,
   UserEffectivePermissionsResponse,
   EnhancedUserPermissionsResponse,
@@ -1105,6 +1107,25 @@ class APIClient {
   ): Promise<void> {
     return this.delete<void>(`/admin/permissions/users/${userId}/roles/${roleId}`, {
       params: entityId ? { entity_id: entityId } : undefined,
+    });
+  }
+
+  /**
+   * Bulk assign a permission role to multiple users
+   */
+  async bulkAssignPermissionRole(data: BulkAssignRoleRequest): Promise<BulkAssignRoleResponse> {
+    return this.post<BulkAssignRoleResponse>("/admin/permissions/bulk-assign", data);
+  }
+
+  /**
+   * Search users for role assignment (server-side search)
+   */
+  async searchUsersForRoleAssignment(
+    search: string,
+    limit: number = 20
+  ): Promise<PaginatedUsersResponse> {
+    return this.get<PaginatedUsersResponse>("/admin/users", {
+      params: { search, limit, is_active: true },
     });
   }
 

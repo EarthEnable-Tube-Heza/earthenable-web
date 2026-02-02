@@ -14,8 +14,8 @@ import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
 import { PageTitle } from "@/src/components/dashboard/PageTitle";
 import { PAGE_SPACING } from "@/src/lib/theme";
 import { Button, Badge, ConfirmDialog, Spinner, LabeledSelect } from "@/src/components/ui";
-import { RoleEditor, UserRoleAssignment } from "@/src/components/permissions";
-import type { PermissionRole } from "@/src/types/permission";
+import { RoleEditor, UserSearchMultiSelect } from "@/src/components/permissions";
+import type { PermissionRole, BulkAssignRoleResponse } from "@/src/types/permission";
 import type { UserListItem } from "@/src/types/user";
 
 export default function PermissionsPage() {
@@ -24,8 +24,6 @@ export default function PermissionsPage() {
   // Modal states
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingRoleId, setEditingRoleId] = useState<string | undefined>();
-  const [isUserAssignmentOpen, setIsUserAssignmentOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
     role: PermissionRole | null;
@@ -33,6 +31,11 @@ export default function PermissionsPage() {
     isOpen: false,
     role: null,
   });
+
+  // Bulk assignment states
+  const [bulkSelectedUsers, setBulkSelectedUsers] = useState<UserListItem[]>([]);
+  const [bulkSelectedRoleId, setBulkSelectedRoleId] = useState<string>("");
+  const [bulkAssignResult, setBulkAssignResult] = useState<BulkAssignRoleResponse | null>(null);
 
   // Fetch permission roles
   const {
@@ -43,12 +46,6 @@ export default function PermissionsPage() {
   } = useQuery({
     queryKey: ["permission-roles"],
     queryFn: () => apiClient.getPermissionRoles(),
-  });
-
-  // Fetch users for assignment dropdown
-  const { data: usersData } = useQuery({
-    queryKey: ["users-for-assignment"],
-    queryFn: () => apiClient.getUsers({ limit: 100, is_active: true }),
   });
 
   // Delete mutation
@@ -65,6 +62,22 @@ export default function PermissionsPage() {
     mutationFn: () => apiClient.seedDefaultPermissionRoles(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["permission-roles"] });
+    },
+  });
+
+  // Bulk assign mutation
+  const bulkAssignMutation = useMutation({
+    mutationFn: () =>
+      apiClient.bulkAssignPermissionRole({
+        user_ids: bulkSelectedUsers.map((u) => u.id),
+        role_id: bulkSelectedRoleId,
+      }),
+    onSuccess: (result) => {
+      setBulkAssignResult(result);
+      if (result.successful > 0) {
+        setBulkSelectedUsers([]);
+        setBulkSelectedRoleId("");
+      }
     },
   });
 
@@ -88,12 +101,14 @@ export default function PermissionsPage() {
     }
   };
 
-  const handleAssignToUser = (user: UserListItem) => {
-    setSelectedUser(user);
-    setIsUserAssignmentOpen(true);
+  const handleBulkAssign = () => {
+    if (bulkSelectedUsers.length === 0 || !bulkSelectedRoleId) return;
+    setBulkAssignResult(null);
+    bulkAssignMutation.mutate();
   };
 
   const roles = rolesData?.items || [];
+  const activeRoles = roles.filter((r: PermissionRole) => r.is_active);
 
   return (
     <div className={PAGE_SPACING}>
@@ -203,27 +218,136 @@ export default function PermissionsPage() {
         </div>
       </div>
 
-      {/* User Assignment Quick Action */}
+      {/* Bulk User Role Assignment */}
       <div className="bg-white rounded-lg shadow-medium p-6">
-        <h3 className="text-lg font-heading font-medium text-text-primary mb-4">
-          Quick User Role Assignment
-        </h3>
-        <div className="max-w-md">
-          <LabeledSelect
-            options={[
-              { value: "", label: "Select a user to manage roles..." },
-              ...(usersData?.items.map((user: UserListItem) => ({
-                value: user.id,
-                label: `${user.name || user.email} (${user.email})`,
-              })) || []),
-            ]}
-            onChange={(e) => {
-              const user = usersData?.items.find((u: UserListItem) => u.id === e.target.value);
-              if (user) handleAssignToUser(user);
-            }}
-            value=""
-          />
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-heading font-medium text-text-primary">
+              Bulk Role Assignment
+            </h3>
+            <p className="text-sm text-text-secondary mt-1">
+              Search and select multiple users to assign a role to all of them at once.
+            </p>
+          </div>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* User Search */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">Select Users</label>
+            <UserSearchMultiSelect
+              selectedUsers={bulkSelectedUsers}
+              onSelectionChange={setBulkSelectedUsers}
+              placeholder="Search users by name or email..."
+              disabled={bulkAssignMutation.isPending}
+            />
+          </div>
+
+          {/* Role Selection & Action */}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">Select Role</label>
+            <div className="space-y-4">
+              <LabeledSelect
+                value={bulkSelectedRoleId}
+                onChange={(e) => setBulkSelectedRoleId(e.target.value)}
+                disabled={bulkAssignMutation.isPending || activeRoles.length === 0}
+                options={[
+                  { value: "", label: "Choose a role to assign..." },
+                  ...activeRoles.map((role: PermissionRole) => ({
+                    value: role.id,
+                    label: `${role.name}${role.entity ? ` (${role.entity.code})` : ""}`,
+                  })),
+                ]}
+              />
+
+              <Button
+                variant="primary"
+                onClick={handleBulkAssign}
+                disabled={
+                  bulkSelectedUsers.length === 0 ||
+                  !bulkSelectedRoleId ||
+                  bulkAssignMutation.isPending
+                }
+                loading={bulkAssignMutation.isPending}
+                className="w-full"
+              >
+                Assign Role to {bulkSelectedUsers.length} User
+                {bulkSelectedUsers.length !== 1 ? "s" : ""}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Assignment Result */}
+        {bulkAssignResult && (
+          <div
+            className={`mt-4 p-4 rounded-lg ${
+              bulkAssignResult.failed === 0
+                ? "bg-status-success/10 border border-status-success/30"
+                : bulkAssignResult.successful === 0
+                  ? "bg-status-error/10 border border-status-error/30"
+                  : "bg-status-warning/10 border border-status-warning/30"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-text-primary">
+                  {bulkAssignResult.failed === 0
+                    ? "All assignments successful!"
+                    : bulkAssignResult.successful === 0
+                      ? "All assignments failed"
+                      : "Partial success"}
+                </p>
+                <p className="text-sm text-text-secondary mt-1">
+                  {bulkAssignResult.successful} of {bulkAssignResult.total} users assigned
+                  successfully
+                  {bulkAssignResult.failed > 0 && ` (${bulkAssignResult.failed} failed)`}
+                </p>
+              </div>
+              <button
+                onClick={() => setBulkAssignResult(null)}
+                className="text-text-secondary hover:text-text-primary"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            {bulkAssignResult.failed > 0 && (
+              <div className="mt-3 text-sm">
+                <p className="font-medium text-text-primary mb-1">Failed assignments:</p>
+                <ul className="space-y-1">
+                  {bulkAssignResult.results
+                    .filter((r) => !r.success)
+                    .slice(0, 5)
+                    .map((r) => (
+                      <li key={r.user_id} className="text-status-error">
+                        User {r.user_id.slice(0, 8)}...: {r.error}
+                      </li>
+                    ))}
+                  {bulkAssignResult.results.filter((r) => !r.success).length > 5 && (
+                    <li className="text-text-secondary">
+                      ... and {bulkAssignResult.results.filter((r) => !r.success).length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {bulkAssignMutation.isError && (
+          <div className="mt-4 p-4 bg-status-error/10 border border-status-error/30 rounded-lg">
+            <p className="text-sm text-status-error">
+              {(bulkAssignMutation.error as Error)?.message || "Failed to assign roles"}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Roles Table */}
@@ -380,19 +504,6 @@ export default function PermissionsPage() {
         roleId={editingRoleId}
         onSuccess={() => {
           refetch();
-        }}
-      />
-
-      {/* User Role Assignment Modal */}
-      <UserRoleAssignment
-        isOpen={isUserAssignmentOpen}
-        onClose={() => {
-          setIsUserAssignmentOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
-        onSuccess={() => {
-          // Optionally refresh data
         }}
       />
 
