@@ -111,6 +111,24 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
     [canMakeCall]
   );
 
+  // Call another agent directly (agent-to-agent call via AT)
+  const handleCallAgent = useCallback(
+    async (agent: { user_id: string; user_name?: string; user_email?: string }) => {
+      if (!canMakeCall) return;
+
+      // For Africa's Talking, agent-to-agent calls use the agent:{user_id} format
+      // This tells AT to route the call to the agent's WebRTC client
+      const agentPhoneNumber = `agent:${agent.user_id}`;
+
+      try {
+        await makeCall(agentPhoneNumber);
+      } catch (err) {
+        console.error("Failed to call agent:", err);
+      }
+    },
+    [canMakeCall, makeCall]
+  );
+
   // Determine display state
   const hasActiveCall = isCallActive || callState === "ended";
   const hasIncomingCall = !!incomingCall;
@@ -458,6 +476,8 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
               // For now, just log to console
               console.log("Transfer to agent:", agent.user_name, agent.user_id);
             }}
+            onCallAgent={handleCallAgent}
+            canCallAgent={canMakeCall && currentStatus === AgentStatusEnum.AVAILABLE}
           />
         </Card>
 
