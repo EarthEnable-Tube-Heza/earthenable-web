@@ -504,9 +504,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       sessionExpired: false,
     });
 
-    // Navigate to sign-in
+    // Navigate to sign-in with session_expired flag
     if (typeof window !== "undefined") {
-      window.location.href = "/auth/signin";
+      window.location.href = "/auth/signin?session_expired=true";
     }
   }, []);
 

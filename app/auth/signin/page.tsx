@@ -35,13 +35,18 @@ function SignInContent() {
   const isNetworkError = errorType === "network";
   const isServerError = errorType === "server";
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but NOT if coming from session expiry)
   useEffect(() => {
+    // Skip auto-redirect if user arrived here due to session expiry
+    // This prevents race conditions where auth state hasn't fully cleared yet
+    if (sessionExpired) {
+      return;
+    }
     if (!isLoading && isAuthenticated) {
       const redirect = searchParams.get("redirect") || "/dashboard";
       router.push(redirect);
     }
-  }, [isAuthenticated, isLoading, router, searchParams]);
+  }, [isAuthenticated, isLoading, router, searchParams, sessionExpired]);
 
   /**
    * Handle successful Google OAuth
@@ -92,7 +97,8 @@ function SignInContent() {
   }
 
   // Don't render sign-in if already authenticated (will redirect)
-  if (isAuthenticated) {
+  // EXCEPT when arriving from session expiry (auth state may still be settling)
+  if (isAuthenticated && !sessionExpired) {
     return null;
   }
 
