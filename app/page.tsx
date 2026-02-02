@@ -1,11 +1,10 @@
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 /**
  * Root Page
  *
- * Redirects to the component showcase page.
- * TODO: Replace with proper landing page or dashboard redirect.
+ * Redirects to the dashboard home page.
  */
 export default function HomePage() {
-  redirect('/dashboard/components');
+  redirect("/dashboard");
 }
