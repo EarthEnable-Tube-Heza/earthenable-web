@@ -13,7 +13,6 @@
  */
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   PieChart,
@@ -30,7 +29,9 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { Card, Badge, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
+import { Card, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import {
   useUserActivityStats,
   useHierarchicalFeatureUsage,
@@ -190,6 +191,11 @@ function TopActionRow({
  * Mobile App Analytics Page
  */
 export default function MobileAnalyticsPage() {
+  useSetPageHeader({
+    title: "Mobile Analytics",
+    pathLabels: { analytics: "Analytics", mobile: "Mobile App" },
+  });
+
   // Filter state
   const [days, setDays] = useState(30);
   const [selectedRole, setSelectedRole] = useState<string[]>([]);
@@ -336,41 +342,7 @@ export default function MobileAnalyticsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-gray-500">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">
-              Dashboard
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li>
-            <Link href="/dashboard/analytics" className="hover:text-primary transition-colors">
-              Analytics
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li className="text-gray-900 font-medium">Mobile App</li>
-        </ol>
-      </nav>
-
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-gray-900">Mobile App Analytics</h1>
-          <p className="text-gray-500 mt-1">
-            Aggregate usage patterns and behavioral insights across all users
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="success" dot>
-            {userActivityStats?.currently_online || 0} Online Now
-          </Badge>
-        </div>
-      </div>
-
+    <div className={`container mx-auto max-w-7xl ${PAGE_SPACING}`}>
       {/* Filters */}
       <Card padding="md" className="mb-6 overflow-visible">
         <div className="flex flex-wrap items-end gap-4">

@@ -47,6 +47,7 @@ export interface ExtendedTokenResponse extends TokenResponse {
  */
 export interface GoogleAuthRequest {
   token: string; // Google ID token
+  client_type: string; // "mobile" or "web"
 }
 
 /**
@@ -62,6 +63,7 @@ export interface AuthState {
   error: string | null;
   entityInfo: EntityInfo | null;
   selectedEntityId: string | null;
+  sessionExpired: boolean;
 }
 
 /**
@@ -73,6 +75,16 @@ export interface AuthContextValue extends AuthState {
   refreshAccessToken: () => Promise<void>;
   selectEntity: (entityId: string) => Promise<void>;
   clearError: () => void;
+  acknowledgeSessionExpired: () => void;
+  /**
+   * Register an external activity source (e.g., call center WebRTC client).
+   * The callback should return true when the source is "active" — meaning
+   * the user should not be logged out even if they haven't interacted with
+   * the page (e.g., agent waiting for calls or on an active call).
+   *
+   * Returns an unregister function.
+   */
+  registerActivitySource: (source: () => boolean) => () => void;
 }
 
 /**

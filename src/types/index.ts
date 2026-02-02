@@ -15,3 +15,5 @@ export * from "./monitoring";
 export * from "./sync";
 export * from "./notification";
 export * from "./sms";
+export * from "./voice";
+export * from "./navigation";

@@ -11,6 +11,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Card, Badge, Spinner, Button, LabeledSelect, MultiSelect } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
+import { PagePermissionGuard } from "@/src/components/auth";
 import {
   useSalesforceSyncHistory,
   useSalesforceSyncStats,
@@ -155,7 +159,7 @@ function SalesforceSyncTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -366,7 +370,7 @@ function UserSyncSessionsTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -650,7 +654,7 @@ function UserSyncStatesTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Filters */}
       <Card padding="md" className="overflow-visible">
         <div className="flex flex-wrap items-end gap-4">
@@ -868,33 +872,34 @@ function UserSyncStatesTab() {
 
 // Main Page Component
 export default function SyncPage() {
+  return (
+    <PagePermissionGuard
+      permissions={["system.sync", "system.admin"]}
+      pageTitle="Sync Dashboard"
+      showUnauthorizedPage
+    >
+      <SyncPageContent />
+    </PagePermissionGuard>
+  );
+}
+
+function SyncPageContent() {
   const [activeTab, setActiveTab] = useState<TabType>("salesforce");
 
-  return (
-    <div className="container mx-auto max-w-7xl">
-      {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-gray-500">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">
-              Dashboard
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li className="text-gray-900 font-medium">Sync</li>
-        </ol>
-      </nav>
+  useSetPageHeader({
+    title: "Sync Dashboard",
+    pathLabels: { sync: "Sync" },
+  });
 
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-heading font-bold text-gray-900">Sync Dashboard</h1>
-        <p className="text-gray-500 mt-1">
-          Monitor and investigate synchronization between Salesforce, API, and mobile app users
-        </p>
-      </div>
+  return (
+    <div className={PAGE_SPACING}>
+      <PageTitle
+        title="Sync Dashboard"
+        description="Monitor and investigate synchronization between Salesforce, API, and mobile app users"
+      />
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="border-b border-gray-200">
         <nav className="flex gap-6">
           <button
             onClick={() => setActiveTab("salesforce")}

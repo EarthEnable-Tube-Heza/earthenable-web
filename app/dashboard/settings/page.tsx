@@ -9,8 +9,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useTokenExpiry } from "@/src/lib/auth";
-import { Card } from "@/src/components/ui/Card";
-import { Button } from "@/src/components/ui/Button";
+import { Card, Button } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -54,15 +56,17 @@ export default function SettingsPage() {
     return `${minutes} minutes`;
   };
 
+  useSetPageHeader({
+    title: "Settings",
+    pathLabels: { settings: "Settings" },
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-text-primary">Settings</h1>
-        <p className="text-text-secondary mt-2">
-          Manage your dashboard preferences and account settings
-        </p>
-      </div>
+    <div className={PAGE_SPACING}>
+      <PageTitle
+        title="Settings"
+        description="Manage your dashboard preferences and account settings"
+      />
 
       {/* Session Management */}
       <Card header="Session Management" divided padding="lg">

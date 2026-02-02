@@ -11,8 +11,9 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
 import { TaskSubject, TaskSubjectForm } from "@/src/types/form";
-import { cn } from "@/src/lib/theme";
+import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { EditFormMappingModal } from "@/src/components/EditFormMappingModal";
 import { CreateTaskSubjectModal } from "@/src/components/CreateTaskSubjectModal";
 import { CreateFormMappingModal } from "@/src/components/CreateFormMappingModal";
@@ -27,6 +28,11 @@ interface TaskSubjectWithMappings {
 }
 
 export default function TaskSubjectsPage() {
+  useSetPageHeader({
+    title: "Task Subjects",
+    pathLabels: { tasks: "Tasks", subjects: "Subjects" },
+  });
+
   const [countryFilter, setCountryFilter] = useState<string>("");
   const [selectedMapping, setSelectedMapping] = useState<TaskSubjectForm | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,7 +106,7 @@ export default function TaskSubjectsPage() {
   const countryOptions = EARTHENABLE_COUNTRIES.map((c) => c.code);
 
   return (
-    <div className="space-y-6">
+    <div className={PAGE_SPACING}>
       {/* Info Card */}
       <div className="bg-status-info/10 border border-status-info rounded-lg p-4">
         <div className="flex items-start gap-3">

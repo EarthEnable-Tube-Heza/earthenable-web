@@ -13,7 +13,10 @@
  */
 
 import { useState } from "react";
-import { Card } from "@/src/components/ui";
+import { Button, Card } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { ExpenseStats } from "@/src/components/expenses/ExpenseStats";
 import { MyExpensesTab } from "@/src/components/expenses/tabs/MyExpensesTab";
 import { NewRequestTab } from "@/src/components/expenses/tabs/NewRequestTab";
@@ -119,13 +122,23 @@ export default function ExpensesPage() {
     return true;
   });
 
+  useSetPageHeader({
+    title: "Expense Management",
+    pathLabels: { expenses: "Expenses" },
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary font-heading">Expense Management</h1>
-        <p className="text-text-secondary mt-1">Manage expenses, budgets, and payment requests</p>
-      </div>
+    <div className={PAGE_SPACING}>
+      {/* Page Title + CTA */}
+      <PageTitle
+        title="Expense Management"
+        description="Manage expenses, budgets, and payment requests"
+        actions={
+          <Button variant="primary" size="sm" onClick={() => setActiveTab("new-request")}>
+            New Request
+          </Button>
+        }
+      />
 
       {/* Stats Overview */}
       <ExpenseStats />

@@ -29,8 +29,15 @@ interface Config {
 
   // Token Management Configuration
   token: {
-    refreshThreshold: number; // minutes
-    criticalThreshold: number; // minutes
+    refreshThreshold: number; // minutes before expiry to start silent refresh
+    criticalThreshold: number; // minutes before expiry to show warning modal
+  };
+
+  // Session Activity Detection
+  session: {
+    activityIdleThreshold: number; // seconds — user is "idle" after this long without interaction
+    activityThrottleInterval: number; // seconds — throttle DOM activity event tracking
+    refreshCheckInterval: number; // seconds — how often to check if token needs refresh
   };
 
   // Environment
@@ -71,6 +78,24 @@ export const config: Config = {
     // Show critical warning when token is about to expire
     // Default: 2 minutes (gives user time to save work before session ends)
     criticalThreshold: parseInt(process.env.NEXT_PUBLIC_TOKEN_CRITICAL_THRESHOLD || "2", 10),
+  },
+
+  session: {
+    // User is considered "idle" after this many seconds without DOM interaction.
+    // Active users get silent token refresh; idle users see the expiry modal.
+    // Default: 300 seconds (5 minutes)
+    activityIdleThreshold: parseInt(process.env.NEXT_PUBLIC_ACTIVITY_IDLE_THRESHOLD || "300", 10),
+
+    // Throttle DOM activity event tracking to avoid excessive updates.
+    // Default: 30 seconds
+    activityThrottleInterval: parseInt(
+      process.env.NEXT_PUBLIC_ACTIVITY_THROTTLE_INTERVAL || "30",
+      10
+    ),
+
+    // How often to check whether the token needs refreshing.
+    // Default: 30 seconds
+    refreshCheckInterval: parseInt(process.env.NEXT_PUBLIC_REFRESH_CHECK_INTERVAL || "30", 10),
   },
 
   isDevelopment: process.env.NODE_ENV === "development",

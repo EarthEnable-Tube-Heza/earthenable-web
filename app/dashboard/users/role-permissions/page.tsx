@@ -11,6 +11,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api/apiClient";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { Button, Card, Badge, Spinner, Input, Select } from "@/src/components/ui";
 import {
   RolePermissionMapping,
@@ -33,6 +35,11 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 export default function RolePermissionsPage() {
+  useSetPageHeader({
+    title: "Role Permissions",
+    pathLabels: { users: "Users", "role-permissions": "Role Permissions" },
+  });
+
   const queryClient = useQueryClient();
 
   // State for filters
@@ -165,17 +172,10 @@ export default function RolePermissionsPage() {
   const tiers = tiersData?.tiers || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header with actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-text-primary">Role Permission Mappings</h2>
-          <p className="text-sm text-text-secondary mt-1">
-            Configure which Salesforce roles can view which tasks. Each role maps to a permission
-            tier.
-          </p>
-        </div>
-        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+    <div className={PAGE_SPACING}>
+      {/* Actions */}
+      <div className="flex justify-end">
+        <Button variant="primary" size="sm" onClick={() => setShowCreateModal(true)}>
           Add Role Mapping
         </Button>
       </div>

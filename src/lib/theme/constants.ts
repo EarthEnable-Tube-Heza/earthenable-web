@@ -102,6 +102,12 @@ export const spacing = {
 } as const;
 
 /**
+ * Page Layout
+ * Tailwind class for consistent vertical spacing between page-level sections.
+ */
+export const PAGE_SPACING = "space-y-4";
+
+/**
  * Border Radius
  */
 export const borderRadius = {

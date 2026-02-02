@@ -13,6 +13,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Card, Badge, Spinner, Button, Input, LabeledSelect } from "@/src/components/ui";
+import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
+import { PageTitle } from "@/src/components/dashboard/PageTitle";
+import { PAGE_SPACING } from "@/src/lib/theme";
 import { useNotificationsByUser, useNotificationStats } from "@/src/hooks/useNotifications";
 import {
   SendNotificationModal,
@@ -82,41 +85,23 @@ export default function NotificationsPage() {
     setSelectedUser(null);
   };
 
-  return (
-    <div className="container mx-auto max-w-7xl">
-      {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-gray-500">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">
-              Dashboard
-            </Link>
-          </li>
-          <li className="text-gray-400">/</li>
-          <li className="text-gray-900 font-medium">Notifications</li>
-        </ol>
-      </nav>
+  useSetPageHeader({
+    title: "Notifications",
+    pathLabels: { notifications: "Notifications" },
+  });
 
-      {/* Page Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-gray-900">Notifications</h1>
-          <p className="text-gray-500 mt-1">
-            View and manage push notifications sent to mobile app users
-          </p>
-        </div>
-        <Button variant="primary" onClick={() => setIsSendModalOpen(true)}>
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-          Send Notification
-        </Button>
-      </div>
+  return (
+    <div className={`container mx-auto max-w-7xl ${PAGE_SPACING}`}>
+      {/* Page Title + CTA */}
+      <PageTitle
+        title="Notifications"
+        description="View and manage push notifications sent to mobile app users"
+        actions={
+          <Button variant="primary" size="sm" onClick={() => setIsSendModalOpen(true)}>
+            Send Notification
+          </Button>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="mb-6">

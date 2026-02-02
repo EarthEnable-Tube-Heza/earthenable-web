@@ -12,19 +12,27 @@ export interface Expense {
   department_id: string;
   submitter_id: string;
   category_id: string;
-  expense_type: "expense" | "per_diem" | "advance";
+  // May come as snake_case or camelCase due to backend aliases
+  expense_type?: "expense" | "per_diem" | "advance";
+  expenseType?: "expense" | "per_diem" | "advance";
   title: string;
   amount: number;
   currency: string;
-  expense_date: string;
+  expense_date?: string;
+  expenseDate?: string;
   description?: string;
   status: "draft" | "submitted" | "approved" | "rejected" | "paid";
-  created_at: string;
-  updated_at: string;
-  // Joined fields
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  // Joined fields (may come as snake_case or camelCase due to backend aliases)
   submitter_name?: string;
+  submitterName?: string;
   department_name?: string;
+  departmentName?: string;
   category_name?: string;
+  categoryName?: string;
 }
 
 export interface ExpenseListResponse {
@@ -113,9 +121,11 @@ export interface PerDiemRate {
   designation: string;
   rate_per_day: number;
   currency: string;
-  effective_date: string;
+  effective_from: string;
+  effective_to: string | null;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Entity {
@@ -142,6 +152,64 @@ export interface JobRole {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// ==================== Approval Types ====================
+
+export interface ApprovalStep {
+  id: string;
+  stepOrder: number;
+  approverId: string;
+  approverName?: string;
+  approverRole?: string;
+  status: "pending" | "approved" | "rejected";
+  comments?: string;
+  approvedAt?: string;
+  createdAt: string;
+}
+
+export interface ExpenseWithApprovals {
+  success: boolean;
+  expense: Expense;
+  submitterName?: string;
+  departmentName?: string;
+  categoryName?: string;
+  approvals: ApprovalStep[];
+  currentStep?: number;
+  totalSteps: number;
+  canApprove: boolean;
+  canReject: boolean;
+}
+
+export interface PendingApprovalItem {
+  approvalId: string;
+  expenseId: string;
+  expenseTitle: string;
+  expenseAmount: number;
+  expenseCurrency: string;
+  expenseDate: string;
+  expenseType: "expense" | "per_diem" | "advance";
+  submitterId: string;
+  submitterName?: string;
+  departmentName?: string;
+  stepOrder: number;
+  totalSteps: number;
+  submittedAt?: string;
+}
+
+export interface PendingApprovalsResponse {
+  success: boolean;
+  approvals: PendingApprovalItem[];
+  totalCount: number;
+}
+
+export interface ApprovalActionResponse {
+  success: boolean;
+  message: string;
+  expenseId: string;
+  expenseStatus: string;
+  stepOrder: number;
+  action: "approved" | "rejected";
 }
 
 /**
@@ -277,22 +345,24 @@ export async function calculatePerDiem(data: {
 
 /**
  * Get departments for entity
+ * Uses non-admin endpoint accessible to all authenticated users in the entity
  */
 export async function getDepartments(entityId: string): Promise<{ departments: Department[] }> {
   const response = await apiClient.get<{ departments: Department[] }>(
-    `/admin/entities/${entityId}/departments`
+    `/expenses/entity/${entityId}/departments`
   );
   return response;
 }
 
 /**
  * Get expense categories for entity
+ * Uses non-admin endpoint accessible to all authenticated users in the entity
  */
 export async function getExpenseCategories(
   entityId: string
 ): Promise<{ categories: ExpenseCategory[] }> {
   const response = await apiClient.get<{ categories: ExpenseCategory[] }>(
-    `/admin/entities/${entityId}/expense-categories`
+    `/expenses/entity/${entityId}/categories`
   );
   return response;
 }
@@ -326,8 +396,8 @@ export async function createPerDiemRate(
     designation: string;
     ratePerDay: number;
     currency: string;
-    dayNight: string;
-    effectiveDate: string;
+    effectiveFrom: string;
+    effectiveTo?: string | null;
     isActive?: boolean;
   }
 ): Promise<PerDiemRate> {
@@ -335,8 +405,8 @@ export async function createPerDiemRate(
     designation: data.designation,
     rate_per_day: data.ratePerDay,
     currency: data.currency,
-    day_night: data.dayNight,
-    effective_date: data.effectiveDate,
+    effective_from: data.effectiveFrom,
+    effective_to: data.effectiveTo ?? null,
     is_active: data.isActive ?? true,
   });
   return response;
@@ -524,6 +594,56 @@ export async function createJobRole(
     level: data.level,
     description: data.description,
     is_active: data.isActive ?? true,
+  });
+  return response;
+}
+
+// ==================== Approval Functions ====================
+
+/**
+ * Get expense with full approval chain details
+ */
+export async function getExpenseWithApprovals(expenseId: string): Promise<ExpenseWithApprovals> {
+  const response = await apiClient.get<ExpenseWithApprovals>(
+    `/expenses/${expenseId}/with-approvals`
+  );
+  return response;
+}
+
+/**
+ * Get pending approvals for current user
+ */
+export async function getPendingApprovals(entityId?: string): Promise<PendingApprovalsResponse> {
+  const params = new URLSearchParams();
+  if (entityId) params.append("entityId", entityId);
+
+  const url = `/expenses/pending-approvals${params.toString() ? `?${params.toString()}` : ""}`;
+  const response = await apiClient.get<PendingApprovalsResponse>(url);
+  return response;
+}
+
+/**
+ * Approve an expense at the current step
+ */
+export async function approveExpense(
+  expenseId: string,
+  comments?: string
+): Promise<ApprovalActionResponse> {
+  const response = await apiClient.post<ApprovalActionResponse>(`/expenses/${expenseId}/approve`, {
+    comments,
+  });
+  return response;
+}
+
+/**
+ * Reject an expense at the current step
+ */
+export async function rejectExpense(
+  expenseId: string,
+  reason: string
+): Promise<ApprovalActionResponse> {
+  const response = await apiClient.post<ApprovalActionResponse>(`/expenses/${expenseId}/reject`, {
+    reason,
   });
   return response;
 }
