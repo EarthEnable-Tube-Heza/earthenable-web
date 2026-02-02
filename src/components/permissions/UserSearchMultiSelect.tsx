@@ -170,7 +170,7 @@ export function UserSearchMultiSelect({
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
           disabled={disabled || selectedUsers.length >= maxSelections}
-          className="w-full pl-10 pr-4 py-2.5 border border-border-default rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors disabled:bg-background-light disabled:cursor-not-allowed"
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[#EA6A00]/20 focus:border-[#EA6A00] transition-colors disabled:bg-background-light disabled:cursor-not-allowed"
         />
         {isLoading && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
