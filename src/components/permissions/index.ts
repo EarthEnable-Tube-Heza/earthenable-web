@@ -7,3 +7,4 @@
 export { PermissionTree } from "./PermissionTree";
 export { RoleEditor } from "./RoleEditor";
 export { UserRoleAssignment } from "./UserRoleAssignment";
+export { UserSearchMultiSelect } from "./UserSearchMultiSelect";
