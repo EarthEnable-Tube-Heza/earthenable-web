@@ -166,13 +166,39 @@ export function useExpenseCategories(entityId?: string) {
 /**
  * Hook to get budgets
  */
-export function useBudgets() {
+export function useBudgets(departmentId?: string) {
   const { selectedEntityId } = useAuth();
 
   return useQuery({
-    queryKey: ["budgets", selectedEntityId],
-    queryFn: () => expenseAPI.getBudgets(selectedEntityId || ""),
+    queryKey: ["budgets", selectedEntityId, departmentId],
+    queryFn: () => expenseAPI.getBudgets(selectedEntityId || "", departmentId),
     enabled: !!selectedEntityId,
+  });
+}
+
+/**
+ * Hook to get budget summary for entity
+ */
+export function useBudgetSummary() {
+  const { selectedEntityId } = useAuth();
+
+  return useQuery({
+    queryKey: ["budget-summary", selectedEntityId],
+    queryFn: () => expenseAPI.getBudgetSummary(selectedEntityId || ""),
+    enabled: !!selectedEntityId,
+  });
+}
+
+/**
+ * Hook to get department budget breakdown
+ */
+export function useDepartmentBudgetBreakdown(departmentId: string) {
+  const { selectedEntityId } = useAuth();
+
+  return useQuery({
+    queryKey: ["department-budget-breakdown", selectedEntityId, departmentId],
+    queryFn: () => expenseAPI.getDepartmentBudgetBreakdown(selectedEntityId || "", departmentId),
+    enabled: !!selectedEntityId && !!departmentId,
   });
 }
 
