@@ -292,31 +292,39 @@ describe("ExpenseClient", () => {
           budgets: [
             {
               id: "budget-123",
-              entity_id: mockEntityId,
-              department_id: mockDepartmentId,
-              category_id: mockCategoryId,
-              budget_amount: 10000,
-              spent_amount: 3500,
-              period: "Q1",
-              start_date: "2025-01-01",
-              end_date: "2025-03-31",
-              fiscal_year: 2025,
-              department_name: "Engineering",
-              category_name: "Transportation",
+              entityId: mockEntityId,
+              departmentId: mockDepartmentId,
+              categoryId: mockCategoryId,
+              name: "Q1 Budget",
+              allocatedAmount: 10000,
+              spentAmount: 3500,
+              remainingAmount: 6500,
+              utilizationPercentage: 35,
+              currency: "RWF",
+              period: "quarterly",
+              startDate: "2025-01-01",
+              endDate: "2025-03-31",
+              departmentName: "Engineering",
+              categoryName: "Transportation",
+              status: "on_track",
             },
             {
               id: "budget-124",
-              entity_id: mockEntityId,
-              department_id: mockDepartmentId,
-              category_id: "cat-124",
-              budget_amount: 5000,
-              spent_amount: 1200,
-              period: "Q1",
-              start_date: "2025-01-01",
-              end_date: "2025-03-31",
-              fiscal_year: 2025,
-              department_name: "Engineering",
-              category_name: "Meals",
+              entityId: mockEntityId,
+              departmentId: mockDepartmentId,
+              categoryId: "cat-124",
+              name: "Q1 Meals Budget",
+              allocatedAmount: 5000,
+              spentAmount: 1200,
+              remainingAmount: 3800,
+              utilizationPercentage: 24,
+              currency: "RWF",
+              period: "quarterly",
+              startDate: "2025-01-01",
+              endDate: "2025-03-31",
+              departmentName: "Engineering",
+              categoryName: "Meals",
+              status: "on_track",
             },
           ],
         };
@@ -328,8 +336,8 @@ describe("ExpenseClient", () => {
         expect(apiClient.get).toHaveBeenCalledWith(`/admin/entities/${mockEntityId}/budgets`);
         expect(result).toEqual(mockBudgets);
         expect(result.budgets).toHaveLength(2);
-        expect(result.budgets[0].budget_amount).toBe(10000);
-        expect(result.budgets[0].spent_amount).toBe(3500);
+        expect(result.budgets[0].allocatedAmount).toBe(10000);
+        expect(result.budgets[0].spentAmount).toBe(3500);
       });
 
       it("should handle empty budgets response", async () => {

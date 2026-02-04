@@ -17,7 +17,7 @@ import { Button, Card } from "@/src/components/ui";
 import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
 import { PageTitle } from "@/src/components/dashboard/PageTitle";
 import { PAGE_SPACING } from "@/src/lib/theme";
-import { ExpenseStats } from "@/src/components/expenses/ExpenseStats";
+import { ExpenseStats, ExpenseStatusFilter } from "@/src/components/expenses/ExpenseStats";
 import { MyExpensesTab } from "@/src/components/expenses/tabs/MyExpensesTab";
 import { NewRequestTab } from "@/src/components/expenses/tabs/NewRequestTab";
 import { AllExpensesTab } from "@/src/components/expenses/tabs/AllExpensesTab";
@@ -112,7 +112,19 @@ const tabs: Tab[] = [
 
 export default function ExpensesPage() {
   const [activeTab, setActiveTab] = useState<TabId>("my-expenses");
+  const [statusFilter, setStatusFilter] = useState<ExpenseStatusFilter>("all");
   const isAdmin = useIsAdmin();
+
+  // Handle stat card click - switch to all-expenses tab and set filter
+  const handleStatusClick = (status: ExpenseStatusFilter) => {
+    setStatusFilter(status);
+    if (isAdmin) {
+      setActiveTab("all-expenses");
+    } else {
+      // For non-admins, switch to my-expenses tab (they can't see all-expenses)
+      setActiveTab("my-expenses");
+    }
+  };
 
   // Filter tabs based on user role
   const filteredTabs = tabs.filter((tab) => {
@@ -141,7 +153,7 @@ export default function ExpensesPage() {
       />
 
       {/* Stats Overview */}
-      <ExpenseStats />
+      <ExpenseStats onStatusClick={handleStatusClick} />
 
       {/* Tab Navigation */}
       <Card padding="none">
@@ -171,9 +183,9 @@ export default function ExpensesPage() {
 
         {/* Tab Content */}
         <div className="p-6">
-          {activeTab === "my-expenses" && <MyExpensesTab />}
+          {activeTab === "my-expenses" && <MyExpensesTab initialStatusFilter={statusFilter} />}
           {activeTab === "new-request" && <NewRequestTab />}
-          {activeTab === "all-expenses" && <AllExpensesTab />}
+          {activeTab === "all-expenses" && <AllExpensesTab initialStatusFilter={statusFilter} />}
           {activeTab === "budgets" && <BudgetsTab />}
           {activeTab === "entities" && <EntitiesTab />}
           {activeTab === "departments" && <DepartmentsTab />}

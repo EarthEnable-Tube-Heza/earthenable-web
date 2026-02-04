@@ -43,13 +43,21 @@ export interface ExpenseListResponse {
 }
 
 export interface ExpenseSummary {
-  total_count: number;
-  total_amount: number;
-  draft_count: number;
-  submitted_count: number;
-  approved_count: number;
-  rejected_count: number;
-  paid_count: number;
+  // Support both snake_case and camelCase from backend
+  total_count?: number;
+  totalCount?: number;
+  total_amount?: number;
+  totalAmount?: number;
+  draft_count?: number;
+  draftCount?: number;
+  submitted_count?: number;
+  submittedCount?: number;
+  approved_count?: number;
+  approvedCount?: number;
+  rejected_count?: number;
+  rejectedCount?: number;
+  paid_count?: number;
+  paidCount?: number;
 }
 
 export interface Department {
@@ -102,17 +110,63 @@ export interface PerDiemCalculation {
 
 export interface Budget {
   id: string;
-  entity_id: string;
-  department_id: string;
-  category_id: string;
-  budget_amount: number;
-  spent_amount: number;
+  entityId: string;
+  departmentId: string;
+  categoryId: string | null;
+  name: string;
+  description?: string;
+  allocatedAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  utilizationPercentage: number;
+  currency: string;
   period: string;
-  start_date: string;
-  end_date: string;
-  fiscal_year: number;
-  department_name?: string;
-  category_name?: string;
+  startDate: string;
+  endDate: string;
+  departmentName: string | null;
+  categoryName: string | null;
+  status: "on_track" | "at_risk" | "over_budget";
+}
+
+export interface BudgetSummary {
+  totalAllocated: number;
+  totalSpent: number;
+  totalRemaining: number;
+  overallUtilization: number;
+  departmentCount: number;
+  onTrackCount: number;
+  atRiskCount: number;
+  overBudgetCount: number;
+  departments: DepartmentBudgetSummary[];
+}
+
+export interface DepartmentBudgetSummary {
+  departmentId: string;
+  departmentName: string;
+  allocatedAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  utilizationPercentage: number;
+  status: "on_track" | "at_risk" | "over_budget";
+}
+
+export interface DepartmentBudgetBreakdown {
+  departmentId: string;
+  departmentName: string;
+  overallBudget: CategoryBudget | null;
+  categoryBreakdown: CategoryBudget[];
+}
+
+export interface CategoryBudget {
+  id: string;
+  name: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  allocatedAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  utilizationPercentage: number;
+  status: "on_track" | "at_risk" | "over_budget";
 }
 
 export interface PerDiemRate {
@@ -191,6 +245,7 @@ export interface PendingApprovalItem {
   expenseType: "expense" | "per_diem" | "advance";
   submitterId: string;
   submitterName?: string;
+  departmentId?: string;
   departmentName?: string;
   stepOrder: number;
   totalSteps: number;
@@ -370,9 +425,35 @@ export async function getExpenseCategories(
 /**
  * Get budgets for entity
  */
-export async function getBudgets(entityId: string): Promise<{ budgets: Budget[] }> {
-  const response = await apiClient.get<{ budgets: Budget[] }>(
-    `/admin/entities/${entityId}/budgets`
+export async function getBudgets(
+  entityId: string,
+  departmentId?: string
+): Promise<{ budgets: Budget[] }> {
+  const params = new URLSearchParams();
+  if (departmentId) params.append("department_id", departmentId);
+
+  const url = `/admin/entities/${entityId}/budgets${params.toString() ? `?${params.toString()}` : ""}`;
+  const response = await apiClient.get<{ budgets: Budget[] }>(url);
+  return response;
+}
+
+/**
+ * Get budget summary for entity
+ */
+export async function getBudgetSummary(entityId: string): Promise<BudgetSummary> {
+  const response = await apiClient.get<BudgetSummary>(`/admin/entities/${entityId}/budget-summary`);
+  return response;
+}
+
+/**
+ * Get budget breakdown for a department
+ */
+export async function getDepartmentBudgetBreakdown(
+  entityId: string,
+  departmentId: string
+): Promise<DepartmentBudgetBreakdown> {
+  const response = await apiClient.get<DepartmentBudgetBreakdown>(
+    `/admin/entities/${entityId}/budgets/${departmentId}/breakdown`
   );
   return response;
 }

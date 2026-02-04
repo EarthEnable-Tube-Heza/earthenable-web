@@ -6,7 +6,7 @@
  * Shows all expenses across the organization with table view, search, filters, bulk actions, and pagination
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Input,
@@ -40,20 +40,179 @@ import {
   usePendingApprovals,
   useApproveExpense,
   useRejectExpense,
+  useBudgets,
 } from "@/src/hooks/useExpenses";
 import { useAuth } from "@/src/lib/auth";
-import { Expense, PendingApprovalItem } from "@/src/lib/api/expenseClient";
+import { Expense, PendingApprovalItem, Budget } from "@/src/lib/api/expenseClient";
+import { AlertTriangle, TrendingUp } from "@/src/lib/icons";
+
+/**
+ * Format currency amount
+ */
+function formatCurrencyAmount(amount: number, currency: string = "RWF") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * Budget Impact Card - shows how approving an expense affects department budget
+ */
+function BudgetImpactCard({
+  departmentBudget,
+  expenseAmount,
+  expenseCurrency,
+}: {
+  departmentBudget: Budget | null;
+  expenseAmount: number;
+  expenseCurrency: string;
+}) {
+  if (!departmentBudget) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+        <p className="text-sm text-gray-500 text-center">
+          No budget configured for this department
+        </p>
+      </div>
+    );
+  }
+
+  const currentUtilization = departmentBudget.utilizationPercentage;
+  const newSpent = departmentBudget.spentAmount + expenseAmount;
+  const newUtilization =
+    departmentBudget.allocatedAmount > 0 ? (newSpent / departmentBudget.allocatedAmount) * 100 : 0;
+  const newRemaining = departmentBudget.allocatedAmount - newSpent;
+  const willExceedBudget = newUtilization > 100;
+  const willBeAtRisk = newUtilization >= 85 && newUtilization <= 100;
+
+  // Determine status color
+  const getStatusColor = (util: number) => {
+    if (util > 100) return "text-status-error";
+    if (util >= 85) return "text-status-warning";
+    return "text-status-success";
+  };
+
+  const getBarColor = (util: number) => {
+    if (util > 100) return "bg-status-error";
+    if (util >= 85) return "bg-status-warning";
+    return "bg-status-success";
+  };
+
+  return (
+    <div
+      className={`rounded-lg p-4 mb-4 border ${
+        willExceedBudget
+          ? "bg-red-50 border-red-200"
+          : willBeAtRisk
+            ? "bg-yellow-50 border-yellow-200"
+            : "bg-green-50 border-green-200"
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        {willExceedBudget ? (
+          <TrendingUp className="w-5 h-5 text-status-error" />
+        ) : willBeAtRisk ? (
+          <AlertTriangle className="w-5 h-5 text-status-warning" />
+        ) : (
+          <BarChart className="w-5 h-5 text-status-success" />
+        )}
+        <span className="font-semibold text-sm">
+          {departmentBudget.departmentName} Budget Impact
+        </span>
+      </div>
+
+      {/* Warning message if over budget */}
+      {willExceedBudget && (
+        <div className="bg-red-100 text-red-800 text-sm p-2 rounded mb-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>
+            Approving this expense will put the department{" "}
+            <strong>{formatCurrencyAmount(Math.abs(newRemaining), expenseCurrency)}</strong> over
+            budget
+          </span>
+        </div>
+      )}
+
+      {willBeAtRisk && !willExceedBudget && (
+        <div className="bg-yellow-100 text-yellow-800 text-sm p-2 rounded mb-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>Budget will be at risk level ({newUtilization.toFixed(0)}% utilized)</span>
+        </div>
+      )}
+
+      {/* Budget Stats */}
+      <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+        <div>
+          <span className="text-gray-500">Budget:</span>
+          <span className="ml-2 font-medium">
+            {formatCurrencyAmount(departmentBudget.allocatedAmount, expenseCurrency)}
+          </span>
+        </div>
+        <div>
+          <span className="text-gray-500">Currently Spent:</span>
+          <span className="ml-2 font-medium">
+            {formatCurrencyAmount(departmentBudget.spentAmount, expenseCurrency)}
+          </span>
+        </div>
+        <div>
+          <span className="text-gray-500">This Expense:</span>
+          <span className="ml-2 font-medium text-primary">
+            +{formatCurrencyAmount(expenseAmount, expenseCurrency)}
+          </span>
+        </div>
+        <div>
+          <span className="text-gray-500">After Approval:</span>
+          <span className={`ml-2 font-medium ${getStatusColor(newUtilization)}`}>
+            {formatCurrencyAmount(newSpent, expenseCurrency)}
+          </span>
+        </div>
+      </div>
+
+      {/* Utilization Bar */}
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-gray-500">Current: {currentUtilization.toFixed(0)}%</span>
+          <span className={`font-semibold ${getStatusColor(newUtilization)}`}>
+            After: {newUtilization.toFixed(0)}%
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden relative">
+          {/* Current utilization */}
+          <div
+            className={`absolute h-full ${getBarColor(currentUtilization)} opacity-50`}
+            style={{ width: `${Math.min(currentUtilization, 100)}%` }}
+          />
+          {/* New utilization */}
+          <div
+            className={`absolute h-full ${getBarColor(newUtilization)}`}
+            style={{ width: `${Math.min(newUtilization, 100)}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs mt-1 text-gray-400">
+          <span>0%</span>
+          <span>85%</span>
+          <span>100%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Approve modal component
 function ApproveModal({
   isOpen,
   expense,
+  departmentBudget,
   onClose,
   onConfirm,
   isLoading,
 }: {
   isOpen: boolean;
   expense: Expense | PendingApprovalItem | null;
+  departmentBudget: Budget | null;
   onClose: () => void;
   onConfirm: (comments: string) => void;
   isLoading: boolean;
@@ -63,19 +222,33 @@ function ApproveModal({
   if (!isOpen || !expense) return null;
 
   const title = "title" in expense ? expense.title : expense.expenseTitle;
+  const amount = "amount" in expense ? expense.amount : expense.expenseAmount;
+  const currency = "currency" in expense ? expense.currency : expense.expenseCurrency;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2">Approve Expense</h3>
         <p className="text-gray-600 mb-4">
-          Approve <span className="font-medium">&quot;{title}&quot;</span>?
+          Approve <span className="font-medium">&quot;{title}&quot;</span> for{" "}
+          <span className="font-semibold text-primary">
+            {formatCurrencyAmount(amount, currency)}
+          </span>
+          ?
         </p>
+
+        {/* Budget Impact Card */}
+        <BudgetImpactCard
+          departmentBudget={departmentBudget}
+          expenseAmount={amount}
+          expenseCurrency={currency}
+        />
+
         <textarea
           value={comments}
           onChange={(e) => setComments(e.target.value)}
           placeholder="Add comments (optional)"
-          className="w-full border rounded-lg p-3 mb-4 h-24 resize-none"
+          className="w-full border rounded-lg p-3 mb-4 h-20 resize-none"
         />
         <div className="flex gap-3 justify-end">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
@@ -94,12 +267,14 @@ function ApproveModal({
 function RejectModal({
   isOpen,
   expense,
+  departmentBudget,
   onClose,
   onConfirm,
   isLoading,
 }: {
   isOpen: boolean;
   expense: Expense | PendingApprovalItem | null;
+  departmentBudget: Budget | null;
   onClose: () => void;
   onConfirm: (reason: string) => void;
   isLoading: boolean;
@@ -110,6 +285,8 @@ function RejectModal({
   if (!isOpen || !expense) return null;
 
   const title = "title" in expense ? expense.title : expense.expenseTitle;
+  const amount = "amount" in expense ? expense.amount : expense.expenseAmount;
+  const currency = "currency" in expense ? expense.currency : expense.expenseCurrency;
 
   const handleConfirm = () => {
     if (!reason.trim()) {
@@ -121,11 +298,20 @@ function RejectModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <h3 className="text-lg font-semibold mb-2 text-error">Reject Expense</h3>
         <p className="text-gray-600 mb-4">
-          Reject <span className="font-medium">&quot;{title}&quot;</span>?
+          Reject <span className="font-medium">&quot;{title}&quot;</span> for{" "}
+          <span className="font-semibold">{formatCurrencyAmount(amount, currency)}</span>?
         </p>
+
+        {/* Budget Context - helps approver understand if rejection is budget-related */}
+        <BudgetImpactCard
+          departmentBudget={departmentBudget}
+          expenseAmount={amount}
+          expenseCurrency={currency}
+        />
+
         <textarea
           value={reason}
           onChange={(e) => {
@@ -133,7 +319,7 @@ function RejectModal({
             setError("");
           }}
           placeholder="Rejection reason (required)"
-          className={`w-full border rounded-lg p-3 mb-2 h-24 resize-none ${error ? "border-error" : ""}`}
+          className={`w-full border rounded-lg p-3 mb-2 h-20 resize-none ${error ? "border-error" : ""}`}
         />
         {error && <p className="text-error text-sm mb-4">{error}</p>}
         <div className="flex gap-3 justify-end">
@@ -165,14 +351,20 @@ const initialModalState: ModalState = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
-export function AllExpensesTab() {
+export type ExpenseStatusFilter = "all" | "draft" | "submitted" | "approved" | "rejected" | "paid";
+
+interface AllExpensesTabProps {
+  initialStatusFilter?: ExpenseStatusFilter;
+}
+
+export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
   const router = useRouter();
   const { user, selectedEntityId } = useAuth();
   const entityId = selectedEntityId || user?.entity_id || "";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
-    status: "all",
+    status: initialStatusFilter || "all",
     expenseType: "all",
     departmentId: "",
     categoryId: "",
@@ -199,6 +391,14 @@ export function AllExpensesTab() {
   const [approveTarget, setApproveTarget] = useState<Expense | PendingApprovalItem | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Expense | PendingApprovalItem | null>(null);
 
+  // Update filter when initialStatusFilter prop changes
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setFilters((prev) => ({ ...prev, status: initialStatusFilter }));
+      setCurrentPage(1);
+    }
+  }, [initialStatusFilter]);
+
   // Fetch data
   const {
     data: expensesData,
@@ -213,6 +413,7 @@ export function AllExpensesTab() {
   const { data: pendingData, isLoading: pendingLoading } = usePendingApprovals(entityId);
   const { data: departmentsData } = useDepartments(entityId);
   const { data: categoriesData } = useExpenseCategories(entityId);
+  const { data: budgetsData } = useBudgets();
 
   const approveMutation = useApproveExpense();
   const rejectMutation = useRejectExpense();
@@ -221,6 +422,36 @@ export function AllExpensesTab() {
   const pendingApprovals = pendingData?.approvals || [];
   const departments = departmentsData?.departments || [];
   const categories = categoriesData?.categories || [];
+  const budgets = useMemo(() => budgetsData?.budgets || [], [budgetsData?.budgets]);
+
+  // Helper to find department budget for an expense
+  const getDepartmentBudget = useMemo(() => {
+    // Create a map of departmentId -> overall budget (category_id is null)
+    const budgetMap = new Map<string, Budget>();
+    budgets.forEach((budget) => {
+      // Only use department-level budgets (no category)
+      if (!budget.categoryId) {
+        budgetMap.set(budget.departmentId, budget);
+      }
+    });
+    return (departmentId: string | undefined): Budget | null => {
+      if (!departmentId) return null;
+      return budgetMap.get(departmentId) || null;
+    };
+  }, [budgets]);
+
+  // Get budget for current approve/reject target
+  const getTargetBudget = (target: Expense | PendingApprovalItem | null): Budget | null => {
+    if (!target) return null;
+    // Get department ID from either expense (snake_case) or pending approval (camelCase)
+    let deptId: string | undefined;
+    if ("department_id" in target && target.department_id) {
+      deptId = target.department_id;
+    } else if ("departmentId" in target && target.departmentId) {
+      deptId = target.departmentId;
+    }
+    return getDepartmentBudget(deptId);
+  };
 
   // Filter expenses by search query and expense type
   const filteredExpenses = useMemo(() => {
@@ -912,6 +1143,7 @@ export function AllExpensesTab() {
       <ApproveModal
         isOpen={!!approveTarget}
         expense={approveTarget}
+        departmentBudget={getTargetBudget(approveTarget)}
         onClose={() => setApproveTarget(null)}
         onConfirm={handleApprove}
         isLoading={approveMutation.isPending}
@@ -919,6 +1151,7 @@ export function AllExpensesTab() {
       <RejectModal
         isOpen={!!rejectTarget}
         expense={rejectTarget}
+        departmentBudget={getTargetBudget(rejectTarget)}
         onClose={() => setRejectTarget(null)}
         onConfirm={handleReject}
         isLoading={rejectMutation.isPending}
