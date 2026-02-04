@@ -16,6 +16,7 @@ import {
   useAgentStatusWithAutoConnect,
   useMyCallbacks,
   useVoiceSettings,
+  useQueuedCalls,
 } from "@/src/hooks/useCallCenter";
 import { AgentStatusEnum } from "@/src/types/voice";
 import { Dialpad } from "./Dialpad";
@@ -25,6 +26,7 @@ import { AgentStatusSelector } from "./AgentStatusSelector";
 import { ACWCountdown } from "./ACWCountdown";
 import { RecentCallHistory } from "./RecentCallHistory";
 import { QueueAgentsPanel } from "./QueueAgentsPanel";
+import { QueuedCallsPanel } from "./QueuedCallsPanel";
 import { Card, Spinner, Badge } from "@/src/components/ui";
 
 interface WorkspaceViewProps {
@@ -80,6 +82,10 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   // My callbacks
   const { data: myCallbacks } = useMyCallbacks(selectedEntityId ?? undefined);
   const pendingCallbacks = myCallbacks?.filter((cb) => cb.status === "pending") || [];
+
+  // Queued calls (for badge count)
+  const { data: queuedCallsData } = useQueuedCalls(selectedEntityId ?? undefined);
+  const queuedCallsCount = queuedCallsData?.items?.length || 0;
 
   // Voice settings (for AT username)
   const { data: voiceSettings } = useVoiceSettings(selectedEntityId ?? undefined);
@@ -399,23 +405,41 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
         </Card>
       </div>
 
-      {/* Column 2: Callbacks */}
-      <div className="flex flex-col">
+      {/* Column 2: Queue & Callbacks (separate cards) */}
+      <div className="flex flex-col gap-4">
+        {/* Customer Queue */}
+        <Card variant="bordered" padding="md" className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-heading font-semibold text-text-secondary">
+              Customer Queue
+            </h3>
+            {queuedCallsCount > 0 && (
+              <Badge variant="warning" size="sm">
+                {queuedCallsCount} waiting
+              </Badge>
+            )}
+          </div>
+          <QueuedCallsPanel
+            entityId={selectedEntityId ?? undefined}
+            className="flex-1 overflow-y-auto max-h-48"
+          />
+        </Card>
+
         {/* Pending Callbacks */}
-        <Card variant="bordered" padding="md" className="h-full overflow-hidden flex flex-col">
+        <Card variant="bordered" padding="md" className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-heading font-semibold text-text-secondary">My Callbacks</h3>
             {pendingCallbacks.length > 0 && (
-              <Badge variant="warning" size="sm">
-                {pendingCallbacks.length}
+              <Badge variant="info" size="sm">
+                {pendingCallbacks.length} pending
               </Badge>
             )}
           </div>
 
           {pendingCallbacks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center flex-1 min-h-[200px] py-6">
+            <div className="flex flex-col items-center justify-center flex-1 min-h-[100px] py-4">
               <svg
-                className="w-10 h-10 text-text-disabled mb-2"
+                className="w-8 h-8 text-text-disabled mb-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -427,10 +451,10 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p className="text-sm text-text-disabled">No pending callbacks</p>
+              <p className="text-xs text-text-disabled">No pending callbacks</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto">
+            <div className="space-y-2 flex-1 overflow-y-auto max-h-48">
               {pendingCallbacks.slice(0, 5).map((callback) => (
                 <div
                   key={callback.id}
