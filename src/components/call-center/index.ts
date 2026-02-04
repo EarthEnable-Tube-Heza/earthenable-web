@@ -22,3 +22,4 @@ export { QueueFormModal } from "./QueueFormModal";
 export { QueueAgentsModal } from "./QueueAgentsModal";
 export { RecentCallHistory } from "./RecentCallHistory";
 export { QueueAgentsPanel } from "./QueueAgentsPanel";
+export { QueuedCallsPanel } from "./QueuedCallsPanel";
