@@ -33,6 +33,7 @@ export const voiceQueryKeys = {
     [...voiceQueryKeys.all, "queues", filters] as const,
   queue: (queueId: string) => [...voiceQueryKeys.all, "queue", queueId] as const,
   queueAgents: (queueId: string) => [...voiceQueryKeys.all, "queue-agents", queueId] as const,
+  queuedCalls: (entityId: string) => [...voiceQueryKeys.all, "queued-calls", entityId] as const,
   // Calls
   calls: (filters?: CallLogFilters) => [...voiceQueryKeys.all, "calls", filters] as const,
   call: (callId: string) => [...voiceQueryKeys.all, "call", callId] as const,
@@ -255,6 +256,24 @@ export function useCallLogs(filters?: CallLogFilters) {
   return useQuery({
     queryKey: voiceQueryKeys.calls(filters),
     queryFn: () => apiClient.getCallLogs(filters),
+  });
+}
+
+/**
+ * Hook to get calls currently waiting in the queue
+ * Fetches calls with status=queued or status=ringing
+ */
+export function useQueuedCalls(entityId: string | undefined) {
+  return useQuery({
+    queryKey: voiceQueryKeys.queuedCalls(entityId || ""),
+    queryFn: () =>
+      apiClient.getCallLogs({
+        entity_id: entityId,
+        status: "queued,ringing",
+        limit: 50,
+      }),
+    enabled: !!entityId,
+    refetchInterval: 5000, // Refresh every 5 seconds for real-time updates
   });
 }
 
