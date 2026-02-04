@@ -6,7 +6,7 @@
  * Shows user's own expenses with table view, search, filters, bulk actions, and pagination
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Input,
@@ -55,16 +55,32 @@ const initialModalState: ModalState = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
-export function MyExpensesTab() {
+export type ExpenseStatusFilter = "all" | "draft" | "submitted" | "approved" | "rejected" | "paid";
+
+interface MyExpensesTabProps {
+  initialStatusFilter?: ExpenseStatusFilter;
+}
+
+export function MyExpensesTab({ initialStatusFilter }: MyExpensesTabProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<ExpenseStatusFilter>(
+    initialStatusFilter || "all"
+  );
   const [modal, setModal] = useState<ModalState>(initialModalState);
   const [pendingExpenseId, setPendingExpenseId] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Update filter when initialStatusFilter prop changes
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+      setCurrentPage(1);
+    }
+  }, [initialStatusFilter]);
 
   // Selection state for bulk actions
   const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
@@ -115,7 +131,7 @@ export function MyExpensesTab() {
 
   // Reset page when filters change
   const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
+    setStatusFilter(value as ExpenseStatusFilter);
     setCurrentPage(1);
     setSelectedExpenses(new Set());
   };
