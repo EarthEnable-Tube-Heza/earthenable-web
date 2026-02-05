@@ -139,7 +139,7 @@ export function Sidebar() {
           {effectiveCollapsed ? (
             // Collapsed: Show vertical/square icon
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/icon.png" alt="EarthEnable Hub" className="w-12 h-12 mx-auto" />
+            <img src="/logo-square.png" alt="EarthEnable Hub" className="w-12 h-12 mx-auto" />
           ) : (
             // Expanded: Show full horizontal logo
             // eslint-disable-next-line @next/next/no-img-element
