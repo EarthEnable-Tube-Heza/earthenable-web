@@ -127,9 +127,11 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
       if (!canMakeCall || !voiceSettings?.api_username) return;
 
       // For Africa's Talking, agent-to-agent calls use the format:
-      // {api_username}.agent_{user_id}
+      // {api_username}.agent_{user_id_no_dashes_first16}
       // e.g., "earthenable.agent_6512429d40fd4302"
-      const agentPhoneNumber = `${voiceSettings.api_username}.agent_${agent.user_id}`;
+      // The client name must match the format used when requesting the WebRTC capability token
+      const clientName = `agent_${agent.user_id.replace(/-/g, "").slice(0, 16)}`;
+      const agentPhoneNumber = `${voiceSettings.api_username}.${clientName}`;
 
       try {
         await makeCall(agentPhoneNumber, agent.user_name);
