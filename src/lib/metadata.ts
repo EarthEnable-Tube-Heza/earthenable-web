@@ -175,13 +175,10 @@ export const rootMetadata: Metadata = {
   creator: "EarthEnable",
   publisher: "EarthEnable",
 
-  // Icons
+  // Icons - Next.js auto-generates favicon from app/icon.png
   icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "1024x1024" }],
+    apple: [{ url: "/icon.png", type: "image/png" }],
   },
 
   // Manifest
