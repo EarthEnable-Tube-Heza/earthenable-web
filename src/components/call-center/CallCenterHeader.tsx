@@ -101,7 +101,8 @@ export function CallCenterHeader() {
   );
 
   // Call center context for WebRTC
-  const { isInitialized, isReady, initialize, disconnect, callState } = useCallCenterContext();
+  const { isInitialized, isReady, initialize, retryConnection, disconnect, callState } =
+    useCallCenterContext();
 
   // Unified status change handler with auto-connect
   const {
@@ -287,7 +288,9 @@ export function CallCenterHeader() {
               onClick={() => {
                 if (isReady) {
                   disconnect();
-                } else if (!isInitialized || callState === "error") {
+                } else if (callState === "error") {
+                  retryConnection();
+                } else if (!isInitialized) {
                   initialize();
                 }
               }}

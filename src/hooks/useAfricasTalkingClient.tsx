@@ -73,6 +73,7 @@ export interface UseAfricasTalkingClientReturn {
   // Call control methods
   initialize: () => Promise<void>;
   disconnect: () => void;
+  retryConnection: () => void;
   makeCall: (phoneNumber: string, contactName?: string) => Promise<void>;
   answerCall: () => void;
   rejectCall: () => void;
@@ -120,6 +121,17 @@ export function useAfricasTalkingClient(
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const clientRef = useRef<unknown | null>(null);
 
+  // Reconnect refs
+  const MAX_RECONNECT_ATTEMPTS = 3;
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitializingRef = useRef(false);
+  const hasNotifiedDisconnectRef = useRef(false);
+  const onClientDisconnectedRef = useRef(onClientDisconnected);
+
+  // Keep onClientDisconnected ref in sync
+  onClientDisconnectedRef.current = onClientDisconnected;
+
   // ==================== Duration Timer ====================
 
   const startDurationTimer = useCallback(() => {
@@ -146,12 +158,25 @@ export function useAfricasTalkingClient(
   // ==================== Initialize Client ====================
 
   const initialize = useCallback(async () => {
-    if (isInitialized || !entityId) return;
+    if (isInitializingRef.current || (isInitialized && !error) || !entityId) return;
 
+    isInitializingRef.current = true;
     setCallState("initializing");
     setError(null);
 
     try {
+      // Clean up old broken client before re-initializing
+      if (clientRef.current) {
+        try {
+          // @ts-expect-error - client disconnect method
+          clientRef.current.disconnect?.();
+        } catch {
+          // Ignore cleanup errors
+        }
+        clientRef.current = null;
+        setClient(null);
+      }
+
       // Get WebRTC config (capability token) from backend
       const config = await apiClient.getWebRTCConfig(entityId);
 
@@ -175,6 +200,9 @@ export function useAfricasTalkingClient(
         console.log("[AT Client] Ready - client can make/receive calls");
         setIsReady(true);
         setCallState("ready");
+        // Reset reconnect state on successful connection
+        reconnectAttemptsRef.current = 0;
+        hasNotifiedDisconnectRef.current = false;
       });
 
       atClient.on("notready", () => {
@@ -242,21 +270,22 @@ export function useAfricasTalkingClient(
 
       // Event: offline - token expired
       atClient.on("offline", () => {
-        console.log("[AT Client] Offline - token expired");
+        console.log("[AT Client] Offline - token expired, will attempt reconnect");
         setIsReady(false);
         setIsInitialized(false);
-        setCallState("idle");
-        setError("Session expired. Please refresh to reconnect.");
-        onClientDisconnected?.();
+        setCallState("error");
+        setError("Session expired. Reconnecting...");
+        // Don't notify backend yet - auto-reconnect may succeed
       });
 
       // Event: closed - connection to AT servers broken
       atClient.on("closed", () => {
-        console.log("[AT Client] Closed - connection to servers broken");
+        console.log("[AT Client] Closed - connection broken, will attempt reconnect");
         setIsReady(false);
+        setIsInitialized(false);
         setCallState("error");
-        setError("Connection lost. Check your internet connection.");
-        onClientDisconnected?.();
+        setError("Connection lost. Reconnecting...");
+        // Don't notify backend yet - auto-reconnect may succeed
       });
 
       clientRef.current = atClient;
@@ -268,15 +297,17 @@ export function useAfricasTalkingClient(
       setError(errorMessage);
       setCallState("error");
       onError?.(err instanceof Error ? err : new Error(errorMessage));
+    } finally {
+      isInitializingRef.current = false;
     }
   }, [
     entityId,
     isInitialized,
+    error,
     onIncomingCall,
     onCallConnected,
     onCallEnded,
     onError,
-    onClientDisconnected,
     startDurationTimer,
     stopDurationTimer,
   ]);
@@ -294,6 +325,10 @@ export function useAfricasTalkingClient(
   useEffect(() => {
     return () => {
       stopDurationTimer();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       if (clientRef.current) {
         // @ts-expect-error - client disconnect method
         clientRef.current.disconnect?.();
@@ -305,6 +340,13 @@ export function useAfricasTalkingClient(
 
   const disconnect = useCallback(() => {
     stopDurationTimer();
+    // Cancel any pending reconnect
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    reconnectAttemptsRef.current = 0;
+    hasNotifiedDisconnectRef.current = false;
     if (clientRef.current) {
       // @ts-expect-error - client disconnect method
       clientRef.current.disconnect?.();
@@ -317,8 +359,58 @@ export function useAfricasTalkingClient(
     setActiveCall(null);
     setIncomingCall(null);
     setError(null);
-    onClientDisconnected?.();
-  }, [stopDurationTimer, onClientDisconnected]);
+    onClientDisconnectedRef.current?.();
+  }, [stopDurationTimer]);
+
+  // ==================== Auto-Reconnect ====================
+
+  useEffect(() => {
+    // Only attempt reconnect when in error state and not initialized
+    if (callState !== "error" || isInitialized) return;
+
+    if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+      const delay = Math.pow(2, reconnectAttemptsRef.current + 1) * 1000; // 2s, 4s, 8s
+      console.log(
+        `[AT Client] Auto-reconnect attempt ${reconnectAttemptsRef.current + 1}/${MAX_RECONNECT_ATTEMPTS} in ${delay}ms`
+      );
+
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectAttemptsRef.current += 1;
+        initialize();
+      }, delay);
+    } else if (!hasNotifiedDisconnectRef.current) {
+      // All attempts exhausted - notify backend and show final error
+      console.log("[AT Client] All reconnect attempts exhausted, notifying backend");
+      hasNotifiedDisconnectRef.current = true;
+      setError("Connection lost. Check your internet connection.");
+      onClientDisconnectedRef.current?.();
+    }
+
+    return () => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+  }, [callState, isInitialized, initialize]);
+
+  // ==================== Retry Connection (Manual) ====================
+
+  const retryConnection = useCallback(() => {
+    // Reset reconnect counters so auto-reconnect gets another full set of attempts
+    reconnectAttemptsRef.current = 0;
+    hasNotifiedDisconnectRef.current = false;
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    // Clear error state and re-initialize
+    setIsInitialized(false);
+    setError(null);
+    setCallState("idle");
+    // Trigger initialize on next tick after state updates
+    setTimeout(() => initialize(), 0);
+  }, [initialize]);
 
   // ==================== Call Control Methods ====================
 
@@ -467,6 +559,7 @@ export function useAfricasTalkingClient(
     // Call control methods
     initialize,
     disconnect,
+    retryConnection,
     makeCall,
     answerCall,
     rejectCall,
