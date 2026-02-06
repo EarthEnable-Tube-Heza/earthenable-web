@@ -7,7 +7,7 @@
  * and queue information. Designed for agents who stay on calls all day.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/src/lib/theme";
 import { useAuth } from "@/src/lib/auth";
 import { useCallCenterContext } from "@/src/hooks/useAfricasTalkingClient";
@@ -15,6 +15,8 @@ import {
   useMyAgentStatus,
   useAgentStatusWithAutoConnect,
   useMyCallbacks,
+  useMyActiveCall,
+  useTransferCall,
   useVoiceSettings,
   useQueuedCalls,
 } from "@/src/hooks/useCallCenter";
@@ -90,6 +92,16 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
   // Voice settings (for AT username)
   const { data: voiceSettings } = useVoiceSettings(selectedEntityId ?? undefined);
 
+  // Active call from API (needed for transfer - gives us the call log ID)
+  const { data: activeCallLog } = useMyActiveCall(selectedEntityId ?? undefined);
+
+  // Transfer call mutation
+  const transferCallMutation = useTransferCall();
+
+  // Transfer mode state
+  const [isTransferMode, setIsTransferMode] = useState(false);
+  const agentsPanelRef = useRef<HTMLDivElement>(null);
+
   // Get current status (fallback to offline if no status)
   const currentStatus = agentStatus?.status ?? AgentStatusEnum.OFFLINE;
 
@@ -141,6 +153,46 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
     },
     [canMakeCall, makeCall, voiceSettings?.api_username]
   );
+
+  // Handle transfer button click in CallControls
+  const handleTransferClick = useCallback(() => {
+    setIsTransferMode((prev) => !prev);
+    // Scroll agents panel into view
+    if (!isTransferMode) {
+      setTimeout(() => {
+        agentsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 100);
+    }
+  }, [isTransferMode]);
+
+  // Handle transfer to a specific agent
+  const handleTransferToAgent = useCallback(
+    async (agent: { user_id: string; user_name?: string; user_email?: string }) => {
+      if (!activeCallLog?.id || !voiceSettings?.api_username) return;
+
+      // Build AT WebRTC client name for the target agent
+      const clientName = `agent_${agent.user_id.replace(/-/g, "").slice(0, 16)}`;
+      const targetAddress = `${voiceSettings.api_username}.${clientName}`;
+
+      try {
+        await transferCallMutation.mutateAsync({
+          callId: activeCallLog.id,
+          target: targetAddress,
+        });
+        setIsTransferMode(false);
+      } catch (err) {
+        console.error("Transfer failed:", err);
+      }
+    },
+    [activeCallLog?.id, voiceSettings?.api_username, transferCallMutation]
+  );
+
+  // Reset transfer mode when call ends
+  useEffect(() => {
+    if (!isCallActive && isTransferMode) {
+      setIsTransferMode(false);
+    }
+  }, [isCallActive, isTransferMode]);
 
   // Determine display state
   const hasActiveCall = isCallActive || callState === "ended";
@@ -375,6 +427,8 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
                     onToggleMute={toggleMute}
                     onToggleHold={toggleHold}
                     onEndCall={endCall}
+                    onTransfer={handleTransferClick}
+                    isTransferActive={isTransferMode}
                     onShowKeypad={() => setShowKeypad(!showKeypad)}
                     isConnected={callState === "connected" || callState === "on_hold"}
                     size="lg"
@@ -496,22 +550,42 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
       {/* Column 3: Queue Agents & Recent Calls */}
       <div className="flex flex-col gap-6 md:col-span-2 xl:col-span-1">
         {/* Queue Agents for Transfer */}
-        <Card variant="bordered" padding="md">
-          <h3 className="text-sm font-heading font-semibold text-text-secondary mb-3">
-            Queue Agents
-          </h3>
+        <Card
+          ref={agentsPanelRef}
+          variant="bordered"
+          padding="md"
+          className={cn(isTransferMode && "ring-2 ring-primary ring-offset-2")}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-heading font-semibold text-text-secondary">Queue Agents</h3>
+            {isTransferMode && (
+              <Badge variant="warning" size="sm">
+                Select agent to transfer
+              </Badge>
+            )}
+          </div>
+          {isTransferMode && transferCallMutation.isPending && (
+            <div className="flex items-center gap-2 mb-3 p-2 bg-primary/5 rounded-lg">
+              <Spinner size="sm" />
+              <span className="text-sm text-text-secondary">Transferring call...</span>
+            </div>
+          )}
+          {isTransferMode && transferCallMutation.isError && (
+            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">Transfer failed. Please try again.</p>
+            </div>
+          )}
           <QueueAgentsPanel
             entityId={selectedEntityId ?? undefined}
-            onAgentClick={(agent) => {
-              // In a real implementation, this would initiate a transfer
-              // For now, just log to console
-              console.log("Transfer to agent:", agent.user_name, agent.user_id);
-            }}
+            onAgentClick={
+              isTransferMode && isCallActive ? (agent) => handleTransferToAgent(agent) : undefined
+            }
             onCallAgent={handleCallAgent}
             canCallAgent={
               canMakeCall &&
               currentStatus === AgentStatusEnum.AVAILABLE &&
-              !!voiceSettings?.api_username
+              !!voiceSettings?.api_username &&
+              !isTransferMode
             }
           />
         </Card>

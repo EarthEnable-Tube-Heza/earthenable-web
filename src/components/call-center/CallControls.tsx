@@ -22,6 +22,8 @@ interface CallControlsProps {
   onEndCall: () => void;
   /** Callback to open transfer dialog */
   onTransfer?: () => void;
+  /** Whether transfer mode is active */
+  isTransferActive?: boolean;
   /** Callback to open keypad for DTMF */
   onShowKeypad?: () => void;
   /** Whether the call is connected */
@@ -176,6 +178,7 @@ export function CallControls({
   onToggleHold,
   onEndCall,
   onTransfer,
+  isTransferActive,
   onShowKeypad,
   isConnected = true,
   size = "md",
@@ -218,6 +221,7 @@ export function CallControls({
       {onTransfer && (
         <ControlButton
           onClick={onTransfer}
+          active={isTransferActive}
           label="Transfer"
           icon={<TransferIcon />}
           size={size}
