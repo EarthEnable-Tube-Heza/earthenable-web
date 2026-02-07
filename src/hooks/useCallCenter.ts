@@ -513,7 +513,7 @@ export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
     isInitialized,
     isReady,
     callState,
-    initialize,
+    retryConnection,
     error: connectionError,
   } = useCallCenterContext();
 
@@ -589,13 +589,14 @@ export function useAgentStatusWithAutoConnect(entityId: string | undefined) {
       ) {
         // Mark that we're attempting to connect for Available status
         isAttemptingAvailableConnect.current = true;
-        initialize();
+        // Use retryConnection to get a fresh connection (resets reconnect counters)
+        retryConnection();
       }
 
       // Update status via API
       updateStatusMutation.mutate(newStatus);
     },
-    [updateStatusMutation, isInitialized, callState, initialize]
+    [updateStatusMutation, isInitialized, callState, retryConnection]
   );
 
   // Dismiss the connection failure message

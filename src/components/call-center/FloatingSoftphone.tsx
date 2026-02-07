@@ -43,6 +43,7 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
     incomingCall,
     error,
     initialize,
+    retryConnection,
     makeCall,
     answerCall,
     rejectCall,
@@ -322,7 +323,7 @@ export function FloatingSoftphone({ className }: FloatingSoftphoneProps) {
                 <p className="text-status-error font-medium mb-2">Connection Failed</p>
                 <p className="text-text-secondary text-xs text-center mb-4 px-4">{error}</p>
                 <button
-                  onClick={initialize}
+                  onClick={retryConnection}
                   className="px-4 py-2 bg-primary text-white text-sm rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   Retry Connection

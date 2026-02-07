@@ -52,6 +52,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
     incomingCall,
     error,
     initialize,
+    retryConnection,
     makeCall,
     answerCall,
     rejectCall,
@@ -292,7 +293,7 @@ export function WorkspaceView({ className }: WorkspaceViewProps) {
                   <p className="text-status-error font-medium mb-2">Connection Failed</p>
                   <p className="text-text-secondary text-sm text-center mb-4 max-w-xs">{error}</p>
                   <button
-                    onClick={initialize}
+                    onClick={retryConnection}
                     className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
                   >
                     Retry Connection
