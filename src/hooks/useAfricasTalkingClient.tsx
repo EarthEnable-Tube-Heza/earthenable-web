@@ -124,6 +124,7 @@ export function useAfricasTalkingClient(
   // Reconnect refs
   const MAX_RECONNECT_ATTEMPTS = 3;
   const INIT_TIMEOUT_MS = 15000; // 15 seconds to receive "ready" event
+  const WEBSOCKET_TEARDOWN_MS = 500; // delay for old WebSocket to fully close
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -131,8 +132,24 @@ export function useAfricasTalkingClient(
   const hasNotifiedDisconnectRef = useRef(false);
   const onClientDisconnectedRef = useRef(onClientDisconnected);
 
-  // Keep onClientDisconnected ref in sync
+  // Refs to track state without causing initialize to be recreated
+  const isInitializedRef = useRef(false);
+  const errorRef = useRef<string | null>(null);
+
+  // Keep refs in sync with state
   onClientDisconnectedRef.current = onClientDisconnected;
+  isInitializedRef.current = isInitialized;
+  errorRef.current = error;
+
+  // Stable refs for callback options to avoid recreating initialize
+  const onIncomingCallRef = useRef(onIncomingCall);
+  const onCallConnectedRef = useRef(onCallConnected);
+  const onCallEndedRef = useRef(onCallEnded);
+  const onErrorRef = useRef(onError);
+  onIncomingCallRef.current = onIncomingCall;
+  onCallConnectedRef.current = onCallConnected;
+  onCallEndedRef.current = onCallEnded;
+  onErrorRef.current = onError;
 
   // ==================== Duration Timer ====================
 
@@ -160,7 +177,8 @@ export function useAfricasTalkingClient(
   // ==================== Initialize Client ====================
 
   const initialize = useCallback(async () => {
-    if (isInitializingRef.current || (isInitialized && !error) || !entityId) return;
+    if (isInitializingRef.current || (isInitializedRef.current && !errorRef.current) || !entityId)
+      return;
 
     isInitializingRef.current = true;
     setCallState("initializing");
@@ -177,6 +195,15 @@ export function useAfricasTalkingClient(
         }
         clientRef.current = null;
         setClient(null);
+
+        // Wait for old WebSocket to fully close before creating a new client.
+        // The AT library may internally reference the closing socket; without
+        // this delay the new client sends on the dying connection, causing
+        // "WebSocket is already in CLOSING or CLOSED state" errors.
+        await new Promise((resolve) => setTimeout(resolve, WEBSOCKET_TEARDOWN_MS));
+
+        // Bail out if we were disconnected/cleaned up during the wait
+        if (!isInitializingRef.current) return;
       }
 
       // Get WebRTC config (capability token) from backend
@@ -233,7 +260,7 @@ export function useAfricasTalkingClient(
         };
         setIncomingCall(incoming);
         setCallState("ringing");
-        onIncomingCall?.(incoming);
+        onIncomingCallRef.current?.(incoming);
       });
 
       // Event: callaccepted (per AT docs - call successfully bridged)
@@ -245,7 +272,7 @@ export function useAfricasTalkingClient(
         setActiveCall((prev) => {
           if (!prev) return null;
           const connectedCall = { ...prev, connectedAt: new Date() };
-          onCallConnected?.(connectedCall);
+          onCallConnectedRef.current?.(connectedCall);
           return connectedCall;
         });
 
@@ -261,7 +288,7 @@ export function useAfricasTalkingClient(
         setActiveCall((prev) => {
           if (prev) {
             const reason = hangupCause ? `${hangupCause.code} - ${hangupCause.reason}` : undefined;
-            onCallEnded?.(prev, reason);
+            onCallEndedRef.current?.(prev, reason);
           }
           return null;
         });
@@ -336,21 +363,15 @@ export function useAfricasTalkingClient(
       console.error("[AT Client] Initialization error:", errorMessage);
       setError(errorMessage);
       setCallState("error");
-      onError?.(err instanceof Error ? err : new Error(errorMessage));
+      onErrorRef.current?.(err instanceof Error ? err : new Error(errorMessage));
     } finally {
       isInitializingRef.current = false;
     }
-  }, [
-    entityId,
-    isInitialized,
-    error,
-    onIncomingCall,
-    onCallConnected,
-    onCallEnded,
-    onError,
-    startDurationTimer,
-    stopDurationTimer,
-  ]);
+    // entityId is the only reactive dependency; all other values are read
+    // from refs so initialize is stable across re-renders and won't cause
+    // cascading re-render loops through the auto-reconnect effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityId]);
 
   // ==================== Auto-initialize ====================
 
@@ -395,6 +416,8 @@ export function useAfricasTalkingClient(
     }
     reconnectAttemptsRef.current = 0;
     hasNotifiedDisconnectRef.current = false;
+    // Signal any in-flight initialize() to bail out after its teardown delay
+    isInitializingRef.current = false;
     if (clientRef.current) {
       // @ts-expect-error - client disconnect method
       clientRef.current.disconnect?.();
