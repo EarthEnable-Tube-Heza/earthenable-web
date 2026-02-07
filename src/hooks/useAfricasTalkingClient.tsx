@@ -123,8 +123,10 @@ export function useAfricasTalkingClient(
 
   // Reconnect refs
   const MAX_RECONNECT_ATTEMPTS = 3;
+  const INIT_TIMEOUT_MS = 15000; // 15 seconds to receive "ready" event
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(false);
   const hasNotifiedDisconnectRef = useRef(false);
   const onClientDisconnectedRef = useRef(onClientDisconnected);
@@ -198,6 +200,11 @@ export function useAfricasTalkingClient(
 
       atClient.on("ready", () => {
         console.log("[AT Client] Ready - client can make/receive calls");
+        // Clear initialization timeout — we connected successfully
+        if (initTimeoutRef.current) {
+          clearTimeout(initTimeoutRef.current);
+          initTimeoutRef.current = null;
+        }
         setIsReady(true);
         setCallState("ready");
         // Reset reconnect state on successful connection
@@ -271,6 +278,10 @@ export function useAfricasTalkingClient(
       // Event: offline - token expired
       atClient.on("offline", () => {
         console.log("[AT Client] Offline - token expired, will attempt reconnect");
+        if (initTimeoutRef.current) {
+          clearTimeout(initTimeoutRef.current);
+          initTimeoutRef.current = null;
+        }
         setIsReady(false);
         setIsInitialized(false);
         setCallState("error");
@@ -281,6 +292,10 @@ export function useAfricasTalkingClient(
       // Event: closed - connection to AT servers broken
       atClient.on("closed", () => {
         console.log("[AT Client] Closed - connection broken, will attempt reconnect");
+        if (initTimeoutRef.current) {
+          clearTimeout(initTimeoutRef.current);
+          initTimeoutRef.current = null;
+        }
         setIsReady(false);
         setIsInitialized(false);
         setCallState("error");
@@ -291,6 +306,31 @@ export function useAfricasTalkingClient(
       clientRef.current = atClient;
       setClient(atClient);
       setIsInitialized(true);
+
+      // Start initialization timeout — if "ready" event doesn't fire within
+      // INIT_TIMEOUT_MS, the AT client silently failed to register (e.g.,
+      // WebSocket connected but SIP registration never completed). Treat
+      // this as a connection error so auto-reconnect can kick in.
+      // Note: The "ready" handler clears initTimeoutRef, so if this callback
+      // executes it means "ready" never fired.
+      initTimeoutRef.current = setTimeout(() => {
+        initTimeoutRef.current = null;
+        console.warn(
+          "[AT Client] Initialization timeout — no 'ready' event received within " +
+            `${INIT_TIMEOUT_MS}ms. Treating as connection error.`
+        );
+        try {
+          atClient.disconnect?.();
+        } catch {
+          // Ignore cleanup errors
+        }
+        clientRef.current = null;
+        setClient(null);
+        setIsInitialized(false);
+        setIsReady(false);
+        setCallState("error");
+        setError("Phone service connection timed out. Retrying...");
+      }, INIT_TIMEOUT_MS);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to initialize call client";
       console.error("[AT Client] Initialization error:", errorMessage);
@@ -329,6 +369,10 @@ export function useAfricasTalkingClient(
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+        initTimeoutRef.current = null;
+      }
       if (clientRef.current) {
         // @ts-expect-error - client disconnect method
         clientRef.current.disconnect?.();
@@ -340,10 +384,14 @@ export function useAfricasTalkingClient(
 
   const disconnect = useCallback(() => {
     stopDurationTimer();
-    // Cancel any pending reconnect
+    // Cancel any pending reconnect or init timeout
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
+    }
+    if (initTimeoutRef.current) {
+      clearTimeout(initTimeoutRef.current);
+      initTimeoutRef.current = null;
     }
     reconnectAttemptsRef.current = 0;
     hasNotifiedDisconnectRef.current = false;
