@@ -93,6 +93,68 @@ export interface UseAfricasTalkingClientReturn {
   canMakeCall: boolean;
 }
 
+// ==================== AT Client Loader ====================
+
+/**
+ * Load the Africa's Talking client library via <script> tag injection.
+ *
+ * The AT library (africastalking-client v1.0.7) stores WebSocket connections
+ * and SIP registration state in module-level closure variables. Webpack's
+ * import() caches the module, so subsequent imports return the SAME closures
+ * with stale/dead state — making reconnection impossible.
+ *
+ * By loading the UMD bundle via a fresh <script> tag, the browser re-executes
+ * the factory function, creating new closure variables (fresh WebSocket,
+ * reset registration flag, etc.). On each reconnect we remove the old script
+ * and insert a new one.
+ */
+const AT_SCRIPT_ID = "at-client-script";
+const AT_AUDIO_ID = "remote-stream-audio";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function loadATClientFresh(): Promise<{ Client: new (token: string) => any }> {
+  return new Promise((resolve, reject) => {
+    // Remove previous script tag so the browser re-executes the factory
+    const oldScript = document.getElementById(AT_SCRIPT_ID);
+    if (oldScript) {
+      oldScript.remove();
+    }
+
+    // Remove stale audio element created by previous AT client instance.
+    // The library creates <audio id="remote-stream-audio"> and reuses it,
+    // but event handlers from the old closure would break audio routing.
+    const oldAudio = document.getElementById(AT_AUDIO_ID);
+    if (oldAudio) {
+      oldAudio.remove();
+    }
+
+    // Clear the global so the new script writes a fresh copy
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (window as any).Africastalking;
+
+    const script = document.createElement("script");
+    script.id = AT_SCRIPT_ID;
+    script.src = "/africastalking.js";
+
+    script.onload = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const AT = (window as any).Africastalking;
+      const ClientConstructor = AT?.default?.Client || AT?.Client || AT;
+      if (!ClientConstructor) {
+        reject(new Error("Africa's Talking Client constructor not found after script load"));
+        return;
+      }
+      resolve({ Client: ClientConstructor });
+    };
+
+    script.onerror = () => {
+      reject(new Error("Failed to load Africa's Talking client script"));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
 // ==================== Hook Implementation ====================
 
 export function useAfricasTalkingClient(
@@ -122,9 +184,8 @@ export function useAfricasTalkingClient(
   const clientRef = useRef<unknown | null>(null);
 
   // Reconnect refs
-  const MAX_RECONNECT_ATTEMPTS = 3;
+  const MAX_RECONNECT_ATTEMPTS = 5;
   const INIT_TIMEOUT_MS = 15000; // 15 seconds to receive "ready" event
-  const WEBSOCKET_TEARDOWN_MS = 500; // delay for old WebSocket to fully close
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -195,30 +256,15 @@ export function useAfricasTalkingClient(
         }
         clientRef.current = null;
         setClient(null);
-
-        // Wait for old WebSocket to fully close before creating a new client.
-        // The AT library may internally reference the closing socket; without
-        // this delay the new client sends on the dying connection, causing
-        // "WebSocket is already in CLOSING or CLOSED state" errors.
-        await new Promise((resolve) => setTimeout(resolve, WEBSOCKET_TEARDOWN_MS));
-
-        // Bail out if we were disconnected/cleaned up during the wait
-        if (!isInitializingRef.current) return;
       }
 
       // Get WebRTC config (capability token) from backend
       const config = await apiClient.getWebRTCConfig(entityId);
 
-      // Dynamically import Africa's Talking client
-      // @ts-expect-error - africastalking-client may not have types
-      const Africastalking = await import("africastalking-client");
-
-      // Initialize the client with the capability token
-      // The library exports Africastalking.Client constructor
-      const ClientConstructor = Africastalking.default?.Client || Africastalking.Client;
-      if (!ClientConstructor) {
-        throw new Error("Africa's Talking Client constructor not found");
-      }
+      // Load a fresh AT client via script tag injection.
+      // This creates entirely new closure variables (WebSocket, registration
+      // flag, etc.), bypassing the stale module cache problem.
+      const { Client: ClientConstructor } = await loadATClientFresh();
 
       const atClient = new ClientConstructor(config.token);
 
@@ -398,6 +444,11 @@ export function useAfricasTalkingClient(
         // @ts-expect-error - client disconnect method
         clientRef.current.disconnect?.();
       }
+      // Clean up AT script tag, audio element, and global
+      document.getElementById(AT_SCRIPT_ID)?.remove();
+      document.getElementById(AT_AUDIO_ID)?.remove();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (window as any).Africastalking;
     };
   }, [stopDurationTimer]);
 
@@ -416,13 +467,18 @@ export function useAfricasTalkingClient(
     }
     reconnectAttemptsRef.current = 0;
     hasNotifiedDisconnectRef.current = false;
-    // Signal any in-flight initialize() to bail out after its teardown delay
+    // Signal any in-flight initialize() to bail out
     isInitializingRef.current = false;
     if (clientRef.current) {
       // @ts-expect-error - client disconnect method
       clientRef.current.disconnect?.();
       clientRef.current = null;
     }
+    // Clean up AT script tag, audio element, and global
+    document.getElementById(AT_SCRIPT_ID)?.remove();
+    document.getElementById(AT_AUDIO_ID)?.remove();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (window as any).Africastalking;
     setClient(null);
     setIsInitialized(false);
     setIsReady(false);
@@ -464,6 +520,27 @@ export function useAfricasTalkingClient(
       }
     };
   }, [callState, isInitialized, initialize]);
+
+  // ==================== Online Recovery ====================
+  // When all auto-reconnect attempts are exhausted and the browser comes back
+  // online, automatically reset and retry — no manual "Retry" click needed.
+
+  useEffect(() => {
+    const handleOnline = () => {
+      if (callState === "error" && reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+        console.log("[AT Client] Browser back online — resetting reconnect and retrying");
+        reconnectAttemptsRef.current = 0;
+        hasNotifiedDisconnectRef.current = false;
+        setIsInitialized(false);
+        setError(null);
+        setCallState("idle");
+        setTimeout(() => initialize(), 0);
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [callState, initialize]);
 
   // ==================== Retry Connection (Manual) ====================
 
