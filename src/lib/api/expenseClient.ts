@@ -6,15 +6,31 @@
 
 import { apiClient } from "./apiClient";
 
+export interface ExpenseTypeConfig {
+  id: string;
+  entity_id: string;
+  name: string;
+  code: string;
+  description?: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Expense {
   id: string;
   entity_id: string;
   department_id: string;
   submitter_id: string;
   category_id: string;
-  // May come as snake_case or camelCase due to backend aliases
-  expense_type?: "expense" | "per_diem" | "advance";
-  expenseType?: "expense" | "per_diem" | "advance";
+  // Expense type (DB-driven)
+  expense_type_id?: string;
+  expenseTypeId?: string;
+  expense_type_name?: string;
+  expenseTypeName?: string;
+  expense_type_code?: string;
+  expenseTypeCode?: string;
   title: string;
   amount: number;
   currency: string;
@@ -26,6 +42,16 @@ export interface Expense {
   createdAt?: string;
   updated_at?: string;
   updatedAt?: string;
+  // Approval phase tracking
+  current_approval_phase?: "request" | "finance" | "complete";
+  currentApprovalPhase?: "request" | "finance" | "complete";
+  // QuickBooks integration
+  quickbooks_journal_id?: string;
+  quickbooksJournalId?: string;
+  quickbooks_posted_at?: string;
+  quickbooksPostedAt?: string;
+  quickbooks_error?: string;
+  quickbooksError?: string;
   // Joined fields (may come as snake_case or camelCase due to backend aliases)
   submitter_name?: string;
   submitterName?: string;
@@ -33,6 +59,45 @@ export interface Expense {
   departmentName?: string;
   category_name?: string;
   categoryName?: string;
+  // Attachment metadata
+  attachment_count?: number;
+  attachmentCount?: number;
+  requires_receipt?: boolean;
+  requiresReceipt?: boolean;
+  // Payment / banking details (recipient)
+  account_name?: string;
+  accountName?: string;
+  account_number?: string;
+  accountNumber?: string;
+  bank_name?: string;
+  bankName?: string;
+  // Approval step progress
+  current_step?: number;
+  currentStep?: number;
+  total_steps?: number;
+  totalSteps?: number;
+  approved_steps?: number;
+  approvedSteps?: number;
+  // Finance processing fields
+  batch_number?: string;
+  batchNumber?: string;
+  payment_account_id?: string;
+  paymentAccountId?: string;
+  payment_account_name?: string;
+  paymentAccountName?: string;
+  quickbooks_expense_account_id?: string;
+  quickbooksExpenseAccountId?: string;
+  quickbooks_expense_account_name?: string;
+  quickbooksExpenseAccountName?: string;
+  payment_date?: string;
+  paymentDate?: string;
+  // Reference / submission tracking
+  reference_number?: string;
+  referenceNumber?: string;
+  submitted_at?: string;
+  submittedAt?: string;
+  paid_at?: string;
+  paidAt?: string;
 }
 
 export interface ExpenseListResponse {
@@ -196,6 +261,18 @@ export interface Entity {
   updated_at: string;
 }
 
+export interface EntityCurrency {
+  id: string;
+  entity_id: string;
+  currency_code: string;
+  currency_name: string;
+  is_default: boolean;
+  exchange_rate: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface JobRole {
   id: string;
   entity_id: string;
@@ -217,6 +294,7 @@ export interface ApprovalStep {
   approverName?: string;
   approverRole?: string;
   status: "pending" | "approved" | "rejected";
+  chain?: "request" | "finance";
   comments?: string;
   approvedAt?: string;
   createdAt: string;
@@ -242,13 +320,16 @@ export interface PendingApprovalItem {
   expenseAmount: number;
   expenseCurrency: string;
   expenseDate: string;
-  expenseType: "expense" | "per_diem" | "advance";
+  expenseTypeId: string;
+  expenseTypeName?: string;
+  expenseTypeCode?: string;
   submitterId: string;
   submitterName?: string;
   departmentId?: string;
   departmentName?: string;
   stepOrder: number;
   totalSteps: number;
+  chain?: string;
   submittedAt?: string;
 }
 
@@ -267,6 +348,38 @@ export interface ApprovalActionResponse {
   action: "approved" | "rejected";
 }
 
+export interface ApprovalHistoryItem {
+  approvalId: string;
+  expenseId: string;
+  expenseTitle: string;
+  expenseAmount: number;
+  expenseCurrency: string;
+  expenseDate: string;
+  expenseStatus: "draft" | "submitted" | "approved" | "rejected" | "paid";
+  expenseTypeId?: string;
+  expenseTypeName?: string;
+  expenseTypeCode?: string;
+  submitterId: string;
+  submitterName?: string;
+  departmentId?: string;
+  departmentName?: string;
+  stepOrder: number;
+  totalSteps: number;
+  chain: "request" | "finance";
+  approvalStatus: "pending" | "approved" | "rejected";
+  approvalComments?: string;
+  approvedAt?: string;
+  submittedAt?: string;
+  paidAt?: string;
+  paymentDate?: string;
+}
+
+export interface ApprovalHistoryResponse {
+  success: boolean;
+  approvals: ApprovalHistoryItem[];
+  totalCount: number;
+}
+
 /**
  * Fetch expense summary statistics
  */
@@ -277,7 +390,7 @@ export async function getExpenseSummary(
   let url = `/expenses/summary/${entityId}`;
   const params = new URLSearchParams();
 
-  if (departmentId) params.append("department_id", departmentId);
+  if (departmentId) params.append("departmentId", departmentId);
 
   if (params.toString()) {
     url += `?${params.toString()}`;
@@ -300,12 +413,13 @@ export async function listExpenses(params: {
 }): Promise<ExpenseListResponse> {
   const queryParams = new URLSearchParams();
 
-  if (params.entityId) queryParams.append("entity_id", params.entityId);
-  if (params.departmentId) queryParams.append("department_id", params.departmentId);
-  if (params.submitterId) queryParams.append("submitter_id", params.submitterId);
-  if (params.statusFilter) queryParams.append("status_filter", params.statusFilter);
-  if (params.page) queryParams.append("page", params.page.toString());
-  if (params.pageSize) queryParams.append("page_size", params.pageSize.toString());
+  if (params.entityId) queryParams.append("entityId", params.entityId);
+  if (params.departmentId) queryParams.append("departmentId", params.departmentId);
+  if (params.submitterId) queryParams.append("submitterId", params.submitterId);
+  if (params.statusFilter) queryParams.append("status", params.statusFilter);
+  if (params.page)
+    queryParams.append("skip", ((params.page - 1) * (params.pageSize || 100)).toString());
+  if (params.pageSize) queryParams.append("limit", params.pageSize.toString());
 
   const url = `/expenses/?${queryParams.toString()}`;
   const response = await apiClient.get<ExpenseListResponse>(url);
@@ -327,23 +441,29 @@ export async function createExpense(data: {
   entityId: string;
   departmentId: string;
   categoryId: string;
-  expenseType: "expense" | "per_diem" | "advance";
+  expenseTypeId: string;
   title: string;
   amount: number;
   currency: string;
   expenseDate: string;
   description?: string;
+  accountName?: string;
+  accountNumber?: string;
+  bankName?: string;
 }): Promise<Expense> {
   const response = await apiClient.post<Expense>("/expenses/", {
     entityId: data.entityId,
     departmentId: data.departmentId,
     categoryId: data.categoryId,
-    expenseType: data.expenseType,
+    expenseTypeId: data.expenseTypeId,
     title: data.title,
     amount: data.amount,
     currency: data.currency,
     expenseDate: data.expenseDate,
     description: data.description,
+    accountName: data.accountName,
+    accountNumber: data.accountNumber,
+    bankName: data.bankName,
   });
   return response;
 }
@@ -359,6 +479,9 @@ export async function updateExpense(
     currency: string;
     expenseDate: string;
     description: string;
+    accountName: string;
+    accountNumber: string;
+    bankName: string;
   }>
 ): Promise<Expense> {
   const response = await apiClient.put<Expense>(`/expenses/${id}`, data);
@@ -430,9 +553,9 @@ export async function getBudgets(
   departmentId?: string
 ): Promise<{ budgets: Budget[] }> {
   const params = new URLSearchParams();
-  if (departmentId) params.append("department_id", departmentId);
+  if (departmentId) params.append("departmentId", departmentId);
 
-  const url = `/admin/entities/${entityId}/budgets${params.toString() ? `?${params.toString()}` : ""}`;
+  const url = `/expenses/entity/${entityId}/budgets${params.toString() ? `?${params.toString()}` : ""}`;
   const response = await apiClient.get<{ budgets: Budget[] }>(url);
   return response;
 }
@@ -647,6 +770,86 @@ export async function createExpenseCategory(
 }
 
 /**
+ * Get expense types for entity (user-facing, active only)
+ */
+export async function getExpenseTypes(
+  entityId: string
+): Promise<{ expense_types: ExpenseTypeConfig[] }> {
+  const response = await apiClient.get<{ expense_types: ExpenseTypeConfig[] }>(
+    `/expenses/entity/${entityId}/types`
+  );
+  return response;
+}
+
+/**
+ * Get expense types for entity (admin, includes inactive)
+ */
+export async function getExpenseTypesAdmin(
+  entityId: string,
+  includeInactive = true
+): Promise<{ expense_types: ExpenseTypeConfig[] }> {
+  const params = includeInactive ? "?include_inactive=true" : "";
+  const response = await apiClient.get<{ expense_types: ExpenseTypeConfig[] }>(
+    `/admin/entities/${entityId}/expense-types${params}`
+  );
+  return response;
+}
+
+/**
+ * Create expense type
+ */
+export async function createExpenseType(
+  entityId: string,
+  data: {
+    name: string;
+    code: string;
+    description?: string;
+    isActive?: boolean;
+    displayOrder?: number;
+  }
+): Promise<ExpenseTypeConfig> {
+  const response = await apiClient.post<ExpenseTypeConfig>(
+    `/admin/entities/${entityId}/expense-types`,
+    {
+      name: data.name,
+      code: data.code,
+      description: data.description,
+      is_active: data.isActive ?? true,
+      display_order: data.displayOrder ?? 0,
+    }
+  );
+  return response;
+}
+
+/**
+ * Update expense type
+ */
+export async function updateExpenseType(
+  entityId: string,
+  typeId: string,
+  data: {
+    name?: string;
+    code?: string;
+    description?: string;
+    isActive?: boolean;
+    displayOrder?: number;
+  }
+): Promise<ExpenseTypeConfig> {
+  const payload: Record<string, unknown> = {};
+  if (data.name !== undefined) payload.name = data.name;
+  if (data.code !== undefined) payload.code = data.code;
+  if (data.description !== undefined) payload.description = data.description;
+  if (data.isActive !== undefined) payload.is_active = data.isActive;
+  if (data.displayOrder !== undefined) payload.display_order = data.displayOrder;
+
+  const response = await apiClient.patch<ExpenseTypeConfig>(
+    `/admin/entities/${entityId}/expense-types/${typeId}`,
+    payload
+  );
+  return response;
+}
+
+/**
  * Get job roles for entity
  */
 export async function getJobRoles(entityId: string): Promise<{ job_roles: JobRole[] }> {
@@ -679,6 +882,88 @@ export async function createJobRole(
   return response;
 }
 
+// ==================== Attachment Types & Functions ====================
+
+export interface ExpenseAttachment {
+  id: string;
+  expenseId: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface ExpenseAttachmentListResponse {
+  success: boolean;
+  attachments: ExpenseAttachment[];
+}
+
+export interface PresignedDownloadResponse {
+  success: boolean;
+  url: string;
+  expiresIn: number;
+}
+
+/**
+ * Upload a file attachment to an expense
+ */
+export async function uploadExpenseAttachment(
+  expenseId: string,
+  file: File
+): Promise<ExpenseAttachment> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiClient.post<ExpenseAttachment>(
+    `/expenses/${expenseId}/attachments`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response;
+}
+
+/**
+ * List all attachments for an expense
+ */
+export async function getExpenseAttachments(
+  expenseId: string
+): Promise<ExpenseAttachmentListResponse> {
+  const response = await apiClient.get<ExpenseAttachmentListResponse>(
+    `/expenses/${expenseId}/attachments`
+  );
+  return response;
+}
+
+/**
+ * Get presigned download URL for an attachment
+ *
+ * @param attachmentId - Attachment ID
+ * @param inline - If true, URL uses Content-Disposition: inline for browser preview
+ */
+export async function getAttachmentDownloadUrl(
+  attachmentId: string,
+  inline: boolean = false
+): Promise<PresignedDownloadResponse> {
+  const params = inline ? { inline: "true" } : {};
+  const response = await apiClient.get<PresignedDownloadResponse>(
+    `/expenses/attachments/${attachmentId}/download-url`,
+    { params }
+  );
+  return response;
+}
+
+/**
+ * Delete an attachment
+ */
+export async function deleteExpenseAttachment(attachmentId: string): Promise<void> {
+  await apiClient.delete(`/expenses/attachments/${attachmentId}`);
+}
+
 // ==================== Approval Functions ====================
 
 /**
@@ -700,6 +985,18 @@ export async function getPendingApprovals(entityId?: string): Promise<PendingApp
 
   const url = `/expenses/pending-approvals${params.toString() ? `?${params.toString()}` : ""}`;
   const response = await apiClient.get<PendingApprovalsResponse>(url);
+  return response;
+}
+
+/**
+ * Get approval history for current user (all expenses they've acted on or are assigned to)
+ */
+export async function getApprovalHistory(entityId?: string): Promise<ApprovalHistoryResponse> {
+  const params = new URLSearchParams();
+  if (entityId) params.append("entityId", entityId);
+
+  const url = `/expenses/approval-history${params.toString() ? `?${params.toString()}` : ""}`;
+  const response = await apiClient.get<ApprovalHistoryResponse>(url);
   return response;
 }
 
@@ -726,5 +1023,527 @@ export async function rejectExpense(
   const response = await apiClient.post<ApprovalActionResponse>(`/expenses/${expenseId}/reject`, {
     reason,
   });
+  return response;
+}
+
+// ==================== Mark as Paid Functions ====================
+
+export interface MarkPaidResponse {
+  success: boolean;
+  message: string;
+  expense: Expense;
+}
+
+export interface MarkPaidData {
+  referenceNumber?: string;
+  batchNumber?: string;
+  paymentAccountId?: string;
+  quickbooksExpenseAccountId?: string;
+  quickbooksExpenseAccountName?: string;
+  paymentDate?: string;
+}
+
+/**
+ * Mark an approved expense as paid
+ */
+export async function markExpenseAsPaid(
+  expenseId: string,
+  data?: MarkPaidData | string
+): Promise<MarkPaidResponse> {
+  // Support both legacy (string referenceNumber) and new (object) signatures
+  const body: MarkPaidData = typeof data === "string" ? { referenceNumber: data } : data || {};
+  const response = await apiClient.post<MarkPaidResponse>(`/expenses/${expenseId}/mark-paid`, body);
+  return response;
+}
+
+// ==================== Payment Account Functions ====================
+
+export interface PaymentAccount {
+  id: string;
+  entity_id: string;
+  name: string;
+  account_number?: string;
+  bank_name?: string;
+  description?: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePaymentAccountData {
+  name: string;
+  account_number?: string;
+  bank_name?: string;
+  description?: string;
+  is_active?: boolean;
+  display_order?: number;
+}
+
+export interface UpdatePaymentAccountData {
+  name?: string;
+  account_number?: string;
+  bank_name?: string;
+  description?: string;
+  is_active?: boolean;
+  display_order?: number;
+}
+
+/**
+ * Get active payment accounts for an entity (finance users)
+ */
+export async function getPaymentAccounts(entityId: string): Promise<PaymentAccount[]> {
+  const response = await apiClient.get<{ payment_accounts: PaymentAccount[] }>(
+    `/expenses/entity/${entityId}/payment-accounts`
+  );
+  return response.payment_accounts;
+}
+
+/**
+ * Get payment accounts for admin management
+ */
+export async function getPaymentAccountsAdmin(
+  entityId: string,
+  includeInactive = true
+): Promise<PaymentAccount[]> {
+  const response = await apiClient.get<{ payment_accounts: PaymentAccount[] }>(
+    `/admin/entities/${entityId}/payment-accounts?include_inactive=${includeInactive}`
+  );
+  return response.payment_accounts;
+}
+
+/**
+ * Create a payment account (admin)
+ */
+export async function createPaymentAccount(
+  entityId: string,
+  data: CreatePaymentAccountData
+): Promise<PaymentAccount> {
+  const response = await apiClient.post<PaymentAccount>(
+    `/admin/entities/${entityId}/payment-accounts`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Update a payment account (admin)
+ */
+export async function updatePaymentAccount(
+  entityId: string,
+  accountId: string,
+  data: UpdatePaymentAccountData
+): Promise<PaymentAccount> {
+  const response = await apiClient.patch<PaymentAccount>(
+    `/admin/entities/${entityId}/payment-accounts/${accountId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Get QuickBooks chart of accounts for finance users (non-admin endpoint)
+ */
+export async function getQuickBooksChartOfAccountsForFinance(
+  entityId: string
+): Promise<QuickBooksAccount[]> {
+  const response = await apiClient.get<{ accounts: QuickBooksAccount[] }>(
+    `/expenses/entity/${entityId}/quickbooks/chart-of-accounts`
+  );
+  return response.accounts;
+}
+
+// ==================== QuickBooks Functions ====================
+
+export interface QuickBooksConnectionStatus {
+  entityId: string;
+  connected: boolean;
+  realmId?: string;
+  companyId?: string;
+  connectedAt?: string;
+  tokenExpiresAt?: string;
+  environment: string;
+}
+
+export interface QuickBooksAuthUrlResponse {
+  auth_url: string;
+  entity_id: string;
+}
+
+export interface QuickBooksTestResponse {
+  entity_id: string;
+  success: boolean;
+  message: string;
+}
+
+export interface QuickBooksAccount {
+  id: string;
+  name: string;
+  fully_qualified_name?: string;
+  account_type?: string;
+  account_sub_type?: string;
+  account_number?: string;
+  classification?: string;
+  active: boolean;
+}
+
+export interface PostToQuickBooksResponse {
+  success: boolean;
+  message: string;
+  expenseId: string;
+  journalId?: string;
+  postedAt?: string;
+}
+
+export interface QuickBooksExpenseStatus {
+  expenseId: string;
+  posted: boolean;
+  journalId?: string;
+  postedAt?: string;
+  postedById?: string;
+  error?: string;
+}
+
+export interface QuickBooksBudgetSyncResponse {
+  entityId: string;
+  fiscalYear?: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+  syncedAt?: string;
+}
+
+export interface QuickBooksBudgetSyncStatus {
+  entityId: string;
+  syncedBudgetCount: number;
+  lastSyncedAt?: string;
+}
+
+/**
+ * Get QuickBooks authorization URL for entity
+ */
+export async function getQuickBooksAuthUrl(entityId: string): Promise<QuickBooksAuthUrlResponse> {
+  const response = await apiClient.get<QuickBooksAuthUrlResponse>(
+    `/admin/entities/${entityId}/quickbooks/auth-url`
+  );
+  return response;
+}
+
+/**
+ * Get QuickBooks connection status for entity
+ */
+export async function getQuickBooksStatus(entityId: string): Promise<QuickBooksConnectionStatus> {
+  const response = await apiClient.get<QuickBooksConnectionStatus>(
+    `/admin/entities/${entityId}/quickbooks/status`
+  );
+  return response;
+}
+
+/**
+ * Disconnect QuickBooks for entity
+ */
+export async function disconnectQuickBooks(entityId: string): Promise<QuickBooksConnectionStatus> {
+  const response = await apiClient.post<QuickBooksConnectionStatus>(
+    `/admin/entities/${entityId}/quickbooks/disconnect`
+  );
+  return response;
+}
+
+/**
+ * Test QuickBooks connection for entity
+ */
+export async function testQuickBooksConnection(entityId: string): Promise<QuickBooksTestResponse> {
+  const response = await apiClient.post<QuickBooksTestResponse>(
+    `/admin/entities/${entityId}/quickbooks/test`
+  );
+  return response;
+}
+
+/**
+ * Get chart of accounts from QuickBooks
+ */
+export async function getQuickBooksChartOfAccounts(entityId: string): Promise<QuickBooksAccount[]> {
+  const response = await apiClient.get<QuickBooksAccount[]>(
+    `/admin/entities/${entityId}/quickbooks/chart-of-accounts`
+  );
+  return response;
+}
+
+/**
+ * Post a paid expense to QuickBooks as a journal entry
+ */
+export async function postExpenseToQuickBooks(
+  expenseId: string,
+  creditAccountName?: string
+): Promise<PostToQuickBooksResponse> {
+  const response = await apiClient.post<PostToQuickBooksResponse>(
+    `/expenses/${expenseId}/post-to-quickbooks`,
+    creditAccountName ? { creditAccountName } : {}
+  );
+  return response;
+}
+
+/**
+ * Get QuickBooks posting status for an expense
+ */
+export async function getExpenseQuickBooksStatus(
+  expenseId: string
+): Promise<QuickBooksExpenseStatus> {
+  const response = await apiClient.get<QuickBooksExpenseStatus>(
+    `/expenses/${expenseId}/quickbooks-status`
+  );
+  return response;
+}
+
+/**
+ * Manually trigger QuickBooks budget sync for an entity
+ */
+export async function syncQuickBooksBudgets(
+  entityId: string,
+  fiscalYear?: number
+): Promise<QuickBooksBudgetSyncResponse> {
+  const params = new URLSearchParams();
+  if (fiscalYear) params.append("fiscal_year", fiscalYear.toString());
+
+  const url = `/expenses/entity/${entityId}/quickbooks/sync-budgets${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
+  const response = await apiClient.post<QuickBooksBudgetSyncResponse>(url);
+  return response;
+}
+
+/**
+ * Get QuickBooks budget sync status for an entity
+ */
+export async function getQuickBooksSyncStatus(
+  entityId: string
+): Promise<QuickBooksBudgetSyncStatus> {
+  const response = await apiClient.get<QuickBooksBudgetSyncStatus>(
+    `/expenses/entity/${entityId}/quickbooks/sync-status`
+  );
+  return response;
+}
+
+// ==================== Approval Workflow Admin Functions ====================
+
+export interface ApprovalWorkflow {
+  id: string;
+  entity_id: string;
+  name: string;
+  description?: string;
+  expense_type?: string;
+  department_id?: string;
+  department_name?: string;
+  min_amount?: number;
+  max_amount?: number;
+  priority: number;
+  is_active: boolean;
+  steps: ApprovalWorkflowStep[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ApprovalWorkflowStep {
+  id: string;
+  workflow_id: string;
+  step_order: number;
+  approver_role: string;
+  chain: "request" | "finance";
+  is_required: boolean;
+  fallback_to_hierarchy: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * List approval workflows for an entity
+ */
+export async function getApprovalWorkflows(entityId: string): Promise<ApprovalWorkflow[]> {
+  const response = await apiClient.get<{ workflows: ApprovalWorkflow[] }>(
+    `/admin/entities/${entityId}/approval-workflows`
+  );
+  return response.workflows;
+}
+
+/**
+ * Create an approval workflow
+ */
+export async function createApprovalWorkflow(
+  entityId: string,
+  data: {
+    name: string;
+    description?: string;
+    expense_type?: string;
+    department_id?: string;
+    min_amount?: number;
+    max_amount?: number;
+    priority?: number;
+    is_active?: boolean;
+    steps?: Array<{
+      step_order: number;
+      approver_role: string;
+      chain?: string;
+      is_required?: boolean;
+      fallback_to_hierarchy?: boolean;
+    }>;
+  }
+): Promise<ApprovalWorkflow> {
+  const response = await apiClient.post<ApprovalWorkflow>(
+    `/admin/entities/${entityId}/approval-workflows`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Update an approval workflow
+ */
+export async function updateApprovalWorkflow(
+  workflowId: string,
+  data: {
+    name?: string;
+    description?: string;
+    expense_type?: string;
+    department_id?: string;
+    min_amount?: number;
+    max_amount?: number;
+    priority?: number;
+    is_active?: boolean;
+  }
+): Promise<ApprovalWorkflow> {
+  const response = await apiClient.put<ApprovalWorkflow>(
+    `/admin/approval-workflows/${workflowId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Delete (deactivate) an approval workflow
+ */
+export async function deleteApprovalWorkflow(workflowId: string): Promise<void> {
+  await apiClient.delete(`/admin/approval-workflows/${workflowId}`);
+}
+
+/**
+ * Add a step to a workflow
+ */
+export async function addApprovalWorkflowStep(
+  workflowId: string,
+  data: {
+    step_order: number;
+    approver_role: string;
+    chain?: string;
+    is_required?: boolean;
+    fallback_to_hierarchy?: boolean;
+  }
+): Promise<ApprovalWorkflowStep> {
+  const response = await apiClient.post<ApprovalWorkflowStep>(
+    `/admin/approval-workflows/${workflowId}/steps`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Update an approval step
+ */
+export async function updateApprovalStep(
+  stepId: string,
+  data: {
+    step_order?: number;
+    approver_role?: string;
+    chain?: string;
+    is_required?: boolean;
+    fallback_to_hierarchy?: boolean;
+  }
+): Promise<ApprovalWorkflowStep> {
+  const response = await apiClient.put<ApprovalWorkflowStep>(
+    `/admin/approval-steps/${stepId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Delete an approval step
+ */
+export async function deleteApprovalStep(stepId: string): Promise<void> {
+  await apiClient.delete(`/admin/approval-steps/${stepId}`);
+}
+
+// ==================== Entity Currency API ====================
+
+/**
+ * Get all currencies for an entity
+ */
+export async function getEntityCurrencies(
+  entityId: string
+): Promise<{ currencies: EntityCurrency[] }> {
+  const response = await apiClient.get<{ currencies: EntityCurrency[] }>(
+    `/admin/entities/${entityId}/currencies`
+  );
+  return response;
+}
+
+/**
+ * Create a currency for an entity
+ */
+export async function createEntityCurrency(
+  entityId: string,
+  data: {
+    currency_code: string;
+    currency_name: string;
+    is_default?: boolean;
+    exchange_rate?: number | null;
+    is_active?: boolean;
+  }
+): Promise<EntityCurrency> {
+  const response = await apiClient.post<EntityCurrency>(
+    `/admin/entities/${entityId}/currencies`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Update a currency for an entity
+ */
+export async function updateEntityCurrency(
+  entityId: string,
+  currencyId: string,
+  data: {
+    currency_code?: string;
+    currency_name?: string;
+    is_default?: boolean;
+    exchange_rate?: number | null;
+    is_active?: boolean;
+  }
+): Promise<EntityCurrency> {
+  const response = await apiClient.patch<EntityCurrency>(
+    `/admin/entities/${entityId}/currencies/${currencyId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Delete a currency from an entity
+ */
+export async function deleteEntityCurrency(entityId: string, currencyId: string): Promise<void> {
+  await apiClient.delete(`/admin/entities/${entityId}/currencies/${currencyId}`);
+}
+
+/**
+ * Set a currency as the default for an entity
+ */
+export async function setDefaultEntityCurrency(
+  entityId: string,
+  currencyId: string
+): Promise<EntityCurrency> {
+  const response = await apiClient.post<EntityCurrency>(
+    `/admin/entities/${entityId}/currencies/${currencyId}/set-default`
+  );
   return response;
 }

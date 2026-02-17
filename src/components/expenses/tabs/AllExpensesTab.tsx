@@ -41,9 +41,11 @@ import {
   useApproveExpense,
   useRejectExpense,
   useBudgets,
+  useMarkExpenseAsPaid,
 } from "@/src/hooks/useExpenses";
 import { useAuth } from "@/src/lib/auth";
 import { Expense, PendingApprovalItem, Budget } from "@/src/lib/api/expenseClient";
+import { getExpenseDisplayStatus } from "@/src/utils/expenseStatus";
 import { AlertTriangle, TrendingUp } from "@/src/lib/icons";
 
 /**
@@ -407,7 +409,7 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
   } = useExpenses({
     statusFilter: filters.status === "all" ? undefined : filters.status,
     departmentId: filters.departmentId || undefined,
-    submitterId: undefined, // Show all submitters for admin view
+    allSubmitters: true, // Show all submitters for admin view
   });
 
   const { data: pendingData, isLoading: pendingLoading } = usePendingApprovals(entityId);
@@ -417,6 +419,7 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
 
   const approveMutation = useApproveExpense();
   const rejectMutation = useRejectExpense();
+  const markPaidMutation = useMarkExpenseAsPaid();
 
   const expenses = useMemo(() => expensesData?.expenses || [], [expensesData?.expenses]);
   const pendingApprovals = pendingData?.approvals || [];
@@ -457,9 +460,11 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
   const filteredExpenses = useMemo(() => {
     let result = expenses;
 
-    // Filter by expense type (client-side since API might not support it)
+    // Filter by expense type code (client-side)
     if (filters.expenseType !== "all") {
-      result = result.filter((e) => (e.expense_type || e.expenseType) === filters.expenseType);
+      result = result.filter(
+        (e) => (e.expense_type_code || e.expenseTypeCode) === filters.expenseType
+      );
     }
 
     // Filter by category (client-side)
@@ -530,33 +535,27 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
     return expense.category_name || expense.categoryName || "-";
   };
 
-  // Helper to get expense type (handles both snake_case and camelCase)
-  const getExpenseType = (expense: Expense) => {
-    return expense.expense_type || expense.expenseType || "expense";
+  // Helpers to get expense type fields (handles both snake_case and camelCase)
+  const getExpenseTypeName = (expense: Expense) => {
+    return expense.expense_type_name || expense.expenseTypeName || "-";
+  };
+  const getExpenseTypeCode = (expense: Expense) => {
+    return expense.expense_type_code || expense.expenseTypeCode || "expense";
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "warning" | "success" | "error" | "info"> = {
-      draft: "default",
-      submitted: "warning",
-      approved: "success",
-      rejected: "error",
-      paid: "info",
-    };
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  const getStatusBadge = (expense: Expense) => {
+    const { label, variant } = getExpenseDisplayStatus(expense);
+    return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const getExpenseTypeBadge = (type: string) => {
-    const badges = {
-      expense: { variant: "default" as const, label: "Regular" },
-      per_diem: { variant: "warning" as const, label: "Per Diem" },
-      advance: { variant: "info" as const, label: "Advance" },
+  const getExpenseTypeBadge = (code: string, name: string) => {
+    const variants: Record<string, "default" | "warning" | "info"> = {
+      expense: "default",
+      per_diem: "warning",
+      advance: "info",
     };
-    const config = badges[type as keyof typeof badges] || {
-      variant: "default" as const,
-      label: type,
-    };
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    const variant = variants[code] || "default";
+    return <Badge variant={variant}>{name || code}</Badge>;
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -772,7 +771,7 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium">{item.expenseTitle}</span>
-                    {getExpenseTypeBadge(item.expenseType)}
+                    {getExpenseTypeBadge(item.expenseTypeCode || "", item.expenseTypeName || "")}
                     <Badge variant="warning" size="sm">
                       Step {item.stepOrder}/{item.totalSteps}
                     </Badge>
@@ -1044,8 +1043,10 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
                   <td className="px-4 py-3 text-text-secondary text-sm">
                     {getCategoryName(expense)}
                   </td>
-                  <td className="px-4 py-3">{getExpenseTypeBadge(getExpenseType(expense))}</td>
-                  <td className="px-4 py-3">{getStatusBadge(expense.status)}</td>
+                  <td className="px-4 py-3">
+                    {getExpenseTypeBadge(getExpenseTypeCode(expense), getExpenseTypeName(expense))}
+                  </td>
+                  <td className="px-4 py-3">{getStatusBadge(expense)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       <Button
@@ -1077,6 +1078,24 @@ export function AllExpensesTab({ initialStatusFilter }: AllExpensesTabProps) {
                             <XCircle className="w-4 h-4" />
                           </Button>
                         </>
+                      )}
+                      {expense.status === "approved" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              await markPaidMutation.mutateAsync({ expenseId: expense.id });
+                            } catch (err) {
+                              console.error("Failed to mark as paid:", err);
+                            }
+                          }}
+                          title="Mark as Paid"
+                          className="text-primary hover:bg-primary/10"
+                          loading={markPaidMutation.isPending}
+                        >
+                          $
+                        </Button>
                       )}
                     </div>
                   </td>
