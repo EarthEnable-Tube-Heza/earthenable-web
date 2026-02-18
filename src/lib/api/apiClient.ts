@@ -91,6 +91,10 @@ import {
   ActiveAppUsersResponse,
   ActivityTimeSeriesResponse,
   UserLoginFrequencyResponse,
+  // System job types
+  SystemJobStatusResponse,
+  SystemJobTriggerResponse,
+  SystemJobHistoryResponse,
   // Sync types
   SalesforceSyncHistoryResponse,
   SalesforceSyncStatsResponse,
@@ -1297,6 +1301,49 @@ class APIClient {
     return this.get<UserLoginFrequencyResponse>("/admin/monitoring/login-frequency", {
       params: { days, period, limit },
     });
+  }
+
+  // =========================================================================
+  // System Job Endpoints
+  // =========================================================================
+
+  /**
+   * Get orphaned task cleanup job status and config
+   */
+  async getOrphanedTaskCleanupStatus(): Promise<SystemJobStatusResponse> {
+    return this.get<SystemJobStatusResponse>("/admin/monitoring/system-jobs/orphaned-task-cleanup");
+  }
+
+  /**
+   * Update orphaned task cleanup job config
+   */
+  async updateOrphanedTaskCleanupConfig(data: {
+    interval_hours?: number;
+    is_enabled?: boolean;
+  }): Promise<SystemJobStatusResponse> {
+    return this.patch<SystemJobStatusResponse>(
+      "/admin/monitoring/system-jobs/orphaned-task-cleanup",
+      data
+    );
+  }
+
+  /**
+   * Manually trigger orphaned task cleanup
+   */
+  async triggerOrphanedTaskCleanup(): Promise<SystemJobTriggerResponse> {
+    return this.post<SystemJobTriggerResponse>(
+      "/admin/monitoring/system-jobs/orphaned-task-cleanup/trigger"
+    );
+  }
+
+  /**
+   * Get orphaned task cleanup run history
+   */
+  async getOrphanedTaskCleanupHistory(limit = 20): Promise<SystemJobHistoryResponse> {
+    return this.get<SystemJobHistoryResponse>(
+      "/admin/monitoring/system-jobs/orphaned-task-cleanup/history",
+      { params: { limit } }
+    );
   }
 
   // =========================================================================
