@@ -82,7 +82,7 @@ export function ExpenseStats({ onStatusClick }: ExpenseStatsProps) {
       statusFilter: "draft",
     },
     {
-      label: "Pending Approval",
+      label: "In Review",
       value: submittedCount,
       icon: <Clock className="w-6 h-6" />,
       badge: "warning" as const,

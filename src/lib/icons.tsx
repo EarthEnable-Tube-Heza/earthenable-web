@@ -24,6 +24,7 @@ export {
   Plus,
   Edit,
   Trash2,
+  Star,
   Save,
   Check,
   XCircle,
@@ -87,6 +88,9 @@ export {
   MapPin,
   Globe,
 
+  // Attachments
+  Paperclip,
+
   // Other
   Target,
   Award,
@@ -96,4 +100,9 @@ export {
   Zap,
   Loader2,
   Tag,
+  Maximize2,
+  Link2,
+  Copy,
+  ExternalLink,
+  ArrowLeft,
 } from "lucide-react";

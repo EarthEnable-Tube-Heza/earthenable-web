@@ -6,7 +6,7 @@
  * Form to create new expense requests with informative result modals.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Input,
   Button,
@@ -15,28 +15,29 @@ import {
   Card,
   Spinner,
   ResultModal,
+  FileUpload,
 } from "@/src/components/ui";
 import type { ResultModalVariant } from "@/src/components/ui/ResultModal";
 import {
   useCreateExpense,
   useSubmitExpense,
   useCalculatePerDiem,
-  useDepartments,
   useExpenseCategories,
+  useExpenseTypes,
+  useCurrentUserEmployee,
 } from "@/src/hooks/useExpenses";
+import { uploadExpenseAttachment } from "@/src/lib/api/expenseClient";
 import { useAuth } from "@/src/lib/auth";
 import { Save, Check, XCircle, Info } from "@/src/lib/icons";
-import { CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 const initialFormData = {
-  expenseType: "expense",
+  expenseTypeId: "",
   title: "",
   description: "",
   amount: "",
   currency: "RWF",
   expenseDate: new Date().toISOString().split("T")[0],
   categoryId: "",
-  departmentId: "",
 };
 
 interface ResultModalState {
@@ -50,17 +51,26 @@ interface ResultModalState {
 
 export function NewRequestTab() {
   const { selectedEntityId } = useAuth();
-  const { data: departments, isLoading: loadingDepartments } = useDepartments(
-    selectedEntityId || undefined
-  );
+  const { data: currentUserData, isLoading: loadingEmployee } = useCurrentUserEmployee();
   const { data: categories, isLoading: loadingCategories } = useExpenseCategories(
     selectedEntityId || undefined
   );
+  const { data: typesData } = useExpenseTypes(selectedEntityId || undefined);
+
+  const employeeDepartment = currentUserData?.employee?.department;
+  const hasDepartment = !!employeeDepartment?.id;
+  const entityCurrency = currentUserData?.employee?.entity?.currency || "";
+  const entityCurrencies = currentUserData?.employee?.entity?.currencies || [];
+  const activeCurrencies = entityCurrencies;
+  const hasMultipleCurrencies = activeCurrencies.length > 1;
+  const defaultCurrency = activeCurrencies.find((c) => c.is_default);
+
   const createMutation = useCreateExpense();
   const submitMutation = useSubmitExpense();
   const perDiemMutation = useCalculatePerDiem();
 
   const [formData, setFormData] = useState(initialFormData);
+  const [files, setFiles] = useState<File[]>([]);
   const [perDiemDays, setPerDiemDays] = useState("");
   const [perDiemDesignation, setPerDiemDesignation] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +81,29 @@ export function NewRequestTab() {
     title: "",
     message: "",
   });
+
+  // Set currency from entity when employee data loads
+  useEffect(() => {
+    if (defaultCurrency) {
+      setFormData((prev) => ({ ...prev, currency: defaultCurrency.currency_code }));
+    } else if (entityCurrency) {
+      setFormData((prev) => ({ ...prev, currency: entityCurrency }));
+    }
+  }, [entityCurrency, defaultCurrency]);
+
+  // Derive exchange rate info for selected non-default currency
+  const selectedCurrencyInfo = activeCurrencies.find((c) => c.currency_code === formData.currency);
+  const showExchangeRate =
+    selectedCurrencyInfo &&
+    !selectedCurrencyInfo.is_default &&
+    selectedCurrencyInfo.exchange_rate != null &&
+    defaultCurrency;
+
+  // Determine if selected category requires receipt
+  const selectedCategory = (categories?.categories || []).find(
+    (cat) => cat.id === formData.categoryId
+  );
+  const categoryRequiresReceipt = selectedCategory?.requires_receipt ?? false;
 
   const showResultModal = (
     variant: ResultModalVariant,
@@ -94,7 +127,10 @@ export function NewRequestTab() {
   };
 
   const resetForm = () => {
-    setFormData(initialFormData);
+    const defaultCode =
+      defaultCurrency?.currency_code || entityCurrency || initialFormData.currency;
+    setFormData({ ...initialFormData, currency: defaultCode });
+    setFiles([]);
     setPerDiemCalculation(null);
     setPerDiemDays("");
     setPerDiemDesignation("");
@@ -111,12 +147,38 @@ export function NewRequestTab() {
       return;
     }
 
-    if (!formData.title || !formData.amount || !formData.categoryId || !formData.departmentId) {
+    if (
+      !formData.title ||
+      !formData.amount ||
+      !formData.categoryId ||
+      !formData.description.trim()
+    ) {
       showResultModal(
         "warning",
         "Missing Required Fields",
-        "Please fill in all required fields: Title, Amount, Category, and Department.",
+        "Please fill in all required fields: Title, Amount, Category, and Description.",
         "All fields marked as required must be completed before submitting."
+      );
+      return;
+    }
+
+    if (!hasDepartment) {
+      showResultModal(
+        "warning",
+        "No Department Assigned",
+        "You must be assigned to a department before submitting expenses.",
+        "Please contact your administrator to assign you to a department."
+      );
+      return;
+    }
+
+    // Block submission if receipt is required but no files attached
+    if (submitImmediately && categoryRequiresReceipt && files.length === 0) {
+      showResultModal(
+        "warning",
+        "Receipt Required",
+        "This expense category requires at least one supporting document (receipt, invoice, etc.) before submitting.",
+        "Please attach your receipt files, then try again. You can still save as a draft without attachments."
       );
       return;
     }
@@ -126,31 +188,50 @@ export function NewRequestTab() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const createdExpense: any = await createMutation.mutateAsync({
         entityId: selectedEntityId,
-        departmentId: formData.departmentId,
+        departmentId: employeeDepartment!.id,
         categoryId: formData.categoryId,
-        expenseType: formData.expenseType as "expense" | "per_diem" | "advance",
+        expenseTypeId: formData.expenseTypeId,
         title: formData.title,
         amount: parseFloat(formData.amount),
         currency: formData.currency,
         expenseDate: formData.expenseDate,
-        description: formData.description || undefined,
+        description: formData.description,
       });
 
-      // Step 2: If submit immediately, call the submit endpoint
-      if (submitImmediately && createdExpense?.expense?.id) {
-        await submitMutation.mutateAsync(createdExpense.expense.id);
+      const expenseId = createdExpense?.expense?.id;
+
+      // Step 2: Upload attachments
+      let uploadErrors = 0;
+      if (expenseId && files.length > 0) {
+        for (const file of files) {
+          try {
+            await uploadExpenseAttachment(expenseId, file);
+          } catch (err) {
+            console.error("Failed to upload attachment:", err);
+            uploadErrors++;
+          }
+        }
+      }
+
+      // Step 3: If submit immediately, call the submit endpoint
+      if (submitImmediately && expenseId) {
+        await submitMutation.mutateAsync(expenseId);
+        const uploadNote =
+          uploadErrors > 0 ? ` (${uploadErrors} attachment(s) failed to upload)` : "";
         showResultModal(
           "success",
           "Expense Submitted for Approval",
-          `Your expense request "${formData.title}" for ${parseFloat(formData.amount).toLocaleString()} ${formData.currency} has been submitted successfully.`,
+          `Your expense request "${formData.title}" for ${parseFloat(formData.amount).toLocaleString()} ${formData.currency} has been submitted successfully.${uploadNote}`,
           "Your request is now pending approval. You will be notified once it has been reviewed by your approver.",
           "Done"
         );
       } else {
+        const uploadNote =
+          uploadErrors > 0 ? ` (${uploadErrors} attachment(s) failed to upload)` : "";
         showResultModal(
           "success",
           "Expense Saved as Draft",
-          `Your expense request "${formData.title}" for ${parseFloat(formData.amount).toLocaleString()} ${formData.currency} has been saved as a draft.`,
+          `Your expense request "${formData.title}" for ${parseFloat(formData.amount).toLocaleString()} ${formData.currency} has been saved as a draft.${uploadNote}`,
           "You can find this draft in 'My Expenses' tab. Edit and submit it when you're ready.",
           "Done"
         );
@@ -262,7 +343,7 @@ export function NewRequestTab() {
     );
   }
 
-  if (loadingDepartments || loadingCategories) {
+  if (loadingEmployee || loadingCategories) {
     return (
       <div className="flex items-center justify-center py-12">
         <Spinner size="lg" variant="primary" />
@@ -288,19 +369,22 @@ export function NewRequestTab() {
           <h3 className="text-lg font-semibold text-text-primary mb-4">Expense Type</h3>
           <LabeledSelect
             label="Type"
-            value={formData.expenseType}
-            onChange={(e) => setFormData({ ...formData, expenseType: e.target.value })}
+            value={formData.expenseTypeId}
+            onChange={(e) => setFormData({ ...formData, expenseTypeId: e.target.value })}
             options={[
-              { value: "expense", label: "Regular Expense" },
-              { value: "per_diem", label: "Per Diem" },
-              { value: "advance", label: "Advance Payment" },
+              { value: "", label: "Select type" },
+              ...(typesData?.expense_types || []).map((t) => ({
+                value: t.id,
+                label: t.name,
+              })),
             ]}
             required
           />
         </Card>
 
         {/* Per Diem Calculator */}
-        {formData.expenseType === "per_diem" && (
+        {typesData?.expense_types?.find((t) => t.id === formData.expenseTypeId)?.code ===
+          "per_diem" && (
           <Card variant="bordered" padding="md">
             <div className="flex items-center gap-2 mb-4">
               <Info className="w-5 h-5 text-info" />
@@ -383,13 +467,40 @@ export function NewRequestTab() {
               required
             />
 
-            <LabeledSelect
-              label="Currency"
-              value={formData.currency}
-              onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-              options={CURRENCY_OPTIONS}
-              required
-            />
+            {/* Currency: dropdown if multiple, read-only if single */}
+            <div>
+              {hasMultipleCurrencies ? (
+                <>
+                  <LabeledSelect
+                    label="Currency"
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    options={activeCurrencies.map((c) => ({
+                      value: c.currency_code,
+                      label: `${c.currency_code} - ${c.currency_name}${c.is_default ? " (Default)" : ""}`,
+                    }))}
+                    required
+                  />
+                  {showExchangeRate && (
+                    <p className="mt-1 text-xs text-text-tertiary">
+                      1 {selectedCurrencyInfo!.currency_code} ={" "}
+                      {selectedCurrencyInfo!.exchange_rate!.toLocaleString()}{" "}
+                      {defaultCurrency!.currency_code}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Currency
+                  </label>
+                  <div className="h-11 flex items-center px-3 rounded-lg bg-bg-secondary border border-border-primary text-text-primary text-sm">
+                    {entityCurrency || "—"}
+                  </div>
+                  <p className="mt-1 text-xs text-text-tertiary">Set by the selected entity</p>
+                </>
+              )}
+            </div>
 
             <Input
               label="Expense Date"
@@ -399,19 +510,23 @@ export function NewRequestTab() {
               required
             />
 
-            <LabeledSelect
-              label="Department"
-              value={formData.departmentId}
-              onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
-              options={[
-                { value: "", label: "Select department" },
-                ...(departments?.departments || []).map((dept) => ({
-                  value: dept.id,
-                  label: dept.name,
-                })),
-              ]}
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-1">
+                Department
+              </label>
+              {hasDepartment ? (
+                <div className="h-11 flex items-center px-3 rounded-lg bg-bg-secondary border border-border-primary text-text-primary text-sm">
+                  {employeeDepartment!.name}
+                </div>
+              ) : (
+                <div className="h-11 flex items-center px-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
+                  No department assigned
+                </div>
+              )}
+              <p className="mt-1 text-xs text-text-tertiary">
+                Expenses can only be submitted to your own department
+              </p>
+            </div>
 
             <div className="md:col-span-2">
               <Textarea
@@ -420,6 +535,25 @@ export function NewRequestTab() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Provide details about this expense..."
                 rows={4}
+                required
+              />
+            </div>
+
+            {/* Supporting Documents */}
+            <div className="md:col-span-2">
+              <FileUpload
+                label={
+                  categoryRequiresReceipt
+                    ? "Supporting Documents (Required)"
+                    : "Supporting Documents (Optional)"
+                }
+                required={categoryRequiresReceipt}
+                files={files}
+                onFilesChange={setFiles}
+                accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf,image/heic,image/heif"
+                maxSize={10 * 1024 * 1024}
+                maxFiles={5}
+                disabled={createMutation.isPending || submitMutation.isPending}
               />
             </div>
           </div>

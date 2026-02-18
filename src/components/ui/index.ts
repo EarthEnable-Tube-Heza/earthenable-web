@@ -67,5 +67,17 @@ export type { TabNavigationProps, TabItem } from "./TabNavigation";
 export { SectionLayout } from "./SectionLayout";
 export type { SectionLayoutProps } from "./SectionLayout";
 
+// File upload
+export { FileUpload } from "./FileUpload";
+export type { FileUploadProps } from "./FileUpload";
+
+// Drawer
+export { Drawer } from "./Drawer";
+export type { DrawerProps } from "./Drawer";
+
+// Document preview
+export { DocumentPreview } from "./DocumentPreview";
+export type { DocumentPreviewProps } from "./DocumentPreview";
+
 // Session management
 export { SessionExpiryModal } from "./SessionExpiryModal";
