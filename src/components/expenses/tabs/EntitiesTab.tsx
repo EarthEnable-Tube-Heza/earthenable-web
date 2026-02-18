@@ -3,19 +3,39 @@
 /**
  * Entities Tab (Admin Only)
  *
- * Entity management with QuickBooks configuration
+ * Entity management with QuickBooks configuration and currency management
  */
 
 import { useState } from "react";
-import { Input, Button, LabeledSelect, Card, Spinner, Badge } from "@/src/components/ui";
-import { Plus, XCircle, Save, Building2, Edit, Info } from "@/src/lib/icons";
-import { useEntities, useCreateEntity, useUpdateEntity } from "@/src/hooks/useExpenses";
-import type { Entity } from "@/src/lib/api/expenseClient";
+import {
+  Input,
+  Button,
+  LabeledSelect,
+  Card,
+  Spinner,
+  Badge,
+  ConfirmDialog,
+  ResultModal,
+} from "@/src/components/ui";
+import type { ResultModalVariant } from "@/src/components/ui";
+import { Plus, XCircle, Save, Building2, Edit, Info, Trash2, Star } from "@/src/lib/icons";
+import {
+  useEntities,
+  useCreateEntity,
+  useUpdateEntity,
+  useEntityCurrencies,
+  useCreateEntityCurrency,
+  useDeleteEntityCurrency,
+  useSetDefaultEntityCurrency,
+  useUpdateEntityCurrency,
+} from "@/src/hooks/useExpenses";
+import type { Entity, EntityCurrency } from "@/src/lib/api/expenseClient";
 import { COUNTRY_OPTIONS, CURRENCY_OPTIONS } from "@/src/lib/constants";
 
 export function EntitiesTab() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingEntity, setEditingEntity] = useState<string | null>(null);
+  const [expandedCurrencyEntity, setExpandedCurrencyEntity] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -26,6 +46,18 @@ export function EntitiesTab() {
     quickbooksRealmId: "",
     quickbooksEnabled: false,
   });
+
+  // Currency add form state
+  const [currencyForm, setCurrencyForm] = useState({
+    currencyCode: "",
+    exchangeRate: "",
+  });
+  const [editingRate, setEditingRate] = useState<{ id: string; rate: string } | null>(null);
+  const [resultModal, setResultModal] = useState<{
+    variant: ResultModalVariant;
+    title: string;
+    message: string;
+  } | null>(null);
 
   const { data, isLoading } = useEntities();
   const createEntity = useCreateEntity();
@@ -51,7 +83,11 @@ export function EntitiesTab() {
             quickbooksEnabled: formData.quickbooksEnabled,
           },
         });
-        alert("Entity updated successfully!");
+        setResultModal({
+          variant: "success",
+          title: "Entity Updated",
+          message: "Entity updated successfully!",
+        });
         setEditingEntity(null);
       } else {
         await createEntity.mutateAsync({
@@ -64,13 +100,21 @@ export function EntitiesTab() {
           quickbooksRealmId: formData.quickbooksRealmId || undefined,
           quickbooksEnabled: formData.quickbooksEnabled,
         });
-        alert("Entity created successfully!");
+        setResultModal({
+          variant: "success",
+          title: "Entity Created",
+          message: "Entity created successfully!",
+        });
       }
 
       setShowCreateForm(false);
       resetForm();
     } catch (error) {
-      alert(`Failed to ${editingEntity ? "update" : "create"} entity. Please try again.`);
+      setResultModal({
+        variant: "error",
+        title: "Operation Failed",
+        message: `Failed to ${editingEntity ? "update" : "create"} entity. Please try again.`,
+      });
       console.error(error);
     }
   };
@@ -188,7 +232,7 @@ export function EntitiesTab() {
                 />
 
                 <LabeledSelect
-                  label="Currency"
+                  label="Default Currency"
                   value={formData.currency}
                   onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                   options={CURRENCY_OPTIONS}
@@ -341,11 +385,267 @@ export function EntitiesTab() {
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setExpandedCurrencyEntity(
+                      expandedCurrencyEntity === entity.id ? null : entity.id
+                    )
+                  }
+                >
+                  {expandedCurrencyEntity === entity.id ? "Hide" : "Manage"} Currencies
+                </Button>
               </div>
+
+              {/* Currency Management Panel */}
+              {expandedCurrencyEntity === entity.id && (
+                <CurrencyManagementPanel
+                  entityId={entity.id}
+                  currencyForm={currencyForm}
+                  setCurrencyForm={setCurrencyForm}
+                  editingRate={editingRate}
+                  setEditingRate={setEditingRate}
+                />
+              )}
             </Card>
           ))}
         </div>
       )}
+
+      {/* Entity Result Modal */}
+      <ResultModal
+        isOpen={!!resultModal}
+        variant={resultModal?.variant || "info"}
+        title={resultModal?.title || ""}
+        message={resultModal?.message || ""}
+        onAction={() => setResultModal(null)}
+      />
+    </div>
+  );
+}
+
+/**
+ * Inline currency management panel per entity card
+ */
+function CurrencyManagementPanel({
+  entityId,
+  currencyForm,
+  setCurrencyForm,
+  editingRate,
+  setEditingRate,
+}: {
+  entityId: string;
+  currencyForm: { currencyCode: string; exchangeRate: string };
+  setCurrencyForm: (v: { currencyCode: string; exchangeRate: string }) => void;
+  editingRate: { id: string; rate: string } | null;
+  setEditingRate: (v: { id: string; rate: string } | null) => void;
+}) {
+  const [deletingCurrency, setDeletingCurrency] = useState<{ id: string; code: string } | null>(
+    null
+  );
+  const [resultModal, setResultModal] = useState<{
+    variant: ResultModalVariant;
+    title: string;
+    message: string;
+  } | null>(null);
+
+  const { data, isLoading } = useEntityCurrencies(entityId);
+  const createCurrency = useCreateEntityCurrency(entityId);
+  const deleteCurrency = useDeleteEntityCurrency(entityId);
+  const setDefault = useSetDefaultEntityCurrency(entityId);
+  const updateCurrency = useUpdateEntityCurrency(entityId);
+
+  const currencies = data?.currencies || [];
+
+  const handleAddCurrency = async () => {
+    if (!currencyForm.currencyCode) return;
+
+    const match = CURRENCY_OPTIONS.find((c) => c.value === currencyForm.currencyCode);
+    const name = match
+      ? match.label.split(" - ")[1] || currencyForm.currencyCode
+      : currencyForm.currencyCode;
+
+    try {
+      await createCurrency.mutateAsync({
+        currency_code: currencyForm.currencyCode,
+        currency_name: name,
+        exchange_rate: currencyForm.exchangeRate
+          ? parseFloat(currencyForm.exchangeRate)
+          : undefined,
+      });
+      setCurrencyForm({ currencyCode: "", exchangeRate: "" });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const msg = (error as any)?.response?.data?.detail || "Failed to add currency";
+      setResultModal({ variant: "error", title: "Add Currency Failed", message: msg });
+    }
+  };
+
+  const handleSaveRate = async (currencyId: string) => {
+    if (!editingRate) return;
+    try {
+      await updateCurrency.mutateAsync({
+        currencyId,
+        data: {
+          exchange_rate: editingRate.rate ? parseFloat(editingRate.rate) : undefined,
+        },
+      });
+      setEditingRate(null);
+    } catch {
+      setResultModal({
+        variant: "error",
+        title: "Update Failed",
+        message: "Failed to update exchange rate.",
+      });
+    }
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-border-light space-y-3">
+      <h4 className="text-sm font-semibold text-text-primary">Accepted Currencies</h4>
+
+      {isLoading ? (
+        <Spinner size="sm" />
+      ) : (
+        <div className="space-y-2">
+          {currencies.map((c: EntityCurrency) => (
+            <div
+              key={c.id}
+              className="flex items-center justify-between p-2 rounded-lg bg-background-light"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm font-semibold">{c.currency_code}</span>
+                <span className="text-sm text-text-secondary">{c.currency_name}</span>
+                {c.is_default && (
+                  <Badge variant="success" size="sm">
+                    Default
+                  </Badge>
+                )}
+                {!c.is_default && c.exchange_rate != null && (
+                  <span className="text-xs text-text-tertiary">Rate: {c.exchange_rate}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {!c.is_default && (
+                  <>
+                    {editingRate?.id === c.id ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="0.000001"
+                          value={editingRate.rate}
+                          onChange={(e) => setEditingRate({ id: c.id, rate: e.target.value })}
+                          className="w-24 px-2 py-1 text-xs border rounded"
+                          placeholder="Rate"
+                        />
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleSaveRate(c.id)}
+                          loading={updateCurrency.isPending}
+                        >
+                          Save
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setEditingRate(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setEditingRate({
+                            id: c.id,
+                            rate: c.exchange_rate != null ? String(c.exchange_rate) : "",
+                          })
+                        }
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDefault.mutateAsync(c.id)}
+                      loading={setDefault.isPending}
+                      title="Set as default"
+                    >
+                      <Star className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDeletingCurrency({ id: c.id, code: c.currency_code })}
+                      loading={deleteCurrency.isPending}
+                      title="Remove currency"
+                    >
+                      <Trash2 className="w-3 h-3 text-error" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Currency Form */}
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <LabeledSelect
+            label="Add Currency"
+            value={currencyForm.currencyCode}
+            onChange={(e) => setCurrencyForm({ ...currencyForm, currencyCode: e.target.value })}
+            options={[{ value: "", label: "Select currency" }, ...CURRENCY_OPTIONS]}
+          />
+        </div>
+        <div className="w-32">
+          <Input
+            label="Exchange Rate"
+            type="number"
+            step="0.000001"
+            value={currencyForm.exchangeRate}
+            onChange={(e) => setCurrencyForm({ ...currencyForm, exchangeRate: e.target.value })}
+            placeholder="e.g., 1300"
+          />
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleAddCurrency}
+          loading={createCurrency.isPending}
+          disabled={!currencyForm.currencyCode}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Delete Currency Confirmation */}
+      <ConfirmDialog
+        isOpen={!!deletingCurrency}
+        title="Remove Currency"
+        message={`Are you sure you want to remove ${deletingCurrency?.code || ""}? This action cannot be undone.`}
+        confirmLabel="Remove"
+        confirmVariant="danger"
+        onConfirm={async () => {
+          if (deletingCurrency) {
+            await deleteCurrency.mutateAsync(deletingCurrency.id);
+            setDeletingCurrency(null);
+          }
+        }}
+        onCancel={() => setDeletingCurrency(null)}
+      />
+
+      {/* Currency Result Modal */}
+      <ResultModal
+        isOpen={!!resultModal}
+        variant={resultModal?.variant || "info"}
+        title={resultModal?.title || ""}
+        message={resultModal?.message || ""}
+        onAction={() => setResultModal(null)}
+      />
     </div>
   );
 }
