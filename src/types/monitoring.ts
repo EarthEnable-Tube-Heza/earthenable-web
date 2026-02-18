@@ -373,3 +373,50 @@ export interface UserLoginFrequencyResponse {
   total_sessions: number;
   users: UserLoginFrequency[];
 }
+
+/**
+ * System job run summary
+ */
+export interface SystemJobRunSummary {
+  id: string;
+  status: string;
+  triggered_by: string | null;
+  started_at: string;
+  completed_at: string | null;
+  duration_seconds: number | null;
+  tasks_checked: number;
+  orphaned_found: number;
+  orphaned_deleted: number;
+  error_message: string | null;
+}
+
+/**
+ * System job status response
+ */
+export interface SystemJobStatusResponse {
+  job_key: string;
+  display_name: string;
+  description: string | null;
+  is_enabled: boolean;
+  interval_hours: number;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  last_run: SystemJobRunSummary | null;
+}
+
+/**
+ * System job trigger response
+ */
+export interface SystemJobTriggerResponse {
+  status: string;
+  message: string;
+  run_id: string | null;
+  run: SystemJobRunSummary | null;
+}
+
+/**
+ * System job history response
+ */
+export interface SystemJobHistoryResponse {
+  runs: SystemJobRunSummary[];
+}

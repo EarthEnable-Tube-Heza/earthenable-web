@@ -4,7 +4,7 @@
  * These hooks provide auto-refreshing data for the monitoring dashboard.
  */
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api/apiClient";
 
 // Refresh intervals in milliseconds
@@ -205,6 +205,73 @@ export function useLoginFrequency(days = 7, period?: string, limit = 50) {
   });
 }
 
+// Refresh interval for system jobs
+const SYSTEM_JOB_REFRESH_INTERVAL = 60 * 1000; // 1 minute
+
+/**
+ * Hook to fetch orphaned task cleanup job status
+ * Auto-refreshes every 60 seconds
+ */
+export function useOrphanedTaskCleanupStatus() {
+  return useQuery({
+    queryKey: ["monitoring", "system-jobs", "orphaned-task-cleanup"],
+    queryFn: () => apiClient.getOrphanedTaskCleanupStatus(),
+    refetchInterval: SYSTEM_JOB_REFRESH_INTERVAL,
+    staleTime: SYSTEM_JOB_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to fetch orphaned task cleanup run history
+ * Auto-refreshes every 60 seconds
+ */
+export function useOrphanedTaskCleanupHistory(limit = 20) {
+  return useQuery({
+    queryKey: ["monitoring", "system-jobs", "orphaned-task-cleanup-history", limit],
+    queryFn: () => apiClient.getOrphanedTaskCleanupHistory(limit),
+    refetchInterval: SYSTEM_JOB_REFRESH_INTERVAL,
+    staleTime: SYSTEM_JOB_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to manually trigger orphaned task cleanup
+ * Invalidates status and history on success
+ */
+export function useTriggerOrphanedTaskCleanup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.triggerOrphanedTaskCleanup(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "orphaned-task-cleanup"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "orphaned-task-cleanup-history"],
+      });
+    },
+  });
+}
+
+/**
+ * Hook to update orphaned task cleanup config
+ * Invalidates status on success
+ */
+export function useUpdateOrphanedTaskCleanupConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { interval_hours?: number; is_enabled?: boolean }) =>
+      apiClient.updateOrphanedTaskCleanupConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "orphaned-task-cleanup"],
+      });
+    },
+  });
+}
+
 /**
  * Hook to manually refresh all monitoring data
  */
@@ -248,6 +315,9 @@ export function useRefreshMonitoring() {
     },
     refreshActivityTimeSeries: () => {
       queryClient.invalidateQueries({ queryKey: ["monitoring", "activity-time-series"] });
+    },
+    refreshSystemJobs: () => {
+      queryClient.invalidateQueries({ queryKey: ["monitoring", "system-jobs"] });
     },
   };
 }
