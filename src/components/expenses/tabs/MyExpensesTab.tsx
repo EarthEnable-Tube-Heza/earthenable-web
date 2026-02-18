@@ -31,7 +31,9 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Edit,
+  Paperclip,
 } from "@/src/lib/icons";
+import { getExpenseDisplayStatus } from "@/src/utils/expenseStatus";
 
 interface ModalState {
   isOpen: boolean;
@@ -105,9 +107,12 @@ export function MyExpensesTab({ initialStatusFilter }: MyExpensesTabProps) {
     return expense.category_name || expense.categoryName || "-";
   };
 
-  // Helper to get expense type (handles both snake_case and camelCase)
-  const getExpenseType = (expense: (typeof expenses)[0]) => {
-    return expense.expense_type || expense.expenseType || "expense";
+  // Helpers to get expense type fields (handles both snake_case and camelCase)
+  const getExpenseTypeName = (expense: (typeof expenses)[0]) => {
+    return expense.expense_type_name || expense.expenseTypeName || "-";
+  };
+  const getExpenseTypeCode = (expense: (typeof expenses)[0]) => {
+    return expense.expense_type_code || expense.expenseTypeCode || "expense";
   };
 
   // Filter expenses by search query
@@ -366,28 +371,19 @@ export function MyExpensesTab({ initialStatusFilter }: MyExpensesTabProps) {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "warning" | "success" | "error"> = {
-      draft: "default",
-      submitted: "warning",
-      approved: "success",
-      rejected: "error",
-      paid: "success",
-    };
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  const getStatusBadge = (expense: (typeof expenses)[0]) => {
+    const { label, variant } = getExpenseDisplayStatus(expense);
+    return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const getExpenseTypeBadge = (type: string) => {
-    const badges = {
-      expense: { variant: "default" as const, label: "Regular" },
-      per_diem: { variant: "warning" as const, label: "Per Diem" },
-      advance: { variant: "info" as const, label: "Advance" },
+  const getExpenseTypeBadge = (code: string, name: string) => {
+    const variants: Record<string, "default" | "warning" | "info"> = {
+      expense: "default",
+      per_diem: "warning",
+      advance: "info",
     };
-    const config = badges[type as keyof typeof badges] || {
-      variant: "default" as const,
-      label: type,
-    };
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    const variant = variants[code] || "default";
+    return <Badge variant={variant}>{name || code}</Badge>;
   };
 
   const isAllSelected =
@@ -581,7 +577,20 @@ export function MyExpensesTab({ initialStatusFilter }: MyExpensesTabProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-text-primary">{expense.title}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-medium text-text-primary">{expense.title}</p>
+                          {(expense.attachmentCount || expense.attachment_count || 0) > 0 && (
+                            <span
+                              className="inline-flex items-center gap-0.5 text-text-tertiary"
+                              title={`${expense.attachmentCount || expense.attachment_count} attachment(s)`}
+                            >
+                              <Paperclip className="w-3.5 h-3.5" />
+                              <span className="text-xs">
+                                {expense.attachmentCount || expense.attachment_count}
+                              </span>
+                            </span>
+                          )}
+                        </div>
                         {expense.description && (
                           <p className="text-sm text-text-secondary truncate max-w-[200px]">
                             {expense.description}
@@ -598,8 +607,13 @@ export function MyExpensesTab({ initialStatusFilter }: MyExpensesTabProps) {
                     <td className="px-4 py-3 text-text-secondary text-sm">
                       {getCategoryName(expense)}
                     </td>
-                    <td className="px-4 py-3">{getExpenseTypeBadge(getExpenseType(expense))}</td>
-                    <td className="px-4 py-3">{getStatusBadge(expense.status)}</td>
+                    <td className="px-4 py-3">
+                      {getExpenseTypeBadge(
+                        getExpenseTypeCode(expense),
+                        getExpenseTypeName(expense)
+                      )}
+                    </td>
+                    <td className="px-4 py-3">{getStatusBadge(expense)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <Button

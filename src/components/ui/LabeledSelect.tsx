@@ -10,7 +10,7 @@ import { Select, SelectProps } from "./Select";
 import { forwardRef } from "react";
 import { cn } from "@/src/lib/theme";
 
-export interface LabeledSelectProps extends SelectProps {
+export interface LabeledSelectProps extends Omit<SelectProps, "error"> {
   /**
    * Label for the select
    */
@@ -20,10 +20,15 @@ export interface LabeledSelectProps extends SelectProps {
    * Options for the select
    */
   options: Array<{ value: string; label: string }>;
+
+  /**
+   * Error message to display (also triggers red border on Select)
+   */
+  error?: string;
 }
 
 export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
-  ({ label, options, className, id, required, fullWidth = true, ...props }, ref) => {
+  ({ label, options, className, id, required, fullWidth = true, error, ...props }, ref) => {
     // Generate unique ID for accessibility
     const selectId = id || `select-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
@@ -44,6 +49,7 @@ export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
           className={className}
           required={required}
           fullWidth={fullWidth}
+          error={!!error}
           {...props}
         >
           {options.map((option) => (
@@ -52,6 +58,9 @@ export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
             </option>
           ))}
         </Select>
+
+        {/* Error message */}
+        {error && <p className="text-sm text-status-error">{error}</p>}
       </div>
     );
   }
