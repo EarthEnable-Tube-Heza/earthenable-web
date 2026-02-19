@@ -42,7 +42,6 @@ const DEFAULT_PATH_LABELS: Record<string, string> = {
   callbacks: "Callbacks",
   history: "History",
   mobile: "Mobile App",
-  "entity-access": "Entity Access",
 };
 
 /**
