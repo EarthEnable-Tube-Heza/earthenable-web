@@ -6,7 +6,6 @@
  * Provides tab-based navigation for user management functionality:
  * - All Users: User list with search and filters
  * - Entity Access: Manage user entity access permissions
- * - Permissions: Manage granular permissions
  */
 
 import { SectionLayout, TabItem } from "@/src/components/ui";
@@ -22,24 +21,18 @@ const tabs: TabItem[] = [
     href: "/dashboard/users/entity-access",
     exact: false,
   },
-  {
-    label: "Permissions",
-    href: "/dashboard/users/permissions",
-    exact: false,
-  },
 ];
 
 export default function UsersLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <SectionLayout
       title="User Management"
-      description="Manage users, roles, and permissions"
+      description="Manage users and entity access"
       tabs={tabs}
       tabsAriaLabel="User management tabs"
       pathLabels={{
         users: "Users",
         "entity-access": "Entity Access",
-        permissions: "Permissions",
       }}
     >
       {children}

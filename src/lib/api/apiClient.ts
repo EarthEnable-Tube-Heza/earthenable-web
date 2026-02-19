@@ -45,11 +45,6 @@ import {
   BulkReassignResponse,
   TaskAssignee,
   LocationValuesResponse,
-  OrgHierarchyEntry,
-  PaginatedOrgHierarchyResponse,
-  CreateOrgHierarchyRequest,
-  UpdateOrgHierarchyRequest,
-  OrgRoleOption,
   // Granular Permission Role types
   PermissionDefinitionsResponse,
   PermissionRole,
@@ -891,69 +886,6 @@ class APIClient {
       "/admin/tasks/bulk-update-status",
       { task_ids: taskIds, status }
     );
-  }
-
-  // ============================================================================
-  // ORG HIERARCHY / PERMISSION MANAGEMENT (Admin only)
-  // ============================================================================
-
-  /**
-   * Get available org roles with their permissions
-   */
-  async getOrgRoles(): Promise<OrgRoleOption[]> {
-    return this.get<OrgRoleOption[]>("/admin/org-hierarchy/roles");
-  }
-
-  /**
-   * Get paginated list of org hierarchy entries
-   */
-  async getOrgHierarchyEntries(params?: {
-    skip?: number;
-    limit?: number;
-    user_id?: string;
-    department_id?: string;
-    role?: string;
-    is_active?: boolean;
-  }): Promise<PaginatedOrgHierarchyResponse> {
-    return this.get<PaginatedOrgHierarchyResponse>("/admin/org-hierarchy", { params });
-  }
-
-  /**
-   * Get a specific org hierarchy entry
-   */
-  async getOrgHierarchyEntry(entryId: string): Promise<OrgHierarchyEntry> {
-    return this.get<OrgHierarchyEntry>(`/admin/org-hierarchy/${entryId}`);
-  }
-
-  /**
-   * Get a user's org hierarchy entries
-   */
-  async getUserOrgHierarchy(userId: string): Promise<OrgHierarchyEntry[]> {
-    return this.get<OrgHierarchyEntry[]>(`/admin/users/${userId}/org-hierarchy`);
-  }
-
-  /**
-   * Create a new org hierarchy entry
-   */
-  async createOrgHierarchyEntry(data: CreateOrgHierarchyRequest): Promise<OrgHierarchyEntry> {
-    return this.post<OrgHierarchyEntry>("/admin/org-hierarchy", data);
-  }
-
-  /**
-   * Update an org hierarchy entry
-   */
-  async updateOrgHierarchyEntry(
-    entryId: string,
-    data: UpdateOrgHierarchyRequest
-  ): Promise<OrgHierarchyEntry> {
-    return this.patch<OrgHierarchyEntry>(`/admin/org-hierarchy/${entryId}`, data);
-  }
-
-  /**
-   * Delete an org hierarchy entry
-   */
-  async deleteOrgHierarchyEntry(entryId: string): Promise<void> {
-    return this.delete<void>(`/admin/org-hierarchy/${entryId}`);
   }
 
   // ============================================================================

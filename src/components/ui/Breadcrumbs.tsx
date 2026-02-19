@@ -43,7 +43,6 @@ const DEFAULT_PATH_LABELS: Record<string, string> = {
   history: "History",
   mobile: "Mobile App",
   "entity-access": "Entity Access",
-  permissions: "Permissions",
 };
 
 /**
