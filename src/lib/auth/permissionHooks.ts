@@ -410,6 +410,7 @@ export function useExpensePermissions() {
     canViewAll: hasPermission(Permissions.EXPENSE_VIEW_ALL),
     canCreate: hasPermission(Permissions.EXPENSE_CREATE),
     canApprove: hasPermission(Permissions.EXPENSE_APPROVE),
+    canManage: hasPermission(Permissions.EXPENSE_MANAGE),
   };
 }
 
