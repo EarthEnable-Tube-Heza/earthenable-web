@@ -50,11 +50,6 @@ import {
   CreateOrgHierarchyRequest,
   UpdateOrgHierarchyRequest,
   OrgRoleOption,
-  RolePermissionMapping,
-  RolePermissionMappingListResponse,
-  CreateRolePermissionMappingRequest,
-  UpdateRolePermissionMappingRequest,
-  PermissionTiersResponse,
   // Granular Permission Role types
   PermissionDefinitionsResponse,
   PermissionRole,
@@ -959,61 +954,6 @@ class APIClient {
    */
   async deleteOrgHierarchyEntry(entryId: string): Promise<void> {
     return this.delete<void>(`/admin/org-hierarchy/${entryId}`);
-  }
-
-  // ============================================================================
-  // ROLE PERMISSION MAPPINGS (Admin only)
-  // ============================================================================
-
-  /**
-   * Get available permission tiers
-   */
-  async getPermissionTiers(): Promise<PermissionTiersResponse> {
-    return this.get<PermissionTiersResponse>("/admin/role-permissions/tiers");
-  }
-
-  /**
-   * Get all role permission mappings
-   */
-  async getRolePermissionMappings(params?: {
-    permission_tier?: string;
-    is_active?: boolean;
-    search?: string;
-  }): Promise<RolePermissionMappingListResponse> {
-    return this.get<RolePermissionMappingListResponse>("/admin/role-permissions", { params });
-  }
-
-  /**
-   * Get a specific role permission mapping
-   */
-  async getRolePermissionMapping(mappingId: string): Promise<RolePermissionMapping> {
-    return this.get<RolePermissionMapping>(`/admin/role-permissions/${mappingId}`);
-  }
-
-  /**
-   * Create a new role permission mapping
-   */
-  async createRolePermissionMapping(
-    data: CreateRolePermissionMappingRequest
-  ): Promise<RolePermissionMapping> {
-    return this.post<RolePermissionMapping>("/admin/role-permissions", data);
-  }
-
-  /**
-   * Update a role permission mapping
-   */
-  async updateRolePermissionMapping(
-    mappingId: string,
-    data: UpdateRolePermissionMappingRequest
-  ): Promise<RolePermissionMapping> {
-    return this.patch<RolePermissionMapping>(`/admin/role-permissions/${mappingId}`, data);
-  }
-
-  /**
-   * Delete a role permission mapping
-   */
-  async deleteRolePermissionMapping(mappingId: string): Promise<void> {
-    return this.delete<void>(`/admin/role-permissions/${mappingId}`);
   }
 
   // ============================================================================

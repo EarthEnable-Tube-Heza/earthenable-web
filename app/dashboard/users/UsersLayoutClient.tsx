@@ -7,7 +7,6 @@
  * - All Users: User list with search and filters
  * - Entity Access: Manage user entity access permissions
  * - Permissions: Manage granular permissions
- * - Role Mappings: Configure role-permission mappings
  */
 
 import { SectionLayout, TabItem } from "@/src/components/ui";
@@ -28,11 +27,6 @@ const tabs: TabItem[] = [
     href: "/dashboard/users/permissions",
     exact: false,
   },
-  {
-    label: "Role Mappings",
-    href: "/dashboard/users/role-permissions",
-    exact: false,
-  },
 ];
 
 export default function UsersLayoutClient({ children }: { children: React.ReactNode }) {
@@ -46,7 +40,6 @@ export default function UsersLayoutClient({ children }: { children: React.ReactN
         users: "Users",
         "entity-access": "Entity Access",
         permissions: "Permissions",
-        "role-permissions": "Role Mappings",
       }}
     >
       {children}

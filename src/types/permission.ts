@@ -73,57 +73,6 @@ export interface OrgRoleOption {
 }
 
 // ============================================================================
-// Role Permission Mapping Types
-// ============================================================================
-
-// Role permission mapping response
-export interface RolePermissionMapping {
-  id: string;
-  salesforce_role: string;
-  display_name: string;
-  permission_tier: "view_own" | "view_team" | "view_all";
-  description?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// List response with total count
-export interface RolePermissionMappingListResponse {
-  mappings: RolePermissionMapping[];
-  total: number;
-}
-
-// Create request
-export interface CreateRolePermissionMappingRequest {
-  salesforce_role: string;
-  display_name: string;
-  permission_tier: "view_own" | "view_team" | "view_all";
-  description?: string;
-}
-
-// Update request
-export interface UpdateRolePermissionMappingRequest {
-  display_name?: string;
-  permission_tier?: "view_own" | "view_team" | "view_all";
-  description?: string;
-  is_active?: boolean;
-}
-
-// Permission tier info
-export interface PermissionTierInfo {
-  tier: string;
-  name: string;
-  description: string;
-  permissions: string[];
-}
-
-// Permission tiers response
-export interface PermissionTiersResponse {
-  tiers: PermissionTierInfo[];
-}
-
-// ============================================================================
 // Granular Permission Role Types (Database-driven)
 // ============================================================================
 
