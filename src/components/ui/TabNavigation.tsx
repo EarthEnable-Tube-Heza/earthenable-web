@@ -11,8 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/src/lib/theme";
 import { LucideIcon } from "lucide-react";
-import { useAuth, usePermissions } from "@/src/lib/auth";
-import { UserRole } from "@/src/types";
+import { usePermissions } from "@/src/lib/auth";
 
 export interface TabItem {
   /** Tab label */
@@ -23,8 +22,6 @@ export interface TabItem {
   exact?: boolean;
   /** Optional icon component */
   icon?: LucideIcon;
-  /** Required roles to see this tab (if not provided, tab is visible to all) */
-  requiredRoles?: UserRole[];
   /** Required permissions to see this tab */
   requiredPermissions?: string[];
   /** Whether tab is disabled */
@@ -51,18 +48,10 @@ export function TabNavigation({
   size = "md",
 }: TabNavigationProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
   const { hasAnyPermission } = usePermissions();
 
   // Filter tabs based on permissions
   const visibleTabs = tabs.filter((tab) => {
-    // Check role-based access
-    if (tab.requiredRoles && tab.requiredRoles.length > 0) {
-      if (!user?.role || !tab.requiredRoles.includes(user.role as UserRole)) {
-        return false;
-      }
-    }
-
     // Check permission-based access
     if (tab.requiredPermissions && tab.requiredPermissions.length > 0) {
       if (!hasAnyPermission(tab.requiredPermissions)) {
