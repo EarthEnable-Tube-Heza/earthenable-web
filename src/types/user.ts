@@ -204,17 +204,6 @@ export function isManager(user: User | null | undefined): boolean {
   return user?.is_superuser === true;
 }
 
-/**
- * Check if user has QA agent role or higher
- */
-export function isQAAgent(user: User | null | undefined): boolean {
-  return (
-    user?.role === KnownRoles.QA_AGENT ||
-    user?.role === KnownRoles.MANAGER ||
-    user?.role === KnownRoles.ADMIN
-  );
-}
-
 // ============ Employee Management Types ============
 
 /**
