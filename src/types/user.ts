@@ -188,22 +188,6 @@ export function formatRoleLabel(role: string | undefined | null): string {
     .join(" ");
 }
 
-/**
- * Check if user has admin privileges.
- * DEPRECATED: Use user.is_superuser instead of role-based checks.
- */
-export function isAdmin(user: User | null | undefined): boolean {
-  return user?.is_superuser === true;
-}
-
-/**
- * Check if user has manager privileges or higher.
- * DEPRECATED: Use user.is_superuser instead of role-based checks.
- */
-export function isManager(user: User | null | undefined): boolean {
-  return user?.is_superuser === true;
-}
-
 // ============ Employee Management Types ============
 
 /**
@@ -275,18 +259,3 @@ export interface EndEmployeeRequest {
   end_date: string; // ISO date string
   notes?: string;
 }
-
-// ============ Backward compatibility exports ============
-// DEPRECATED: UserRole enum is deprecated. Use is_superuser for admin checks,
-// and permission-based access control for feature access. Will be removed in Phase 2.
-export enum UserRole {
-  QA_AGENT = "qa_agent",
-  MANAGER = "manager",
-  ADMIN = "admin",
-}
-
-export const UserRoleLabels: Record<string, string> = {
-  [UserRole.QA_AGENT]: "QA Agent",
-  [UserRole.MANAGER]: "Manager",
-  [UserRole.ADMIN]: "Admin",
-};
