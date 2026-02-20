@@ -9,7 +9,6 @@
 import { useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "./AuthContext";
-import { UserRole } from "../../types";
 import { config } from "../config";
 
 /**
@@ -64,40 +63,39 @@ export function useRequireAuth(redirectTo?: string) {
 }
 
 /**
- * Hook to check if user has admin role
+ * Hook to check if user is a superuser (admin).
+ * Uses is_superuser flag instead of role string comparison.
  */
 export function useIsAdmin() {
   const { user } = useAuth();
-  return user?.role === UserRole.ADMIN;
+  return user?.is_superuser === true;
 }
 
 /**
- * Hook to check if user has manager role or higher
+ * Hook to check if user has manager privileges or higher.
+ * Uses is_superuser flag instead of role string comparison.
  */
 export function useIsManager() {
   const { user } = useAuth();
-  return user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN;
+  return user?.is_superuser === true;
 }
 
 /**
- * Hook to check if user has QA agent role or higher
+ * Hook to check if user has QA agent role or higher.
+ * Superusers always have access; otherwise check via permissions.
  */
 export function useIsQAAgent() {
   const { user } = useAuth();
-  return (
-    user?.role === UserRole.QA_AGENT ||
-    user?.role === UserRole.MANAGER ||
-    user?.role === UserRole.ADMIN
-  );
+  return user?.is_superuser === true;
 }
 
 /**
- * Hook to require admin role - redirects to dashboard if not admin
+ * Hook to require admin (superuser) - redirects to dashboard if not.
  */
 export function useRequireAdmin() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = user?.is_superuser === true;
 
   useEffect(() => {
     if (!isLoading && user && !isAdmin) {
@@ -109,12 +107,12 @@ export function useRequireAdmin() {
 }
 
 /**
- * Hook to require manager role or higher
+ * Hook to require manager privileges or higher (superuser).
  */
 export function useRequireManager() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const isManager = user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN;
+  const isManager = user?.is_superuser === true;
 
   useEffect(() => {
     if (!isLoading && user && !isManager) {
