@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { formatRoleLabel } from "@/src/types/user";
-import { EntityListResponse } from "@/src/types";
+import { EntityListResponse, EntityAccessResponse } from "@/src/types";
 import { Button, Card, Badge, PersonCard, ConfirmDialog, Toast } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
 import { CreateEmployeeModal } from "@/src/components/admin/CreateEmployeeModal";
@@ -56,10 +56,14 @@ export default function UserDetailPage() {
   }>({ visible: false, type: "success", message: "" });
 
   // Fetch entity access for this user
-  const { data: entityAccessData, refetch: refetchEntityAccess } = useQuery({
+  // Note: getUserEntityAccess returns EntityAccessResponse[] (flat array), not UserWithEntityAccess
+  const { data: entityAccessList = [], refetch: refetchEntityAccess } = useQuery<
+    EntityAccessResponse[]
+  >({
     queryKey: ["user-entity-access", userId],
-    queryFn: () => apiClient.getUserEntityAccess(userId),
-    enabled: !!userId,
+    queryFn: () =>
+      apiClient.getUserEntityAccess(userId!) as unknown as Promise<EntityAccessResponse[]>,
+    enabled: !!userId && userId !== "undefined",
   });
 
   // Fetch entities when any employee modal or grant modal opens
@@ -498,46 +502,39 @@ export default function UserDetailPage() {
                 Manage Entity Access
               </Button>
             </div>
-            {entityAccessData ? (
-              <>
-                <div className="flex flex-wrap gap-2">
-                  {entityAccessData.entity_access.filter((a) => a.is_active).length === 0 ? (
-                    <p className="text-sm text-text-tertiary italic">
-                      No entity access assigned to this user.
-                    </p>
-                  ) : (
-                    entityAccessData.entity_access
-                      .filter((a) => a.is_active)
-                      .map((access) => (
-                        <div key={access.id} className="relative group">
-                          <Badge variant={access.is_parent ? "warning" : "default"} size="md">
-                            {access.entity_code} - {access.entity_name}
-                            <button
-                              onClick={() =>
-                                handleRevokeEntityAccess(access.entity_id, access.entity_code)
-                              }
-                              className="ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-status-error"
-                              title={`Revoke ${access.entity_code} access`}
-                            >
-                              ×
-                            </button>
-                          </Badge>
-                        </div>
-                      ))
-                  )}
-                </div>
-                <div className="mt-3 text-sm text-text-secondary">
-                  {entityAccessData.accessible_entity_count}{" "}
-                  {entityAccessData.accessible_entity_count === 1 ? "entity" : "entities"}{" "}
-                  accessible
-                  {entityAccessData.default_entity_name && (
-                    <> · Default: {entityAccessData.default_entity_name}</>
-                  )}
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-text-tertiary">Loading entity access...</p>
-            )}
+            {(() => {
+              const activeAccess = entityAccessList.filter((a) => a.is_active);
+              return activeAccess.length === 0 ? (
+                <p className="text-sm text-text-tertiary italic">
+                  No entity access assigned to this user.
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {activeAccess.map((access) => (
+                      <div key={access.id} className="relative group">
+                        <Badge variant={access.is_parent ? "warning" : "default"} size="md">
+                          {access.entity_code} - {access.entity_name}
+                          <button
+                            onClick={() =>
+                              handleRevokeEntityAccess(access.entity_id, access.entity_code)
+                            }
+                            className="ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-status-error"
+                            title={`Revoke ${access.entity_code} access`}
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-sm text-text-secondary">
+                    {activeAccess.length} {activeAccess.length === 1 ? "entity" : "entities"}{" "}
+                    accessible
+                  </div>
+                </>
+              );
+            })()}
           </Card>
 
           {/* App Activity Card - Shows recent user activity from mobile app */}
@@ -857,9 +854,18 @@ export default function UserDetailPage() {
       )}
 
       {/* Grant Entity Access Modal */}
-      {showGrantModal && entityAccessData && (
+      {showGrantModal && user && (
         <GrantEntityAccessModal
-          user={entityAccessData}
+          user={{
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            picture: user.picture,
+            role: user.role,
+            is_active: user.is_active,
+            entity_access: entityAccessList,
+            accessible_entity_count: entityAccessList.filter((a) => a.is_active).length,
+          }}
           entities={entities}
           onClose={handleGrantModalClose}
         />
