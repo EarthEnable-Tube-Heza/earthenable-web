@@ -27,9 +27,10 @@ export interface User {
   name?: string;
   picture?: string;
   google_id?: string;
-  role: string; // Dynamic role string from Salesforce
+  role: string; // Dynamic role string from employee record
   is_active: boolean;
   is_verified: boolean;
+  is_superuser: boolean;
   created_at: string;
   last_login?: string;
   entity_id?: string;
@@ -43,8 +44,9 @@ export interface UserListItem {
   email: string;
   name?: string;
   picture?: string;
-  role: string; // Dynamic role string
+  role: string; // Dynamic role string from employee record
   is_active: boolean;
+  is_superuser: boolean;
   created_at: string;
   last_login?: string;
 }
@@ -187,17 +189,19 @@ export function formatRoleLabel(role: string | undefined | null): string {
 }
 
 /**
- * Check if user has admin role
+ * Check if user has admin privileges.
+ * DEPRECATED: Use user.is_superuser instead of role-based checks.
  */
 export function isAdmin(user: User | null | undefined): boolean {
-  return user?.role === KnownRoles.ADMIN;
+  return user?.is_superuser === true;
 }
 
 /**
- * Check if user has manager role or higher
+ * Check if user has manager privileges or higher.
+ * DEPRECATED: Use user.is_superuser instead of role-based checks.
  */
 export function isManager(user: User | null | undefined): boolean {
-  return user?.role === KnownRoles.MANAGER || user?.role === KnownRoles.ADMIN;
+  return user?.is_superuser === true;
 }
 
 /**
@@ -284,7 +288,8 @@ export interface EndEmployeeRequest {
 }
 
 // ============ Backward compatibility exports ============
-// Keep UserRole enum for any existing code that imports it
+// DEPRECATED: UserRole enum is deprecated. Use is_superuser for admin checks,
+// and permission-based access control for feature access. Will be removed in Phase 2.
 export enum UserRole {
   QA_AGENT = "qa_agent",
   MANAGER = "manager",
