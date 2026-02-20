@@ -3,19 +3,21 @@
 /**
  * Users List Page (Admin only)
  *
- * Displays paginated list of users with search and filtering.
- * Search is triggered only when user clicks Search button or presses Enter.
+ * Displays paginated list of users with search, filtering, and inline entity access management.
+ * Uses getUsersWithEntityAccess() API for entity visibility. Role filtering is client-side.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/src/lib/api";
 import { useSetPageHeader } from "@/src/contexts/PageHeaderContext";
 import { KnownRoles, formatRoleLabel } from "@/src/types/user";
+import { UserWithEntityAccess, EntityListResponse } from "@/src/types";
 import { cn, PAGE_SPACING } from "@/src/lib/theme";
-import { LabeledSelect, MultiSelect } from "@/src/components/ui";
+import { LabeledSelect, MultiSelect, Badge, ConfirmDialog, Toast } from "@/src/components/ui";
+import { GrantEntityAccessModal } from "@/src/components/admin/GrantEntityAccessModal";
 
 export default function UsersPage() {
   const searchParams = useSearchParams();
@@ -25,6 +27,21 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<boolean | "">("");
   const limit = 20;
+
+  // Entity management state
+  const [entities, setEntities] = useState<EntityListResponse[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserWithEntityAccess | null>(null);
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [revokeConfirm, setRevokeConfirm] = useState<{
+    userId: string;
+    entityId: string;
+    entityCode: string;
+  } | null>(null);
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({ visible: false, type: "success", message: "" });
 
   // Initialize filters from URL query parameters
   useEffect(() => {
@@ -48,15 +65,14 @@ export default function UsersPage() {
     }
   }, [searchParams]);
 
-  // Fetch users with pagination and filters
+  // Fetch users with entity access data
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["users", page, searchQuery, roleFilter, statusFilter],
+    queryKey: ["users-entity-access", page, searchQuery, statusFilter],
     queryFn: () =>
-      apiClient.getUsers({
+      apiClient.getUsersWithEntityAccess({
         skip: page * limit,
         limit,
         search: searchQuery || undefined,
-        role: roleFilter.length > 0 ? roleFilter.join(",") : undefined,
         is_active: statusFilter === "" ? undefined : statusFilter,
       }),
   });
@@ -67,24 +83,40 @@ export default function UsersPage() {
     queryFn: () => apiClient.getUserStats(),
   });
 
+  // Fetch entities for grant modal
+  const fetchEntities = useCallback(async () => {
+    if (entities.length > 0) return;
+    try {
+      const data = await apiClient.getEntitiesForAdmin(false);
+      setEntities(data);
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+    }
+  }, [entities.length]);
+
   // Extract unique roles from stats and sort them
   const uniqueRoles = useMemo(() => {
     if (!statsData?.by_role) return [];
     return Object.keys(statsData.by_role)
       .map((role) => {
-        // Normalize role (handle "UserRole.ADMIN" format from backend)
         const normalizedRole = role.startsWith("UserRole.")
           ? role.replace("UserRole.", "").toLowerCase()
           : role.toLowerCase();
         return normalizedRole;
       })
-      .filter((role, index, arr) => arr.indexOf(role) === index) // Remove duplicates
+      .filter((role, index, arr) => arr.indexOf(role) === index)
       .sort((a, b) => formatRoleLabel(a).localeCompare(formatRoleLabel(b)));
   }, [statsData]);
 
-  const users = data?.items || [];
-  const total = data?.total || 0;
-  const totalPages = Math.ceil(total / limit);
+  // Apply client-side role filter (entity-access API doesn't support role param)
+  const users = useMemo(() => {
+    const allUsers = data?.items || [];
+    if (roleFilter.length === 0) return allUsers;
+    return allUsers.filter((user) => roleFilter.includes(user.role.toLowerCase()));
+  }, [data?.items, roleFilter]);
+
+  const total = roleFilter.length > 0 ? users.length : data?.total || 0;
+  const totalPages = roleFilter.length > 0 ? 1 : Math.ceil((data?.total || 0) / limit);
 
   useSetPageHeader({
     title: "Users",
@@ -97,22 +129,56 @@ export default function UsersPage() {
     setPage(0);
   };
 
-  // Handle Enter key in search input
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchInput("");
     setSearchQuery("");
     setPage(0);
   };
 
-  // Check if search input differs from active query
   const hasUnsearchedInput = searchInput !== searchQuery;
+
+  // Entity management handlers
+  const handleManageEntities = async (user: UserWithEntityAccess) => {
+    setSelectedUser(user);
+    await fetchEntities();
+    setShowGrantModal(true);
+  };
+
+  const handleRevokeAccess = (userId: string, entityId: string, entityCode: string) => {
+    setRevokeConfirm({ userId, entityId, entityCode });
+  };
+
+  const confirmRevokeAccess = async () => {
+    if (!revokeConfirm) return;
+    try {
+      await apiClient.revokeEntityAccess(revokeConfirm.userId, revokeConfirm.entityId);
+      await refetch();
+      setToast({ visible: true, type: "success", message: "Entity access revoked successfully" });
+    } catch (err) {
+      setToast({
+        visible: true,
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to revoke access",
+      });
+    } finally {
+      setRevokeConfirm(null);
+    }
+  };
+
+  const handleGrantModalClose = async (success: boolean) => {
+    setShowGrantModal(false);
+    setSelectedUser(null);
+    if (success) {
+      await refetch();
+      setToast({ visible: true, type: "success", message: "Entity access granted successfully" });
+    }
+  };
 
   return (
     <div className={PAGE_SPACING}>
@@ -352,7 +418,7 @@ export default function UsersPage() {
           <>
             {/* Horizontal scroll container for mobile */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-[900px]">
                 <thead className="bg-background-light border-b border-border-light">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
@@ -365,7 +431,7 @@ export default function UsersPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                      Last Login
+                      Entities
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                       Actions
@@ -425,16 +491,60 @@ export default function UsersPage() {
                           {user.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-text-secondary">
-                        {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {user.entity_access.filter((a) => a.is_active).length === 0 ? (
+                            <span className="text-sm text-text-tertiary italic">No entities</span>
+                          ) : (
+                            user.entity_access
+                              .filter((a) => a.is_active)
+                              .map((access) => (
+                                <div key={access.id} className="relative group">
+                                  <Badge
+                                    variant={access.is_parent ? "warning" : "default"}
+                                    size="sm"
+                                  >
+                                    {access.entity_code}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRevokeAccess(
+                                          user.id,
+                                          access.entity_id,
+                                          access.entity_code
+                                        );
+                                      }}
+                                      className="ml-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-status-error"
+                                      title={`Revoke ${access.entity_code} access`}
+                                    >
+                                      ×
+                                    </button>
+                                  </Badge>
+                                </div>
+                              ))
+                          )}
+                        </div>
+                        <div className="mt-1 text-xs text-text-tertiary">
+                          {user.accessible_entity_count}{" "}
+                          {user.accessible_entity_count === 1 ? "entity" : "entities"}
+                          {user.default_entity_name && <> · Default: {user.default_entity_name}</>}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Link
-                          href={`/dashboard/users/${user.id}`}
-                          className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
-                        >
-                          View Details
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/dashboard/users/${user.id}`}
+                            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                          >
+                            View
+                          </Link>
+                          <button
+                            onClick={() => handleManageEntities(user)}
+                            className="text-sm font-medium text-secondary hover:text-secondary/80 transition-colors"
+                          >
+                            Manage Entities
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -446,8 +556,8 @@ export default function UsersPage() {
             {totalPages > 1 && (
               <div className="px-6 py-4 border-t border-border-light flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-text-secondary">
-                  Showing {page * limit + 1} to {Math.min((page + 1) * limit, total)} of {total}{" "}
-                  users
+                  Showing {page * limit + 1} to {Math.min((page + 1) * limit, data?.total || 0)} of{" "}
+                  {data?.total || 0} users
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -507,6 +617,35 @@ export default function UsersPage() {
           </>
         )}
       </div>
+
+      {/* Grant Entity Access Modal */}
+      {showGrantModal && selectedUser && (
+        <GrantEntityAccessModal
+          user={selectedUser}
+          entities={entities}
+          onClose={handleGrantModalClose}
+        />
+      )}
+
+      {/* Revoke Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!revokeConfirm}
+        title="Revoke Entity Access"
+        message={`Are you sure you want to revoke access to ${revokeConfirm?.entityCode || "this entity"}? This action cannot be undone.`}
+        confirmLabel="Revoke Access"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmRevokeAccess}
+        onCancel={() => setRevokeConfirm(null)}
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        visible={toast.visible}
+        type={toast.type}
+        message={toast.message}
+        onDismiss={() => setToast({ ...toast, visible: false })}
+      />
     </div>
   );
 }

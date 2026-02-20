@@ -14,14 +14,15 @@ import Image from "next/image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 import { formatRoleLabel } from "@/src/types/user";
-import { EntityListResponse } from "@/src/types";
-import { Button, Card, Badge, PersonCard } from "@/src/components/ui";
+import { EntityListResponse, EntityAccessResponse } from "@/src/types";
+import { Button, Card, Badge, PersonCard, ConfirmDialog, Toast } from "@/src/components/ui";
 import { UserDetailModal } from "@/src/components/UserDetailModal";
 import { CreateEmployeeModal } from "@/src/components/admin/CreateEmployeeModal";
 import { EditEmployeeModal } from "@/src/components/admin/EditEmployeeModal";
 import { NewAssignmentModal } from "@/src/components/admin/NewAssignmentModal";
 import { EndEmploymentModal } from "@/src/components/admin/EndEmploymentModal";
 import { EmploymentHistoryCard } from "@/src/components/admin/EmploymentHistoryCard";
+import { GrantEntityAccessModal } from "@/src/components/admin/GrantEntityAccessModal";
 import { UserActivityTab } from "@/src/components/users/UserActivityTab";
 
 /**
@@ -42,9 +43,33 @@ export default function UserDetailPage() {
   const [entities, setEntities] = useState<EntityListResponse[]>([]);
   const [loadingEntities, setLoadingEntities] = useState(false);
 
-  // Fetch entities when any employee modal opens
+  // Entity access management state
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [revokeConfirm, setRevokeConfirm] = useState<{
+    entityId: string;
+    entityCode: string;
+  } | null>(null);
+  const [entityToast, setEntityToast] = useState<{
+    visible: boolean;
+    type: "success" | "error";
+    message: string;
+  }>({ visible: false, type: "success", message: "" });
+
+  // Fetch entity access for this user
+  // Note: getUserEntityAccess returns EntityAccessResponse[] (flat array), not UserWithEntityAccess
+  const { data: entityAccessList = [], refetch: refetchEntityAccess } = useQuery<
+    EntityAccessResponse[]
+  >({
+    queryKey: ["user-entity-access", userId],
+    queryFn: () =>
+      apiClient.getUserEntityAccess(userId!) as unknown as Promise<EntityAccessResponse[]>,
+    enabled: !!userId && userId !== "undefined",
+  });
+
+  // Fetch entities when any employee modal or grant modal opens
   useEffect(() => {
-    const shouldFetch = isCreateEmployeeOpen || isEditEmployeeOpen || isNewAssignmentOpen;
+    const shouldFetch =
+      isCreateEmployeeOpen || isEditEmployeeOpen || isNewAssignmentOpen || showGrantModal;
     if (shouldFetch && entities.length === 0 && !loadingEntities) {
       setLoadingEntities(true);
       apiClient
@@ -57,6 +82,7 @@ export default function UserDetailPage() {
     isCreateEmployeeOpen,
     isEditEmployeeOpen,
     isNewAssignmentOpen,
+    showGrantModal,
     entities.length,
     loadingEntities,
   ]);
@@ -70,6 +96,44 @@ export default function UserDetailPage() {
     if (success) {
       // Refetch user data
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
+    }
+  };
+
+  // Entity access handlers
+  const handleGrantModalClose = async (success: boolean) => {
+    setShowGrantModal(false);
+    if (success) {
+      await refetchEntityAccess();
+      setEntityToast({
+        visible: true,
+        type: "success",
+        message: "Entity access granted successfully",
+      });
+    }
+  };
+
+  const handleRevokeEntityAccess = (entityId: string, entityCode: string) => {
+    setRevokeConfirm({ entityId, entityCode });
+  };
+
+  const confirmRevokeEntityAccess = async () => {
+    if (!revokeConfirm) return;
+    try {
+      await apiClient.revokeEntityAccess(userId, revokeConfirm.entityId);
+      await refetchEntityAccess();
+      setEntityToast({
+        visible: true,
+        type: "success",
+        message: "Entity access revoked successfully",
+      });
+    } catch (err) {
+      setEntityToast({
+        visible: true,
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to revoke access",
+      });
+    } finally {
+      setRevokeConfirm(null);
     }
   };
 
@@ -428,6 +492,51 @@ export default function UserDetailPage() {
             </div>
           </Card>
 
+          {/* Entity Access Card */}
+          <Card padding="lg" divided>
+            <div className="flex items-center justify-between mb-4 -mt-2">
+              <h3 className="text-lg font-heading font-semibold text-text-primary">
+                Entity Access
+              </h3>
+              <Button variant="outline" size="sm" onClick={() => setShowGrantModal(true)}>
+                Manage Entity Access
+              </Button>
+            </div>
+            {(() => {
+              const activeAccess = entityAccessList.filter((a) => a.is_active);
+              return activeAccess.length === 0 ? (
+                <p className="text-sm text-text-tertiary italic">
+                  No entity access assigned to this user.
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {activeAccess.map((access) => (
+                      <div key={access.id} className="relative group">
+                        <Badge variant={access.is_parent ? "warning" : "default"} size="md">
+                          {access.entity_code} - {access.entity_name}
+                          <button
+                            onClick={() =>
+                              handleRevokeEntityAccess(access.entity_id, access.entity_code)
+                            }
+                            className="ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:text-status-error"
+                            title={`Revoke ${access.entity_code} access`}
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-sm text-text-secondary">
+                    {activeAccess.length} {activeAccess.length === 1 ? "entity" : "entities"}{" "}
+                    accessible
+                  </div>
+                </>
+              );
+            })()}
+          </Card>
+
           {/* App Activity Card - Shows recent user activity from mobile app */}
           <UserActivityTab userId={userId} />
 
@@ -743,6 +852,44 @@ export default function UserDetailPage() {
           onClose={handleEmployeeModalClose}
         />
       )}
+
+      {/* Grant Entity Access Modal */}
+      {showGrantModal && user && (
+        <GrantEntityAccessModal
+          user={{
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            picture: user.picture,
+            role: user.role,
+            is_active: user.is_active,
+            entity_access: entityAccessList,
+            accessible_entity_count: entityAccessList.filter((a) => a.is_active).length,
+          }}
+          entities={entities}
+          onClose={handleGrantModalClose}
+        />
+      )}
+
+      {/* Revoke Entity Access Confirmation */}
+      <ConfirmDialog
+        isOpen={!!revokeConfirm}
+        title="Revoke Entity Access"
+        message={`Are you sure you want to revoke access to ${revokeConfirm?.entityCode || "this entity"}? This action cannot be undone.`}
+        confirmLabel="Revoke Access"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={confirmRevokeEntityAccess}
+        onCancel={() => setRevokeConfirm(null)}
+      />
+
+      {/* Entity Access Toast */}
+      <Toast
+        visible={entityToast.visible}
+        type={entityToast.type}
+        message={entityToast.message}
+        onDismiss={() => setEntityToast({ ...entityToast, visible: false })}
+      />
     </div>
   );
 }

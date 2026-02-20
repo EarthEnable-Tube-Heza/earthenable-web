@@ -51,6 +51,7 @@ export const Permissions = {
   EXPENSE_VIEW_ALL: "expense.view.all",
   EXPENSE_CREATE: "expense.create",
   EXPENSE_APPROVE: "expense.approve",
+  EXPENSE_MANAGE: "expense.manage",
 
   // Call center permissions (match backend permission_definitions.py)
   CALL_CENTER: "call_center",
@@ -62,8 +63,12 @@ export const Permissions = {
   CALL_CENTER_CALLS_RECEIVE: "call_center.calls.receive",
   CALL_CENTER_RECORDINGS: "call_center.recordings",
   CALL_CENTER_CALLBACKS: "call_center.callbacks",
+  CALL_CENTER_CALLBACKS_OWN: "call_center.callbacks.own",
+  CALL_CENTER_CALLBACKS_ALL: "call_center.callbacks.all",
   CALL_CENTER_QUEUES: "call_center.queues",
   CALL_CENTER_AGENTS: "call_center.agents",
+  CALL_CENTER_AGENTS_VIEW: "call_center.agents.view",
+  CALL_CENTER_AGENTS_MANAGE: "call_center.agents.manage",
   CALL_CENTER_STATS: "call_center.stats",
   CALL_CENTER_SETTINGS: "call_center.settings",
 
@@ -81,6 +86,7 @@ export const Permissions = {
   SYSTEM_SYNC: "system.sync",
   SYSTEM_NOTIFICATIONS: "system.notifications",
   SYSTEM_SMS: "system.sms",
+  SYSTEM_PERMISSIONS: "system.permissions",
 } as const;
 
 /**
@@ -265,7 +271,7 @@ export const navigationModules: NavModule[] = [
         label: "Permissions",
         href: "/dashboard/permissions",
         icon: Shield,
-        permissions: [Permissions.SYSTEM_ADMIN],
+        permissions: [Permissions.SYSTEM_PERMISSIONS, Permissions.SYSTEM_ADMIN],
       },
       {
         id: "components",
@@ -290,32 +296,61 @@ export const navigationConfig: NavigationConfig = {
  * Maps user roles to the permissions they have
  * This is used as a fallback when the backend doesn't provide permissions
  */
+// All permission keys for System Administrator (full access)
+const ALL_PERMISSIONS = Object.values(Permissions);
+
 export const rolePermissions: Record<string, string[]> = {
-  admin: [
-    // Admins have all permissions
-    Permissions.TASKS_VIEW_ALL,
-    Permissions.TASKS_MANAGE,
-    Permissions.EXPENSE_VIEW_ALL,
-    Permissions.EXPENSE_CREATE,
-    Permissions.EXPENSE_APPROVE,
+  // ---- Backend DEFAULT_SYSTEM_ROLES (match permission_definitions.py) ----
+
+  "System Administrator": [...ALL_PERMISSIONS],
+
+  "Call Center Officer": [
+    Permissions.CALL_CENTER,
+    Permissions.CALL_CENTER_WORKSPACE,
+    Permissions.CALL_CENTER_CALLS,
+    Permissions.CALL_CENTER_CALLS_VIEW,
+    Permissions.CALL_CENTER_CALLS_MAKE,
+    Permissions.CALL_CENTER_CALLS_RECEIVE,
+    Permissions.CALL_CENTER_CALLBACKS,
+    Permissions.CALL_CENTER_CALLBACKS_OWN,
+    Permissions.CALL_CENTER_AGENTS,
+    Permissions.CALL_CENTER_AGENTS_VIEW,
+  ],
+
+  "Call Center Manager": [
     Permissions.CALL_CENTER,
     Permissions.CALL_CENTER_WORKSPACE,
     Permissions.CALL_CENTER_CALLS,
     Permissions.CALL_CENTER_CALLS_VIEW,
     Permissions.CALL_CENTER_CALLS_VIEW_ALL,
+    Permissions.CALL_CENTER_CALLS_MAKE,
+    Permissions.CALL_CENTER_CALLS_RECEIVE,
+    Permissions.CALL_CENTER_RECORDINGS,
+    Permissions.CALL_CENTER_CALLBACKS,
+    Permissions.CALL_CENTER_CALLBACKS_OWN,
+    Permissions.CALL_CENTER_CALLBACKS_ALL,
+    Permissions.CALL_CENTER_QUEUES,
+    Permissions.CALL_CENTER_AGENTS,
+    Permissions.CALL_CENTER_AGENTS_VIEW,
+    Permissions.CALL_CENTER_AGENTS_MANAGE,
+    Permissions.CALL_CENTER_STATS,
     Permissions.CALL_CENTER_SETTINGS,
-    Permissions.USERS_VIEW,
-    Permissions.USERS_MANAGE,
-    Permissions.ANALYTICS_VIEW,
-    Permissions.ANALYTICS_EXPORT,
-    Permissions.SYSTEM_ADMIN,
-    Permissions.SYSTEM_MONITORING,
-    Permissions.SYSTEM_SYNC,
-    Permissions.SYSTEM_NOTIFICATIONS,
-    Permissions.SYSTEM_SMS,
   ],
+
+  "QA Agent": [Permissions.TASKS_VIEW_OWN],
+
+  "QA Manager": [
+    Permissions.TASKS_VIEW_OWN,
+    Permissions.TASKS_VIEW_TEAM,
+    Permissions.TASKS_MANAGE,
+    Permissions.ANALYTICS_VIEW,
+  ],
+
+  // ---- Legacy aliases (backward compatibility during transition) ----
+
+  admin: [...ALL_PERMISSIONS],
+
   manager: [
-    // Managers can view team data and have some elevated permissions
     Permissions.TASKS_VIEW_TEAM,
     Permissions.TASKS_MANAGE,
     Permissions.EXPENSE_VIEW_TEAM,
@@ -329,8 +364,8 @@ export const rolePermissions: Record<string, string[]> = {
     Permissions.USERS_VIEW,
     Permissions.ANALYTICS_VIEW,
   ],
+
   qa_agent: [
-    // QA agents have basic permissions
     Permissions.TASKS_VIEW_OWN,
     Permissions.EXPENSE_VIEW_OWN,
     Permissions.EXPENSE_CREATE,
@@ -338,6 +373,7 @@ export const rolePermissions: Record<string, string[]> = {
     Permissions.CALL_CENTER_WORKSPACE,
     Permissions.CALL_CENTER_CALLS_VIEW,
   ],
+
   // Default permissions for unknown roles
   default: [Permissions.EXPENSE_VIEW_OWN, Permissions.EXPENSE_CREATE],
 };
@@ -370,6 +406,7 @@ export const routePermissions: Record<string, string[]> = {
     Permissions.CALL_CENTER_CALLS,
     Permissions.CALL_CENTER_CALLS_VIEW,
   ],
+  "/dashboard/permissions": [Permissions.SYSTEM_PERMISSIONS, Permissions.SYSTEM_ADMIN],
   "/dashboard/components": [Permissions.SYSTEM_ADMIN],
   "/dashboard/expenses": [
     Permissions.EXPENSE_VIEW_OWN,
