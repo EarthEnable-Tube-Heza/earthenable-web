@@ -3,35 +3,20 @@
 /**
  * Job Roles Tab (Admin Only)
  *
- * Job role management with organizational levels and entity-specific roles
+ * Job role management with seniority levels and entity-specific roles
  */
 
 import { useState } from "react";
 import { Input, Button, LabeledSelect, Card, Spinner, Badge, Toast } from "@/src/components/ui";
 import type { ToastType } from "@/src/components/ui/Toast";
 import { Plus, XCircle, Save, Info, Briefcase } from "@/src/lib/icons";
-import { useJobRoles, useCreateJobRole } from "@/src/hooks/useExpenses";
+import { useJobRoles, useCreateJobRole, useSeniorityLevels } from "@/src/hooks/useExpenses";
 import { useAuth } from "@/src/lib/auth";
 
-const LEVEL_OPTIONS = [
-  { value: "intern", label: "Intern" },
-  { value: "officer", label: "Officer" },
-  { value: "junior_manager", label: "Junior Manager" },
-  { value: "manager", label: "Manager" },
-  { value: "senior_manager", label: "Senior Manager" },
-  { value: "director", label: "Director" },
-  { value: "c_suite", label: "C-Suite" },
-];
-
-const getLevelLabel = (level: string): string => {
-  const option = LEVEL_OPTIONS.find((opt) => opt.value === level);
-  return option?.label || level;
-};
-
-const getLevelBadgeVariant = (level: string): "info" | "success" | "warning" | "error" => {
-  if (level === "c_suite" || level === "director") return "error";
-  if (level === "senior_manager" || level === "manager") return "warning";
-  if (level === "junior_manager" || level === "officer") return "info";
+const getSeniorityBadgeVariant = (rank: number): "info" | "success" | "warning" | "error" => {
+  if (rank >= 6) return "error";
+  if (rank >= 4) return "warning";
+  if (rank >= 2) return "info";
   return "success";
 };
 
@@ -42,15 +27,22 @@ export function JobRolesTab() {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    level: "officer",
+    seniority_level_id: "",
     description: "",
     isActive: true,
   });
 
   const { data, isLoading } = useJobRoles(selectedEntityId || undefined);
   const createJobRole = useCreateJobRole(selectedEntityId || undefined);
+  const { data: seniorityLevels = [] } = useSeniorityLevels(selectedEntityId || undefined);
 
   const jobRoles = data?.job_roles || [];
+
+  // Build options from fetched seniority levels
+  const seniorityOptions = seniorityLevels.map((sl) => ({
+    value: sl.id,
+    label: sl.name,
+  }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +51,7 @@ export function JobRolesTab() {
       await createJobRole.mutateAsync({
         name: formData.name,
         code: formData.code,
-        level: formData.level,
+        seniority_level_id: formData.seniority_level_id || undefined,
         description: formData.description || undefined,
         isActive: formData.isActive,
       });
@@ -69,7 +61,7 @@ export function JobRolesTab() {
       setFormData({
         name: "",
         code: "",
-        level: "officer",
+        seniority_level_id: "",
         description: "",
         isActive: true,
       });
@@ -97,7 +89,7 @@ export function JobRolesTab() {
         <div>
           <h3 className="text-lg font-semibold text-text-primary">Job Roles</h3>
           <p className="text-sm text-text-secondary">
-            Manage organizational job roles with levels for employee assignments
+            Manage organizational job roles with seniority levels for employee assignments
           </p>
         </div>
         <Button
@@ -127,9 +119,9 @@ export function JobRolesTab() {
             <h4 className="font-semibold text-text-primary mb-1">How Job Roles Work</h4>
             <p className="text-sm text-text-secondary">
               Job roles represent specific positions within your organization (e.g., &quot;Systems
-              Officer&quot;, &quot;QA Manager&quot;, &quot;Sales Director&quot;). Each role is
-              assigned an organizational level that determines hierarchy. These roles are separate
-              from system permission roles (admin, manager, qa_agent) and are used for
+              Officer&quot;, &quot;QA Manager&quot;, &quot;Sales Director&quot;). Each role can
+              optionally be assigned a seniority level that determines hierarchy. These roles are
+              separate from system permission roles (admin, manager, qa_agent) and are used for
               organizational structure and employee management.
             </p>
           </div>
@@ -161,11 +153,13 @@ export function JobRolesTab() {
             </div>
 
             <LabeledSelect
-              label="Organizational Level"
-              value={formData.level}
-              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-              options={LEVEL_OPTIONS}
-              required
+              label="Seniority Level"
+              value={formData.seniority_level_id}
+              onChange={(e) => setFormData({ ...formData, seniority_level_id: e.target.value })}
+              options={[
+                { value: "", label: "Select seniority level (optional)" },
+                ...seniorityOptions,
+              ]}
             />
 
             <div className="space-y-2">
@@ -203,7 +197,7 @@ export function JobRolesTab() {
                   setFormData({
                     name: "",
                     code: "",
-                    level: "officer",
+                    seniority_level_id: "",
                     description: "",
                     isActive: true,
                   });
@@ -264,11 +258,18 @@ export function JobRolesTab() {
                   <Briefcase className="w-5 h-5 text-text-tertiary flex-shrink-0" />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Badge variant={getLevelBadgeVariant(role.level)} size="sm">
-                    {getLevelLabel(role.level)}
-                  </Badge>
-                </div>
+                {role.seniority_level_name && (
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={getSeniorityBadgeVariant(
+                        seniorityLevels.find((sl) => sl.id === role.seniority_level_id)?.rank ?? 0
+                      )}
+                      size="sm"
+                    >
+                      {role.seniority_level_name}
+                    </Badge>
+                  </div>
+                )}
 
                 {role.description && (
                   <p className="text-xs text-text-secondary line-clamp-2">{role.description}</p>

@@ -278,7 +278,8 @@ export interface JobRole {
   entity_id: string;
   name: string;
   code: string;
-  level: string;
+  seniority_level_id?: string;
+  seniority_level_name?: string;
   description?: string;
   is_active: boolean;
   created_at: string;
@@ -867,7 +868,7 @@ export async function createJobRole(
   data: {
     name: string;
     code: string;
-    level: string;
+    seniority_level_id?: string;
     description?: string;
     isActive?: boolean;
   }
@@ -875,10 +876,29 @@ export async function createJobRole(
   const response = await apiClient.post<JobRole>(`/admin/entities/${entityId}/job-roles`, {
     name: data.name,
     code: data.code,
-    level: data.level,
+    seniority_level_id: data.seniority_level_id,
     description: data.description,
     is_active: data.isActive ?? true,
   });
+  return response;
+}
+
+/**
+ * Get seniority levels (global + entity-scoped)
+ */
+export interface SeniorityLevel {
+  id: string;
+  entity_id?: string;
+  name: string;
+  code: string;
+  rank: number;
+  description?: string;
+  is_active: boolean;
+}
+
+export async function getSeniorityLevels(entityId?: string): Promise<SeniorityLevel[]> {
+  const params = entityId ? `?entity_id=${entityId}` : "";
+  const response = await apiClient.get<SeniorityLevel[]>(`/admin/seniority-levels${params}`);
   return response;
 }
 
