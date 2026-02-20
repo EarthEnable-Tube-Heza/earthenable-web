@@ -191,31 +191,6 @@ export function formatRoleLabel(role: string | undefined | null): string {
 // ============ Employee Management Types ============
 
 /**
- * Employee level enum (organizational hierarchy level)
- */
-export type Level =
-  | "intern"
-  | "officer"
-  | "junior_manager"
-  | "manager"
-  | "senior_manager"
-  | "director"
-  | "c_suite";
-
-/**
- * Level options for dropdown selection
- */
-export const LEVEL_OPTIONS: { value: Level; label: string }[] = [
-  { value: "intern", label: "Intern" },
-  { value: "officer", label: "Officer" },
-  { value: "junior_manager", label: "Junior Manager" },
-  { value: "manager", label: "Manager" },
-  { value: "senior_manager", label: "Senior Manager" },
-  { value: "director", label: "Director" },
-  { value: "c_suite", label: "C-Suite" },
-];
-
-/**
  * Request to create a new employee record
  */
 export interface CreateEmployeeRequest {
@@ -227,9 +202,7 @@ export interface CreateEmployeeRequest {
   branch_id?: string;
   job_role_id?: string;
   approver_id?: string;
-  level?: Level;
   employee_number?: string;
-  job_title?: string;
   notes?: string;
 }
 
@@ -244,9 +217,7 @@ export interface UpdateEmployeeRequest {
   job_role_id?: string;
   approver_id?: string;
   role?: string;
-  level?: Level;
   employee_number?: string;
-  job_title?: string;
   start_date?: string;
   end_date?: string;
   notes?: string;

@@ -298,6 +298,20 @@ export function useJobRoles(entityId?: string) {
 }
 
 /**
+ * Hook to get seniority levels (global + entity-scoped)
+ */
+export function useSeniorityLevels(entityId?: string) {
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || undefined;
+
+  return useQuery({
+    queryKey: ["seniority-levels", finalEntityId],
+    queryFn: () => expenseAPI.getSeniorityLevels(finalEntityId),
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+  });
+}
+
+/**
  * Hook to create job role
  */
 export function useCreateJobRole(entityId?: string) {

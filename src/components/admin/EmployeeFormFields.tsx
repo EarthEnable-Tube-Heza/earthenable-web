@@ -16,8 +16,6 @@ import {
   DepartmentResponse,
   BranchResponse,
   JobRoleResponse,
-  Level,
-  LEVEL_OPTIONS,
   UserListItem,
 } from "@/src/types";
 
@@ -29,9 +27,7 @@ export interface EmployeeFormData {
   job_role_id: string;
   approver_id: string;
   role: string;
-  level: Level | "";
   employee_number: string;
-  job_title: string;
   start_date: string;
   end_date: string;
   notes: string;
@@ -311,7 +307,8 @@ export function EmployeeFormFields({
               <option value="">Select job role...</option>
               {jobRoles.map((role) => (
                 <option key={role.id} value={role.id}>
-                  {role.code} - {role.name} ({role.level})
+                  {role.name}
+                  {role.seniority_level_name ? ` (${role.seniority_level_name})` : ""}
                 </option>
               ))}
             </Select>
@@ -319,7 +316,7 @@ export function EmployeeFormFields({
         </div>
       )}
 
-      {/* Role & Level Row */}
+      {/* Role & Employee Number Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Role"
@@ -331,26 +328,6 @@ export function EmployeeFormFields({
           error={errors.role}
         />
 
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">Level</label>
-          <Select
-            value={data.level}
-            onChange={(e) => handleChange("level", e.target.value)}
-            disabled={disabled}
-            error={!!errors.level}
-          >
-            <option value="">Select level...</option>
-            {LEVEL_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </div>
-
-      {/* Employee Number & Job Title Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Employee Number"
           value={data.employee_number}
@@ -358,15 +335,6 @@ export function EmployeeFormFields({
           placeholder="e.g., EMP001"
           disabled={disabled}
           error={errors.employee_number}
-        />
-
-        <Input
-          label="Job Title"
-          value={data.job_title}
-          onChange={(e) => handleChange("job_title", e.target.value)}
-          placeholder="e.g., Senior QA Agent"
-          disabled={disabled}
-          error={errors.job_title}
         />
       </div>
 
@@ -512,9 +480,7 @@ export function createEmptyEmployeeFormData(): EmployeeFormData {
     job_role_id: "",
     approver_id: "",
     role: "",
-    level: "",
     employee_number: "",
-    job_title: "",
     start_date: new Date().toISOString().split("T")[0],
     end_date: "",
     notes: "",
@@ -532,9 +498,7 @@ export function employeeDetailToFormData(employee: {
   job_role_id?: string;
   approver_id?: string;
   role: string;
-  level?: string;
   employee_number?: string;
-  job_title?: string;
   start_date: string;
   end_date?: string;
   notes?: string;
@@ -547,9 +511,7 @@ export function employeeDetailToFormData(employee: {
     job_role_id: employee.job_role_id || "",
     approver_id: employee.approver_id || "",
     role: employee.role,
-    level: (employee.level as Level) || "",
     employee_number: employee.employee_number || "",
-    job_title: employee.job_title || "",
     start_date: employee.start_date.split("T")[0],
     end_date: employee.end_date?.split("T")[0] || "",
     notes: employee.notes || "",

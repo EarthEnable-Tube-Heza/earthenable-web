@@ -14,7 +14,7 @@ import {
   EmployeeFormData,
   employeeDetailToFormData,
 } from "./EmployeeFormFields";
-import { EntityListResponse, EmployeeDetail, UpdateEmployeeRequest, Level } from "@/src/types";
+import { EntityListResponse, EmployeeDetail, UpdateEmployeeRequest } from "@/src/types";
 
 interface EditEmployeeModalProps {
   userId: string;
@@ -65,9 +65,7 @@ export function EditEmployeeModal({
         job_role_id: formData.job_role_id || undefined,
         approver_id: formData.approver_id || undefined,
         role: formData.role,
-        level: (formData.level as Level) || undefined,
         employee_number: formData.employee_number || undefined,
-        job_title: formData.job_title || undefined,
         end_date: formData.end_date || undefined,
         notes: formData.notes || undefined,
       };
