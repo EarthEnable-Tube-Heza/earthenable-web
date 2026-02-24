@@ -1,10 +1,12 @@
 "use client";
 
 /**
- * Users List Page (Admin only)
+ * Users Management Page (Admin only)
  *
- * Displays paginated list of users with search, filtering, and inline entity access management.
- * Uses getUsersWithEntityAccess() API for entity visibility. Role filtering is client-side.
+ * Tabbed layout with:
+ *   - Users tab: Paginated list with search, filtering, and entity access management
+ *   - Job Roles tab: CRUD for entity-specific job roles (admin only)
+ *   - Seniority Levels tab: CRUD for seniority levels (admin only)
  */
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -18,8 +20,21 @@ import { UserWithEntityAccess, EntityListResponse } from "@/src/types";
 import { cn, PAGE_SPACING } from "@/src/lib/theme";
 import { LabeledSelect, MultiSelect, Badge, ConfirmDialog, Toast } from "@/src/components/ui";
 import { GrantEntityAccessModal } from "@/src/components/admin/GrantEntityAccessModal";
+import { useIsAdmin } from "@/src/lib/auth/hooks";
+import { JobRolesTab } from "@/src/components/expenses/tabs/JobRolesTab";
+import { SeniorityLevelsTab } from "@/src/components/admin/tabs/SeniorityLevelsTab";
 
-export default function UsersPage() {
+type UserTabId = "users" | "job-roles" | "seniority-levels";
+
+const USER_TABS: { id: UserTabId; label: string; adminOnly: boolean }[] = [
+  { id: "users", label: "Users", adminOnly: false },
+  { id: "job-roles", label: "Job Roles", adminOnly: true },
+  { id: "seniority-levels", label: "Seniority Levels", adminOnly: true },
+];
+
+/* ───────────────────── Users Content (extracted) ───────────────────── */
+
+function UsersContent() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(0);
   const [searchInput, setSearchInput] = useState(""); // What user is typing
@@ -118,11 +133,6 @@ export default function UsersPage() {
   const total = roleFilter.length > 0 ? users.length : data?.total || 0;
   const totalPages = roleFilter.length > 0 ? 1 : Math.ceil((data?.total || 0) / limit);
 
-  useSetPageHeader({
-    title: "Users",
-    pathLabels: { users: "Users" },
-  });
-
   // Handle search submission
   const handleSearch = () => {
     setSearchQuery(searchInput);
@@ -181,7 +191,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div className={PAGE_SPACING}>
+    <>
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-medium p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -646,6 +656,57 @@ export default function UsersPage() {
         message={toast.message}
         onDismiss={() => setToast({ ...toast, visible: false })}
       />
+    </>
+  );
+}
+
+/* ───────────────────── Main Page Component ───────────────────── */
+
+export default function UsersPage() {
+  const isAdmin = useIsAdmin();
+  const [activeTab, setActiveTab] = useState<UserTabId>("users");
+
+  useSetPageHeader({
+    title: "Users",
+    pathLabels: { users: "Users" },
+  });
+
+  const visibleTabs = USER_TABS.filter((tab) => !tab.adminOnly || isAdmin);
+
+  return (
+    <div className={PAGE_SPACING}>
+      {/* Tab Navigation — only render if more than one tab visible */}
+      {visibleTabs.length > 1 && (
+        <div className="bg-white rounded-lg shadow-medium overflow-hidden">
+          <div className="border-b border-gray-200 overflow-x-auto">
+            <nav className="flex min-w-full" role="tablist">
+              {visibleTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+                    ${
+                      activeTab === tab.id
+                        ? "border-primary text-primary bg-primary/5"
+                        : "border-transparent text-text-secondary hover:text-text-primary hover:bg-gray-50"
+                    }
+                  `}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Tab Content */}
+      {activeTab === "users" && <UsersContent />}
+      {activeTab === "job-roles" && isAdmin && <JobRolesTab />}
+      {activeTab === "seniority-levels" && isAdmin && <SeniorityLevelsTab />}
     </div>
   );
 }
