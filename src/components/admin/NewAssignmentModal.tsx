@@ -16,7 +16,7 @@ import {
   EmployeeFormData,
   createEmptyEmployeeFormData,
 } from "./EmployeeFormFields";
-import { EntityListResponse, EmployeeDetail, CreateEmployeeRequest, Level } from "@/src/types";
+import { EntityListResponse, EmployeeDetail, CreateEmployeeRequest } from "@/src/types";
 
 interface NewAssignmentModalProps {
   userId: string;
@@ -146,9 +146,7 @@ export function NewAssignmentModal({
       branch_id: formData.branch_id || undefined,
       job_role_id: formData.job_role_id || undefined,
       approver_id: formData.approver_id || undefined,
-      level: (formData.level as Level) || undefined,
       employee_number: formData.employee_number || undefined,
-      job_title: formData.job_title || undefined,
       notes: formData.notes || undefined,
     };
 

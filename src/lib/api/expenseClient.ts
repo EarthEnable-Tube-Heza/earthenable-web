@@ -278,7 +278,8 @@ export interface JobRole {
   entity_id: string;
   name: string;
   code: string;
-  level: string;
+  seniority_level_id?: string;
+  seniority_level_name?: string;
   description?: string;
   is_active: boolean;
   created_at: string;
@@ -867,7 +868,7 @@ export async function createJobRole(
   data: {
     name: string;
     code: string;
-    level: string;
+    seniority_level_id?: string;
     description?: string;
     isActive?: boolean;
   }
@@ -875,11 +876,99 @@ export async function createJobRole(
   const response = await apiClient.post<JobRole>(`/admin/entities/${entityId}/job-roles`, {
     name: data.name,
     code: data.code,
-    level: data.level,
+    seniority_level_id: data.seniority_level_id,
     description: data.description,
     is_active: data.isActive ?? true,
   });
   return response;
+}
+
+/**
+ * Get seniority levels (global + entity-scoped)
+ */
+export interface SeniorityLevel {
+  id: string;
+  entity_id?: string;
+  name: string;
+  code: string;
+  rank: number;
+  description?: string;
+  is_active: boolean;
+}
+
+export async function getSeniorityLevels(entityId?: string): Promise<SeniorityLevel[]> {
+  const params = entityId ? `?entity_id=${entityId}` : "";
+  const response = await apiClient.get<SeniorityLevel[]>(`/admin/seniority-levels${params}`);
+  return response;
+}
+
+/**
+ * Update job role
+ */
+export async function updateJobRole(
+  entityId: string,
+  roleId: string,
+  data: {
+    name?: string;
+    code?: string;
+    seniority_level_id?: string | null;
+    description?: string | null;
+    is_active?: boolean;
+  }
+): Promise<JobRole> {
+  const response = await apiClient.patch<JobRole>(
+    `/admin/entities/${entityId}/job-roles/${roleId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Delete (deactivate) job role
+ */
+export async function deleteJobRole(entityId: string, roleId: string): Promise<void> {
+  await apiClient.delete(`/admin/entities/${entityId}/job-roles/${roleId}`);
+}
+
+/**
+ * Create seniority level
+ */
+export async function createSeniorityLevel(data: {
+  entity_id?: string | null;
+  name: string;
+  code: string;
+  rank: number;
+  description?: string;
+}): Promise<SeniorityLevel> {
+  const response = await apiClient.post<SeniorityLevel>(`/admin/seniority-levels`, data);
+  return response;
+}
+
+/**
+ * Update seniority level
+ */
+export async function updateSeniorityLevel(
+  levelId: string,
+  data: {
+    name?: string;
+    code?: string;
+    rank?: number;
+    description?: string | null;
+    is_active?: boolean;
+  }
+): Promise<SeniorityLevel> {
+  const response = await apiClient.patch<SeniorityLevel>(
+    `/admin/seniority-levels/${levelId}`,
+    data
+  );
+  return response;
+}
+
+/**
+ * Delete (deactivate) seniority level
+ */
+export async function deleteSeniorityLevel(levelId: string): Promise<void> {
+  await apiClient.delete(`/admin/seniority-levels/${levelId}`);
 }
 
 // ==================== Attachment Types & Functions ====================

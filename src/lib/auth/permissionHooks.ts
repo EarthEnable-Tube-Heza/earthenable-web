@@ -138,13 +138,13 @@ export function usePermissions() {
    */
   const hasPermission = useCallback(
     (permission: Permission): boolean => {
-      // Admins have all permissions
-      if (user?.role === "admin") {
+      // Superusers have all permissions
+      if (user?.is_superuser) {
         return true;
       }
       return permissions.has(permission);
     },
-    [permissions, user?.role]
+    [permissions, user?.is_superuser]
   );
 
   /**
@@ -157,14 +157,14 @@ export function usePermissions() {
         return true;
       }
 
-      // Admins have all permissions
-      if (user?.role === "admin") {
+      // Superusers have all permissions
+      if (user?.is_superuser) {
         return true;
       }
 
       return permissionList.some((p) => permissions.has(p));
     },
-    [permissions, user?.role]
+    [permissions, user?.is_superuser]
   );
 
   /**
@@ -177,14 +177,14 @@ export function usePermissions() {
         return true;
       }
 
-      // Admins have all permissions
-      if (user?.role === "admin") {
+      // Superusers have all permissions
+      if (user?.is_superuser) {
         return true;
       }
 
       return permissionList.every((p) => permissions.has(p));
     },
-    [permissions, user?.role]
+    [permissions, user?.is_superuser]
   );
 
   /**
@@ -410,6 +410,7 @@ export function useExpensePermissions() {
     canViewAll: hasPermission(Permissions.EXPENSE_VIEW_ALL),
     canCreate: hasPermission(Permissions.EXPENSE_CREATE),
     canApprove: hasPermission(Permissions.EXPENSE_APPROVE),
+    canManage: hasPermission(Permissions.EXPENSE_MANAGE),
   };
 }
 

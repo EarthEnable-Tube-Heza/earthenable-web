@@ -146,7 +146,8 @@ export interface JobRoleResponse {
   entity_id: string;
   name: string;
   code: string;
-  level: string;
+  seniority_level_id?: string;
+  seniority_level_name?: string;
   description?: string;
   is_active: boolean;
   created_at: string;

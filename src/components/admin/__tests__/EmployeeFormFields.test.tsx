@@ -29,7 +29,8 @@ jest.mock("@/src/lib/api/apiClient", () => ({
         entity_id: "entity-1",
         name: "QA Agent",
         code: "QA",
-        level: "officer",
+        seniority_level_id: "sl-1",
+        seniority_level_name: "Officer",
         is_active: true,
       },
     ]),
@@ -107,27 +108,6 @@ describe("EmployeeFormFields Component", () => {
     expect(roleInput).toHaveAttribute("required");
   });
 
-  it("renders level select with all level options", () => {
-    const formData = createEmptyEmployeeFormData();
-
-    render(
-      <EmployeeFormFields
-        data={formData}
-        onChange={mockOnChange}
-        entities={mockEntities}
-        mode="create"
-      />
-    );
-
-    expect(screen.getByText("Level")).toBeInTheDocument();
-    expect(screen.getByText("Select level...")).toBeInTheDocument();
-    expect(screen.getByText("Intern")).toBeInTheDocument();
-    expect(screen.getByText("Officer")).toBeInTheDocument();
-    expect(screen.getByText("Manager")).toBeInTheDocument();
-    expect(screen.getByText("Director")).toBeInTheDocument();
-    expect(screen.getByText("C-Suite")).toBeInTheDocument();
-  });
-
   it("calls onChange when entity is selected", async () => {
     const formData = createEmptyEmployeeFormData();
 
@@ -198,10 +178,9 @@ describe("EmployeeFormFields Component", () => {
       screen.getByPlaceholderText("Add any notes about ending this employment...")
     ).toBeInTheDocument();
 
-    // Should NOT show entity, role, level, etc.
+    // Should NOT show entity, role, etc.
     expect(screen.queryByText("Entity")).not.toBeInTheDocument();
     expect(screen.queryByText("Role")).not.toBeInTheDocument();
-    expect(screen.queryByText("Level")).not.toBeInTheDocument();
   });
 
   it("disables entity select in edit mode", () => {
@@ -280,9 +259,7 @@ describe("createEmptyEmployeeFormData", () => {
     expect(formData.job_role_id).toBe("");
     expect(formData.approver_id).toBe("");
     expect(formData.role).toBe("");
-    expect(formData.level).toBe("");
     expect(formData.employee_number).toBe("");
-    expect(formData.job_title).toBe("");
     expect(formData.start_date).toBe(new Date().toISOString().split("T")[0]);
     expect(formData.end_date).toBe("");
     expect(formData.notes).toBe("");
@@ -299,9 +276,7 @@ describe("employeeDetailToFormData", () => {
       job_role_id: "role-1",
       approver_id: "approver-1",
       role: "qa_agent",
-      level: "officer",
       employee_number: "EMP001",
-      job_title: "QA Agent",
       start_date: "2024-01-15T00:00:00Z",
       end_date: "2024-12-31T00:00:00Z",
       notes: "Test notes",
@@ -316,9 +291,7 @@ describe("employeeDetailToFormData", () => {
     expect(formData.job_role_id).toBe("role-1");
     expect(formData.approver_id).toBe("approver-1");
     expect(formData.role).toBe("qa_agent");
-    expect(formData.level).toBe("officer");
     expect(formData.employee_number).toBe("EMP001");
-    expect(formData.job_title).toBe("QA Agent");
     expect(formData.start_date).toBe("2024-01-15");
     expect(formData.end_date).toBe("2024-12-31");
     expect(formData.notes).toBe("Test notes");
@@ -337,7 +310,6 @@ describe("employeeDetailToFormData", () => {
     expect(formData.role).toBe("qa_agent");
     expect(formData.department_id).toBe("");
     expect(formData.branch_id).toBe("");
-    expect(formData.level).toBe("");
     expect(formData.end_date).toBe("");
     expect(formData.notes).toBe("");
   });

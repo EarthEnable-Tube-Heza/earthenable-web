@@ -27,9 +27,10 @@ export interface User {
   name?: string;
   picture?: string;
   google_id?: string;
-  role: string; // Dynamic role string from Salesforce
+  role: string; // Dynamic role string from employee record
   is_active: boolean;
   is_verified: boolean;
+  is_superuser: boolean;
   created_at: string;
   last_login?: string;
   entity_id?: string;
@@ -43,8 +44,9 @@ export interface UserListItem {
   email: string;
   name?: string;
   picture?: string;
-  role: string; // Dynamic role string
+  role: string; // Dynamic role string from employee record
   is_active: boolean;
+  is_superuser: boolean;
   created_at: string;
   last_login?: string;
 }
@@ -186,57 +188,7 @@ export function formatRoleLabel(role: string | undefined | null): string {
     .join(" ");
 }
 
-/**
- * Check if user has admin role
- */
-export function isAdmin(user: User | null | undefined): boolean {
-  return user?.role === KnownRoles.ADMIN;
-}
-
-/**
- * Check if user has manager role or higher
- */
-export function isManager(user: User | null | undefined): boolean {
-  return user?.role === KnownRoles.MANAGER || user?.role === KnownRoles.ADMIN;
-}
-
-/**
- * Check if user has QA agent role or higher
- */
-export function isQAAgent(user: User | null | undefined): boolean {
-  return (
-    user?.role === KnownRoles.QA_AGENT ||
-    user?.role === KnownRoles.MANAGER ||
-    user?.role === KnownRoles.ADMIN
-  );
-}
-
 // ============ Employee Management Types ============
-
-/**
- * Employee level enum (organizational hierarchy level)
- */
-export type Level =
-  | "intern"
-  | "officer"
-  | "junior_manager"
-  | "manager"
-  | "senior_manager"
-  | "director"
-  | "c_suite";
-
-/**
- * Level options for dropdown selection
- */
-export const LEVEL_OPTIONS: { value: Level; label: string }[] = [
-  { value: "intern", label: "Intern" },
-  { value: "officer", label: "Officer" },
-  { value: "junior_manager", label: "Junior Manager" },
-  { value: "manager", label: "Manager" },
-  { value: "senior_manager", label: "Senior Manager" },
-  { value: "director", label: "Director" },
-  { value: "c_suite", label: "C-Suite" },
-];
 
 /**
  * Request to create a new employee record
@@ -250,9 +202,7 @@ export interface CreateEmployeeRequest {
   branch_id?: string;
   job_role_id?: string;
   approver_id?: string;
-  level?: Level;
   employee_number?: string;
-  job_title?: string;
   notes?: string;
 }
 
@@ -267,9 +217,7 @@ export interface UpdateEmployeeRequest {
   job_role_id?: string;
   approver_id?: string;
   role?: string;
-  level?: Level;
   employee_number?: string;
-  job_title?: string;
   start_date?: string;
   end_date?: string;
   notes?: string;
@@ -282,17 +230,3 @@ export interface EndEmployeeRequest {
   end_date: string; // ISO date string
   notes?: string;
 }
-
-// ============ Backward compatibility exports ============
-// Keep UserRole enum for any existing code that imports it
-export enum UserRole {
-  QA_AGENT = "qa_agent",
-  MANAGER = "manager",
-  ADMIN = "admin",
-}
-
-export const UserRoleLabels: Record<string, string> = {
-  [UserRole.QA_AGENT]: "QA Agent",
-  [UserRole.MANAGER]: "Manager",
-  [UserRole.ADMIN]: "Admin",
-};

@@ -24,10 +24,11 @@ export function GrantEntityAccessModal({ user, entities, onClose }: GrantEntityA
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const entityAccess = user.entity_access || [];
+
   // Get entities user doesn't already have access to
   const availableEntities = entities.filter(
-    (entity) =>
-      !user.entity_access.some((access) => access.entity_id === entity.id && access.is_active)
+    (entity) => !entityAccess.some((access) => access.entity_id === entity.id && access.is_active)
   );
 
   // Handle entity selection toggle
@@ -89,11 +90,11 @@ export function GrantEntityAccessModal({ user, entities, onClose }: GrantEntityA
           )}
 
           {/* Current Access */}
-          {user.entity_access.filter((a) => a.is_active).length > 0 && (
+          {entityAccess.filter((a) => a.is_active).length > 0 && (
             <div className="mb-6">
               <h3 className="font-semibold text-text-primary mb-2">Current Entity Access</h3>
               <div className="flex flex-wrap gap-2">
-                {user.entity_access
+                {entityAccess
                   .filter((access) => access.is_active)
                   .map((access) => (
                     <span

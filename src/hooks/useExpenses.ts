@@ -298,6 +298,20 @@ export function useJobRoles(entityId?: string) {
 }
 
 /**
+ * Hook to get seniority levels (global + entity-scoped)
+ */
+export function useSeniorityLevels(entityId?: string) {
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || undefined;
+
+  return useQuery({
+    queryKey: ["seniority-levels", finalEntityId],
+    queryFn: () => expenseAPI.getSeniorityLevels(finalEntityId),
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+  });
+}
+
+/**
  * Hook to create job role
  */
 export function useCreateJobRole(entityId?: string) {
@@ -310,6 +324,93 @@ export function useCreateJobRole(entityId?: string) {
       expenseAPI.createJobRole(finalEntityId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+    },
+  });
+}
+
+/**
+ * Hook to update job role
+ */
+export function useUpdateJobRole(entityId?: string) {
+  const queryClient = useQueryClient();
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
+
+  return useMutation({
+    mutationFn: ({
+      roleId,
+      data,
+    }: {
+      roleId: string;
+      data: Parameters<typeof expenseAPI.updateJobRole>[2];
+    }) => expenseAPI.updateJobRole(finalEntityId, roleId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+    },
+  });
+}
+
+/**
+ * Hook to delete (deactivate) job role
+ */
+export function useDeleteJobRole(entityId?: string) {
+  const queryClient = useQueryClient();
+  const { selectedEntityId: globalEntityId } = useAuth();
+  const finalEntityId = entityId || globalEntityId || "";
+
+  return useMutation({
+    mutationFn: (roleId: string) => expenseAPI.deleteJobRole(finalEntityId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["job-roles"] });
+    },
+  });
+}
+
+/**
+ * Hook to create seniority level
+ */
+export function useCreateSeniorityLevel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Parameters<typeof expenseAPI.createSeniorityLevel>[0]) =>
+      expenseAPI.createSeniorityLevel(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seniority-levels"] });
+    },
+  });
+}
+
+/**
+ * Hook to update seniority level
+ */
+export function useUpdateSeniorityLevel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      levelId,
+      data,
+    }: {
+      levelId: string;
+      data: Parameters<typeof expenseAPI.updateSeniorityLevel>[1];
+    }) => expenseAPI.updateSeniorityLevel(levelId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seniority-levels"] });
+    },
+  });
+}
+
+/**
+ * Hook to delete (deactivate) seniority level
+ */
+export function useDeleteSeniorityLevel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (levelId: string) => expenseAPI.deleteSeniorityLevel(levelId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seniority-levels"] });
     },
   });
 }
