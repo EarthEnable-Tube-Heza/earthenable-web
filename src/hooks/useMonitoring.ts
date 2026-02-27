@@ -272,6 +272,72 @@ export function useUpdateOrphanedTaskCleanupConfig() {
   });
 }
 
+// ==================== User Sync Job Hooks ====================
+
+/**
+ * Hook to fetch user sync job status
+ * Auto-refreshes every 60 seconds
+ */
+export function useUserSyncStatus() {
+  return useQuery({
+    queryKey: ["monitoring", "system-jobs", "user-sync"],
+    queryFn: () => apiClient.getUserSyncStatus(),
+    refetchInterval: SYSTEM_JOB_REFRESH_INTERVAL,
+    staleTime: SYSTEM_JOB_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to fetch user sync run history
+ * Auto-refreshes every 60 seconds
+ */
+export function useUserSyncHistory(limit = 20) {
+  return useQuery({
+    queryKey: ["monitoring", "system-jobs", "user-sync-history", limit],
+    queryFn: () => apiClient.getUserSyncHistory(limit),
+    refetchInterval: SYSTEM_JOB_REFRESH_INTERVAL,
+    staleTime: SYSTEM_JOB_REFRESH_INTERVAL - 5000,
+  });
+}
+
+/**
+ * Hook to manually trigger user sync
+ * Invalidates status and history on success
+ */
+export function useTriggerUserSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.triggerUserSync(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "user-sync"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "user-sync-history"],
+      });
+    },
+  });
+}
+
+/**
+ * Hook to update user sync config
+ * Invalidates status on success
+ */
+export function useUpdateUserSyncConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { interval_hours?: number; is_enabled?: boolean }) =>
+      apiClient.updateUserSyncConfig(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["monitoring", "system-jobs", "user-sync"],
+      });
+    },
+  });
+}
+
 /**
  * Hook to manually refresh all monitoring data
  */
