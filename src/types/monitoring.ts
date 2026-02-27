@@ -420,3 +420,54 @@ export interface SystemJobTriggerResponse {
 export interface SystemJobHistoryResponse {
   runs: SystemJobRunSummary[];
 }
+
+/**
+ * User sync run summary
+ */
+export interface UserSyncRunSummary {
+  id: string;
+  status: string;
+  triggered_by: string | null;
+  started_at: string;
+  completed_at: string | null;
+  duration_seconds: number | null;
+  error_message: string | null;
+  details: {
+    users_created?: number;
+    users_updated?: number;
+    employees_created?: number;
+    users_merged?: number;
+    supervisors_linked?: number;
+  } | null;
+}
+
+/**
+ * User sync status response
+ */
+export interface UserSyncStatusResponse {
+  job_key: string;
+  display_name: string;
+  description: string | null;
+  is_enabled: boolean;
+  interval_hours: number;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  last_run: UserSyncRunSummary | null;
+}
+
+/**
+ * User sync trigger response
+ */
+export interface UserSyncTriggerResponse {
+  status: string;
+  message: string;
+  run_id: string | null;
+  run: UserSyncRunSummary | null;
+}
+
+/**
+ * User sync history response
+ */
+export interface UserSyncHistoryResponse {
+  runs: UserSyncRunSummary[];
+}

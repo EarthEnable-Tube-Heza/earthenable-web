@@ -15,3 +15,4 @@ export { EndpointUsageCard } from "./EndpointUsageCard";
 export { HierarchicalFeatureUsageCard } from "./HierarchicalFeatureUsageCard";
 export { LoginFrequencyCard } from "./LoginFrequencyCard";
 export { OrphanedTaskCleanupCard } from "./OrphanedTaskCleanupCard";
+export { UserSyncCard } from "./UserSyncCard";

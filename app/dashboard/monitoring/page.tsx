@@ -23,6 +23,7 @@ import {
   EndpointUsageCard,
   HierarchicalFeatureUsageCard,
   OrphanedTaskCleanupCard,
+  UserSyncCard,
 } from "@/src/components/monitoring";
 
 export default function MonitoringPage() {
@@ -80,6 +81,7 @@ function MonitoringContent() {
       {/* System Jobs Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OrphanedTaskCleanupCard />
+        <UserSyncCard />
       </div>
 
       {/* Bottom Row: Hierarchical Feature Usage (Full Width) */}
