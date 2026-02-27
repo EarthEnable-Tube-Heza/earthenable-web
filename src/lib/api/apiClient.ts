@@ -85,6 +85,10 @@ import {
   SystemJobStatusResponse,
   SystemJobTriggerResponse,
   SystemJobHistoryResponse,
+  // User sync job types
+  UserSyncStatusResponse,
+  UserSyncTriggerResponse,
+  UserSyncHistoryResponse,
   // Sync types
   SalesforceSyncHistoryResponse,
   SalesforceSyncStatsResponse,
@@ -1216,6 +1220,43 @@ class APIClient {
       "/admin/monitoring/system-jobs/orphaned-task-cleanup/history",
       { params: { limit } }
     );
+  }
+
+  // =========================================================================
+  // User Sync Job Endpoints
+  // =========================================================================
+
+  /**
+   * Get user sync job status and config
+   */
+  async getUserSyncStatus(): Promise<UserSyncStatusResponse> {
+    return this.get<UserSyncStatusResponse>("/admin/monitoring/system-jobs/user-sync");
+  }
+
+  /**
+   * Update user sync job config
+   */
+  async updateUserSyncConfig(data: {
+    interval_hours?: number;
+    is_enabled?: boolean;
+  }): Promise<UserSyncStatusResponse> {
+    return this.patch<UserSyncStatusResponse>("/admin/monitoring/system-jobs/user-sync", data);
+  }
+
+  /**
+   * Manually trigger user sync
+   */
+  async triggerUserSync(): Promise<UserSyncTriggerResponse> {
+    return this.post<UserSyncTriggerResponse>("/admin/monitoring/system-jobs/user-sync/trigger");
+  }
+
+  /**
+   * Get user sync run history
+   */
+  async getUserSyncHistory(limit = 20): Promise<UserSyncHistoryResponse> {
+    return this.get<UserSyncHistoryResponse>("/admin/monitoring/system-jobs/user-sync/history", {
+      params: { limit },
+    });
   }
 
   // =========================================================================
