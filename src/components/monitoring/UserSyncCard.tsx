@@ -67,7 +67,7 @@ export function UserSyncCard() {
       const result = await triggerMutation.mutateAsync();
       setTriggerMessage(result.message);
     } catch {
-      setTriggerMessage("Failed to trigger sync");
+      setTriggerMessage("Failed to trigger sync. Please try again.");
     }
   };
 
